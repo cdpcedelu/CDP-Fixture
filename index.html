@@ -1310,6 +1310,22 @@ function renderFixture() {
     return;
   }
 
+  // Ordenar dentro de cada fecha: Viernes primero, luego Sábado por horario
+  function diaHoraSort(p) {
+    const ch = String(p.canchaHora || '').toLowerCase();
+    const esViernes = ch.includes('vie') || ch.includes('viernes');
+    const esSabado  = ch.includes('sab') || ch.includes('sabado');
+    const diaPrio   = esViernes ? 0 : esSabado ? 1 : 2;
+    const mHora     = ch.match(/(\d{1,2}):(\d{2})/);
+    const mins      = mHora ? parseInt(mHora[1]) * 60 + parseInt(mHora[2]) : 9999;
+    return diaPrio * 10000 + mins;
+  }
+  items.sort((a, b) => {
+    const fa = a.fecha ?? 0, fb = b.fecha ?? 0;
+    if (fa !== fb) return fa - fb;
+    return diaHoraSort(a) - diaHoraSort(b);
+  });
+
   // Group by Fecha (round)
   const groups = {};
   items.forEach(p => {
