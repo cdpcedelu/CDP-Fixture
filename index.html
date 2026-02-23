@@ -982,8 +982,7 @@
       <div class="section-title">Posiciones</div>
     </div>
     <div class="tab-row" id="posTab">
-      <button class="tab-pill active" onclick="showPos('general-libres', this)">Gral. Libres</button>
-      <button class="tab-pill" onclick="showPos('zona-a-libres', this)">Zona A</button>
+      <button class="tab-pill active" onclick="showPos('zona-a-libres', this)">Zona A</button>
       <button class="tab-pill" onclick="showPos('zona-b-libres', this)">Zona B</button>
       <button class="tab-pill" onclick="showPos('general-senior', this)">Sénior</button>
     </div>
@@ -1244,7 +1243,7 @@ function showSection(id) {
 
   // Lazy load
   if (id === 'fixture' && !state.fixture) loadFixture();
-  if (id === 'posiciones' && !state.posiciones['general-libres']) loadPosiciones();
+  if (id === 'posiciones' && !state.posiciones['zona-a-libres']) loadPosiciones();
   if (id === 'goleadores' && !state.goleadores['libres-a']) loadGoleadores();
   if (id === 'disciplina' && !state.disciplina['rojas']) loadDisciplina();
   if (id === 'sponsors' && !state.sponsors) loadSponsors();
@@ -1368,7 +1367,6 @@ function renderFixture() {
 // POSICIONES
 // ============================================================
 const POS_SHEETS = {
-  'general-libres': 'Tabla de Pos LIBRES',
   'zona-a-libres': 'Pos Libres ZONA A',
   'zona-b-libres': 'Pos Libres ZONA B',
   'general-senior': 'Tabla de Pos SENIOR',
@@ -1381,7 +1379,7 @@ const POS_SHEETS = {
 };
 
 async function loadPosiciones() {
-  await loadPosView('general-libres');
+  await loadPosView('zona-a-libres');
 }
 
 async function showPos(view, btn) {
