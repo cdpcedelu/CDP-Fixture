@@ -1702,13 +1702,21 @@ function renderDisc(view) {
       const partidos = r['Partidos'];
       const articulo = r['Artículo'] || r['Articulo'] || '';
 
-      // Convertir fecha: si es número serial de Excel, convertir a dd/mm/aaaa
+      // Habilitado FECHA puede ser:
+      //   - número de fixture (2, 3, etc.) → mostrar como "Hab. F2"
+      //   - serial Excel real (>40000)      → mostrar como fecha "10 may. 2026"
+      //   - texto                           → mostrar tal cual
       let fechaHabStr = '';
-      if (fechaHabRaw) {
+      if (fechaHabRaw !== undefined && fechaHabRaw !== null && fechaHabRaw !== '') {
         if (typeof fechaHabRaw === 'number') {
-          // Serial Excel: 1 = 1 enero 1900
-          const d = new Date(Math.round((fechaHabRaw - 25569) * 86400 * 1000));
-          fechaHabStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+          if (fechaHabRaw > 40000) {
+            // Serial de fecha Excel real
+            const d = new Date(Math.round((fechaHabRaw - 25569) * 86400 * 1000));
+            fechaHabStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+          } else {
+            // Número de fixture
+            fechaHabStr = 'F' + fechaHabRaw;
+          }
         } else {
           fechaHabStr = String(fechaHabRaw);
         }
