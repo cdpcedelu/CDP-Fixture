@@ -1698,9 +1698,27 @@ function renderDisc(view) {
 
   if (isRojas) {
     data.forEach(r => {
-      const fechaHab = r['Habilitado FECHA'];
+      const fechaHabRaw = r['Habilitado FECHA'];
       const partidos = r['Partidos'];
       const articulo = r['Artículo'] || r['Articulo'] || '';
+
+      // Convertir fecha: si es número serial de Excel, convertir a dd/mm/aaaa
+      let fechaHabStr = '';
+      if (fechaHabRaw) {
+        if (typeof fechaHabRaw === 'number') {
+          // Serial Excel: 1 = 1 enero 1900
+          const d = new Date(Math.round((fechaHabRaw - 25569) * 86400 * 1000));
+          fechaHabStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else {
+          fechaHabStr = String(fechaHabRaw);
+        }
+      }
+
+      // Partidos: puede ser número o texto como "1 año 1 fecha"
+      const partidosDisplay = (partidos !== undefined && partidos !== null && partidos !== '') ? partidos : '-';
+      const esNumero = typeof partidos === 'number';
+      const labelPartidos = esNumero && partidos > 1 ? 'partidos' : (esNumero ? 'partido' : '');
+
       html += `<div class="disc-row">
         <div class="disc-info">
           <div class="disc-name">${r['Jugador'] || '-'}</div>
@@ -1710,9 +1728,9 @@ function renderDisc(view) {
           </div>
         </div>
         <div class="suspension-info">
-          <div class="suspension-num">${partidos || '-'}</div>
-          <div class="suspension-label">${typeof partidos === 'number' && partidos > 1 ? 'partidos' : 'partido'}</div>
-          ${fechaHab ? `<div class="habilitado-fecha">Hab. F${fechaHab}</div>` : ''}
+          <div class="suspension-num" style="font-size:${esNumero ? '2rem' : '1rem'};line-height:1.2">${partidosDisplay}</div>
+          ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
+          ${fechaHabStr ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
         </div>
       </div>`;
     });
