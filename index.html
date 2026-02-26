@@ -2074,7 +2074,16 @@ async function loadDiscView(view) {
   try {
     const sheetName = DISC_SHEETS[view];
     const data = await fetchSheet(sheetName);
-    state.disciplina[view] = data.filter(r => r['Jugador'] && r['Jugador'] !== '');
+    // Para rojas, añadir _rowIndex basado en posición en el sheet (fila 2 = índice 0)
+    const filtered = data.filter(r => r['Jugador'] && r['Jugador'] !== '');
+    if (view === 'rojas') {
+      let rowCounter = 2;
+      data.forEach(r => {
+        if (r['Jugador'] && r['Jugador'] !== '') r._rowIndex = rowCounter;
+        rowCounter++;
+      });
+    }
+    state.disciplina[view] = filtered;
     renderDisc(view);
   } catch(e) {
     showError('discContainer', 'No se pudo cargar disciplina', () => loadDiscView(view));
@@ -2092,24 +2101,19 @@ function renderDisc(view) {
   let html = '<div class="card">';
 
   if (isRojas) {
-    data.forEach(r => {
+    data.forEach((r, idx) => {
       const fechaHabRaw = r['Habilitado FECHA'];
-      const partidos = r['Partidos'];
-      const articulo = r['Artículo'] || r['Articulo'] || '';
+      const partidos    = r['Partidos'];
+      const articulo    = r['Artículo'] || r['Articulo'] || '';
+      const sinSancion  = (partidos === undefined || partidos === null || partidos === '');
 
-      // Habilitado FECHA puede ser:
-      //   - número de fixture (2, 3, etc.) → mostrar como "Hab. F2"
-      //   - serial Excel real (>40000)      → mostrar como fecha "10 may. 2026"
-      //   - texto                           → mostrar tal cual
       let fechaHabStr = '';
       if (fechaHabRaw !== undefined && fechaHabRaw !== null && fechaHabRaw !== '') {
         if (typeof fechaHabRaw === 'number') {
           if (fechaHabRaw > 40000) {
-            // Serial de fecha Excel real
             const d = new Date(Math.round((fechaHabRaw - 25569) * 86400 * 1000));
             fechaHabStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
           } else {
-            // Número de fixture
             fechaHabStr = 'F' + fechaHabRaw;
           }
         } else {
@@ -2117,24 +2121,35 @@ function renderDisc(view) {
         }
       }
 
-      // Partidos: puede ser número o texto como "1 año 1 fecha"
-      const partidosDisplay = (partidos !== undefined && partidos !== null && partidos !== '') ? partidos : '-';
-      const esNumero = typeof partidos === 'number';
-      const labelPartidos = esNumero && partidos > 1 ? 'partidos' : (esNumero ? 'partido' : '');
+      const partidosDisplay = !sinSancion ? partidos : '—';
+      const esNumero        = typeof partidos === 'number';
+      const labelPartidos   = esNumero && partidos > 1 ? 'partidos' : (esNumero ? 'partido' : '');
 
-      html += `<div class="disc-row">
-        <div class="disc-info">
+      const rojaData = encodeURIComponent(JSON.stringify({
+        rowIndex: r._rowIndex || '',
+        jugador:  r['Jugador'] || '',
+        equipo:   r['Equipo']  || '',
+        fecha:    r['Fecha']   || '',
+        partidos: !sinSancion ? String(partidos) : '',
+        articulo: articulo,
+        habFecha: (fechaHabRaw !== undefined && fechaHabRaw !== null) ? String(fechaHabRaw) : ''
+      }));
+
+      html += `<div class="disc-row" style="${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}">
+        <div class="disc-info" style="flex:1">
           <div class="disc-name">${r['Jugador'] || '-'}</div>
           <div class="disc-team" style="display:flex;align-items:center;gap:5px">
             ${getEscudo(r['Equipo'] || '', 16)}
-            <span>${r['Equipo'] || '-'} ${articulo ? '· Art. ' + articulo : ''}</span>
+            <span>${r['Equipo'] || '-'}${articulo ? ' · Art. ' + articulo : ''}</span>
           </div>
+          ${sinSancion ? '<div style="font-size:10px;color:#ef4444;margin-top:3px;font-weight:600">⚠ Sin sanción cargada</div>' : ''}
         </div>
         <div class="suspension-info">
           <div class="suspension-num" style="font-size:${esNumero ? '2rem' : '1rem'};line-height:1.2">${partidosDisplay}</div>
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
           ${fechaHabStr ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
         </div>
+        ${adminState.loggedIn ? `<button onclick="openRojaModal(decodeURIComponent('${rojaData}'))" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;color:var(--text-dimmer);margin-left:8px;flex-shrink:0">✏️ Editar</button>` : ''}
       </div>`;
     });
   } else {
@@ -2818,5 +2833,119 @@ window.addEventListener('DOMContentLoaded', () => {
   loadFixture();
 });
 </script>
+
+<!-- ═══ MODAL: Completar Sanción Tarjeta Roja ═══ -->
+<div id="rojaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:400px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span style="font-size:24px">🟥</span>
+      <div style="flex:1">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text)" id="rojaModalTitle">Completar Sanción</div>
+        <div style="font-size:12px;color:var(--text-dimmer)" id="rojaModalSub"></div>
+      </div>
+      <button onclick="closeRojaModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-dimmer)">✕</button>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Partidos de suspensión</label>
+      <input id="rojaInputPartidos" type="text" placeholder="Ej: 3  o  1 año 1 fecha"
+        style="width:100%;box-sizing:border-box;background:var(--input-bg,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Artículo del reglamento</label>
+      <input id="rojaInputArticulo" type="text" placeholder="Ej: 45"
+        style="width:100%;box-sizing:border-box;background:var(--input-bg,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+    </div>
+
+    <div style="margin-bottom:20px">
+      <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Habilitado a partir de (fecha o nro de fecha)</label>
+      <input id="rojaInputHabFecha" type="text" placeholder="Ej: F5  o  15/04/2026"
+        style="width:100%;box-sizing:border-box;background:var(--input-bg,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+    </div>
+
+    <div id="rojaModalError" style="display:none;color:#ef4444;font-size:12px;margin-bottom:10px;text-align:center"></div>
+
+    <button onclick="saveRoja()" id="rojaModalSaveBtn"
+      style="width:100%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:17px;cursor:pointer;letter-spacing:1px">
+      💾 GUARDAR SANCIÓN
+    </button>
+  </div>
+</div>
+
+<script>
+// ─── Roja Modal ───
+let _rojaModalData = null;
+
+function openRojaModal(jsonStr) {
+  try { _rojaModalData = JSON.parse(jsonStr); } catch(e) { return; }
+  document.getElementById('rojaModalTitle').textContent  = _rojaModalData.jugador || 'Completar Sanción';
+  document.getElementById('rojaModalSub').textContent    = (_rojaModalData.equipo || '') + (_rojaModalData.fecha ? ' · F' + _rojaModalData.fecha : '');
+  document.getElementById('rojaInputPartidos').value  = _rojaModalData.partidos || '';
+  document.getElementById('rojaInputArticulo').value  = _rojaModalData.articulo || '';
+  document.getElementById('rojaInputHabFecha').value  = _rojaModalData.habFecha || '';
+  document.getElementById('rojaModalError').style.display = 'none';
+  const overlay = document.getElementById('rojaModalOverlay');
+  overlay.style.display = 'flex';
+}
+
+function closeRojaModal() {
+  document.getElementById('rojaModalOverlay').style.display = 'none';
+  _rojaModalData = null;
+}
+
+async function saveRoja() {
+  if (!_rojaModalData) return;
+  const btn      = document.getElementById('rojaModalSaveBtn');
+  const errDiv   = document.getElementById('rojaModalError');
+  const partidos = document.getElementById('rojaInputPartidos').value.trim();
+  const articulo = document.getElementById('rojaInputArticulo').value.trim();
+  const habFecha = document.getElementById('rojaInputHabFecha').value.trim();
+
+  if (!partidos) {
+    errDiv.textContent = 'Ingresá la cantidad de partidos de suspensión';
+    errDiv.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Guardando...';
+  btn.disabled    = true;
+
+  try {
+    const params = new URLSearchParams({
+      action:    'updateRoja',
+      rowIndex:  _rojaModalData.rowIndex || '',
+      jugador:   _rojaModalData.jugador  || '',
+      fecha:     _rojaModalData.fecha    || '',
+      partidos,
+      articulo,
+      habFecha
+    });
+    const res  = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+    const json = await res.json();
+
+    if (json.ok) {
+      // Refrescar vista de disciplina
+      state.disciplina = {};
+      closeRojaModal();
+      loadDisciplina();
+    } else {
+      errDiv.textContent = json.error || 'Error al guardar';
+      errDiv.style.display = 'block';
+    }
+  } catch(e) {
+    errDiv.textContent = 'Error de conexión: ' + e.message;
+    errDiv.style.display = 'block';
+  }
+
+  btn.textContent = '💾 GUARDAR SANCIÓN';
+  btn.disabled    = false;
+}
+
+// Cerrar modal al click fuera
+document.getElementById('rojaModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeRojaModal();
+});
+</script>
+
 </body>
 </html>
