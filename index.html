@@ -884,6 +884,210 @@
     font-size: 12px;
     pointer-events: none;
   }
+
+  /* ═══════════════════════════════════ */
+  /* ADMIN PANEL STYLES                 */
+  /* ═══════════════════════════════════ */
+  .admin-login-box {
+    max-width: 360px;
+    margin: 60px auto;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .admin-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1.5px solid var(--border2);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: center;
+    letter-spacing: 4px;
+    font-weight: 600;
+  }
+  .admin-input:focus { border-color: var(--green); }
+  .admin-input::placeholder { letter-spacing: 1px; font-weight: 400; color: var(--text-dimmer); }
+
+  .admin-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border2);
+    background: var(--bg2);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+  .admin-btn:hover { border-color: var(--green); color: var(--green); }
+  .admin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .admin-btn.primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+    box-shadow: 0 4px 16px rgba(22,163,74,0.25);
+  }
+  .admin-btn.primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .admin-btn.full { width: 100%; margin-top: 14px; }
+  .admin-btn.small { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
+  .admin-btn.yellow { background: #fbbf24; border-color: #f59e0b; color: #000; }
+  .admin-btn.red { background: var(--red); border-color: var(--red); color: #fff; }
+
+  .admin-select {
+    width: 100%;
+    background: var(--bg2);
+    border: 1.5px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+  .admin-select:focus { border-color: var(--green); }
+
+  .admin-select-inline {
+    background: var(--bg2);
+    border: 1.5px solid var(--border2);
+    border-radius: 8px;
+    padding: 5px 10px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    margin-left: auto;
+  }
+
+  .admin-score-input {
+    width: 72px;
+    height: 56px;
+    background: var(--bg3);
+    border: 2px solid var(--border2);
+    border-radius: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    text-align: center;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .admin-score-input:focus { border-color: var(--green); }
+
+  .admin-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dimmer);
+    margin-bottom: 8px;
+  }
+
+  .admin-player-list {
+    min-height: 30px;
+  }
+
+  .admin-player-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 4px 4px 0;
+  }
+  .admin-player-tag.gol { border-left: 3px solid var(--green); }
+  .admin-player-tag.amarilla { border-left: 3px solid #fbbf24; }
+  .admin-player-tag.roja { border-left: 3px solid var(--red); }
+
+  .admin-player-tag .remove-tag {
+    cursor: pointer;
+    color: var(--text-dimmer);
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .admin-player-tag .remove-tag:hover { color: var(--red); }
+
+  .admin-goles-input {
+    width: 36px;
+    height: 24px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--green);
+    outline: none;
+  }
+  .admin-goles-input:focus { border-color: var(--green); }
+
+  /* Admin match row */
+  .admin-match-row {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+  .admin-match-row:hover { border-color: var(--green); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .admin-match-row.played { border-left: 4px solid var(--green); }
+  .admin-match-row.nr { border-left: 4px solid var(--yellow); }
+  .admin-match-row.pending { border-left: 4px solid var(--border2); }
+  .admin-match-row .match-teams { flex:1; }
+  .admin-match-row .match-teams strong {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .admin-match-row .match-result {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--text);
+    min-width: 50px;
+    text-align: center;
+  }
+  .admin-match-row .match-edit-icon {
+    color: var(--text-dimmer);
+    font-size: 16px;
+  }
+
+  @media (max-width: 480px) {
+    .admin-login-box { margin: 30px 8px; padding: 24px 18px; }
+    .admin-score-input { width: 60px; height: 48px; font-size: 26px; }
+    #adminMatchEditor .card { border-radius: 12px; }
+    #adminMatchEditor [style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -920,6 +1124,9 @@
     </button>
     <button class="nav-btn" onclick="showSection('reglamentos')" id="nav-reglamentos">
       <span class="nav-icon">📋</span> Reglamentos
+    </button>
+    <button class="nav-btn" onclick="showSection('admin')" id="nav-admin" style="margin-left:auto">
+      <span class="nav-icon">⚙️</span> Admin
     </button>
   </div>
 </nav>
@@ -1102,6 +1309,188 @@
     </div>
   </section>
 
+  <!-- ===================== ADMIN ===================== -->
+  <section class="section" id="section-admin">
+
+    <!-- LOGIN SCREEN -->
+    <div id="adminLogin">
+      <div class="admin-login-box">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:48px;margin-bottom:10px">🔐</div>
+          <div class="section-title" style="font-size:26px">Panel Administrador</div>
+          <div style="color:var(--text-dimmer);font-size:14px;margin-top:4px">Ingresá tu PIN para acceder</div>
+        </div>
+        <input type="password" id="adminPinInput" class="admin-input" placeholder="PIN de administrador"
+          onkeydown="if(event.key==='Enter') adminDoLogin()" autocomplete="off" maxlength="20">
+        <div id="adminLoginError" style="color:var(--red);font-size:13px;text-align:center;margin:8px 0;display:none"></div>
+        <button class="admin-btn primary full" onclick="adminDoLogin()" id="adminLoginBtn">
+          Ingresar
+        </button>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD (hidden until login) -->
+    <div id="adminDashboard" style="display:none">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Gestión de Partidos</div>
+          <div style="color:var(--text-dimmer);font-size:13px;margin-top:2px">
+            Bienvenido, <span id="adminUserName">Admin</span>
+            · <a href="javascript:void(0)" onclick="adminLogout()" style="color:var(--red);text-decoration:none;font-weight:600">Cerrar sesión</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config URL banner -->
+      <div id="adminConfigBanner" class="config-banner" style="display:none">
+        ⚠️ Necesitás configurar la URL de Apps Script. Editá <code>APPS_SCRIPT_URL</code> en el código.
+        <a href="javascript:void(0)" onclick="document.getElementById('adminConfigBanner').style.display='none'" style="float:right;color:#92400e;font-weight:700">✕</a>
+      </div>
+
+      <!-- Fecha tabs -->
+      <div class="tab-row" id="adminFechaTabs" style="margin-bottom:12px"></div>
+
+      <!-- Match list -->
+      <div id="adminMatchList">
+        <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>
+      </div>
+
+      <!-- Match Editor Modal -->
+      <div id="adminMatchEditor" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <button class="admin-btn small" onclick="adminCloseEditor()">← Volver</button>
+          <div style="flex:1">
+            <div id="editorPartidoTitle" class="card-title" style="font-size:20px;color:var(--text)"></div>
+            <div id="editorPartidoMeta" style="font-size:12px;color:var(--text-dimmer)"></div>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">⚽ Resultado</span>
+            <select id="editorJugado" class="admin-select-inline">
+              <option value="Jugado">Jugado</option>
+              <option value="NR">No Realizado (NR)</option>
+            </select>
+          </div>
+          <div style="padding:20px;display:flex;align-items:center;gap:16px;justify-content:center">
+            <div style="text-align:center;flex:1">
+              <div id="editorEqL" class="equipo-name" style="font-size:15px;margin-bottom:8px"></div>
+              <input type="number" id="editorGolesL" class="admin-score-input" min="0" max="99" value="0">
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text-dimmer)">—</div>
+            <div style="text-align:center;flex:1">
+              <div id="editorEqV" class="equipo-name" style="font-size:15px;margin-bottom:8px"></div>
+              <input type="number" id="editorGolesV" class="admin-score-input" min="0" max="99" value="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Goleadores -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">🥅 Goleadores</span>
+          </div>
+          <div style="padding:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <!-- Goleadores Local -->
+              <div>
+                <div class="admin-label" id="golLabelL">Local</div>
+                <div id="goleadoresLocalList" class="admin-player-list"></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                  <select id="goleadorLocalSelect" class="admin-select" style="flex:1">
+                    <option value="">Elegir jugador...</option>
+                  </select>
+                  <button class="admin-btn small" onclick="addGoleador('L')">+</button>
+                </div>
+              </div>
+              <!-- Goleadores Visitante -->
+              <div>
+                <div class="admin-label" id="golLabelV">Visitante</div>
+                <div id="goleadoresVisitanteList" class="admin-player-list"></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                  <select id="goleadorVisitanteSelect" class="admin-select" style="flex:1">
+                    <option value="">Elegir jugador...</option>
+                  </select>
+                  <button class="admin-btn small" onclick="addGoleador('V')">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjetas Amarillas -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">🟨 Tarjetas Amarillas</span>
+          </div>
+          <div style="padding:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div>
+                <div class="admin-label" id="amLabelL">Local</div>
+                <div id="amarillasLocalList" class="admin-player-list"></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                  <select id="amarillaLocalSelect" class="admin-select" style="flex:1">
+                    <option value="">Elegir jugador...</option>
+                  </select>
+                  <button class="admin-btn small yellow" onclick="addAmarilla('L')">+</button>
+                </div>
+              </div>
+              <div>
+                <div class="admin-label" id="amLabelV">Visitante</div>
+                <div id="amarillasVisitanteList" class="admin-player-list"></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                  <select id="amarillaVisitanteSelect" class="admin-select" style="flex:1">
+                    <option value="">Elegir jugador...</option>
+                  </select>
+                  <button class="admin-btn small yellow" onclick="addAmarilla('V')">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjetas Rojas -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">🟥 Tarjetas Rojas</span>
+          </div>
+          <div style="padding:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div>
+                <div class="admin-label" id="rojaLabelL">Local</div>
+                <div id="rojasLocalList" class="admin-player-list"></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                  <select id="rojaLocalSelect" class="admin-select" style="flex:1">
+                    <option value="">Elegir jugador...</option>
+                  </select>
+                  <button class="admin-btn small red" onclick="addRoja('L')">+</button>
+                </div>
+              </div>
+              <div>
+                <div class="admin-label" id="rojaLabelV">Visitante</div>
+                <div id="rojasVisitanteList" class="admin-player-list"></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                  <select id="rojaVisitanteSelect" class="admin-select" style="flex:1">
+                    <option value="">Elegir jugador...</option>
+                  </select>
+                  <button class="admin-btn small red" onclick="addRoja('V')">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <button class="admin-btn primary full" onclick="adminSaveMatch()" id="adminSaveBtn" style="font-size:16px;padding:14px 24px">
+          💾 Guardar Partido
+        </button>
+        <div id="adminSaveMsg" style="text-align:center;margin-top:10px;font-size:14px;font-weight:600;display:none"></div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -1233,6 +1622,11 @@ const SHEET_ID = '1pmv5pDVTfa8gCYQPz1ZbqgyyM7zNtd7vELtN9vuYEY0';
 const PUBLISHED_ID = '2PACX-1vSUVv4GkwAreYqXyaD6LOpVLpjQTHw1vy4z_6N3xj2wjphMUcJTPy-MJQXlX-ySD6-QCB8-PWsktFKV';
 // Ejemplo: '1pmv5pDVTfa8gCYQPz1ZbqgyyM7zNtd7vELtN9vuYEY0'
 
+// ═══════════════════════════════════════════════
+// ADMIN — URL del Apps Script (completar después de implementar)
+// ═══════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'TU_APPS_SCRIPT_URL_AQUI';
+
 const API_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
 const API_BASE_PUB = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?output=csv&gid=`;
 
@@ -1312,6 +1706,7 @@ function showSection(id) {
   if (id === 'goleadores' && !state.goleadores['libres-a']) loadGoleadores();
   if (id === 'disciplina' && !state.disciplina['rojas']) loadDisciplina();
   if (id === 'sponsors' && !state.sponsors) loadSponsors();
+  if (id === 'admin') initAdmin();
 }
 
 // ============================================================
@@ -1860,6 +2255,547 @@ window.addEventListener('scroll', () => {
   const btn = document.getElementById('scrollTopBtn');
   btn.classList.toggle('visible', window.scrollY > 300);
 });
+
+// ============================================================
+// ADMIN PANEL
+// ============================================================
+let adminState = {
+  loggedIn: false,
+  userName: '',
+  matches: [],
+  currentFecha: '',
+  currentMatch: null,
+  rostersCache: {},
+  editorData: {
+    goleadoresL: [],
+    goleadoresV: [],
+    amonestadosL: [],
+    amonestadosV: [],
+    rojasL: [],
+    rojasV: []
+  }
+};
+
+function initAdmin() {
+  if (adminState.loggedIn) return;
+  document.getElementById('adminLogin').style.display = '';
+  document.getElementById('adminDashboard').style.display = 'none';
+  // Check if URL is configured
+  if (APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxELCSZ_1um1fExggTpzybMmNQBQWOV3KwOPVjwPcUsIiPl1n8baRSNOwFSIMcdhEAe/exec') {
+    // Show config needed msg after login
+  }
+}
+
+async function adminDoLogin() {
+  const pin = document.getElementById('adminPinInput').value.trim();
+  if (!pin) return;
+
+  const btn = document.getElementById('adminLoginBtn');
+  const errDiv = document.getElementById('adminLoginError');
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  errDiv.style.display = 'none';
+
+  try {
+    if (APPS_SCRIPT_URL === 'TU_APPS_SCRIPT_URL_AQUI') {
+      // Fallback: verificar contra el sheet directamente via gviz
+      const data = await fetchSheet('Usuarios');
+      const user = data.find(r => String(r['CONTRASEÑA'] || '').trim() === pin && String(r['TIPO'] || '').trim() === 'Administrador');
+      if (user) {
+        adminState.loggedIn = true;
+        adminState.userName = user['NOMBRE'] || 'Admin';
+        adminOnLoginSuccess();
+      } else {
+        errDiv.textContent = 'PIN incorrecto';
+        errDiv.style.display = '';
+      }
+    } else {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=login&pin=' + encodeURIComponent(pin));
+      const json = await res.json();
+      if (json.ok) {
+        adminState.loggedIn = true;
+        adminState.userName = json.nombre || 'Admin';
+        adminOnLoginSuccess();
+      } else {
+        errDiv.textContent = json.error || 'PIN incorrecto';
+        errDiv.style.display = '';
+      }
+    }
+  } catch(e) {
+    errDiv.textContent = 'Error de conexión: ' + e.message;
+    errDiv.style.display = '';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Ingresar';
+}
+
+function adminOnLoginSuccess() {
+  document.getElementById('adminLogin').style.display = 'none';
+  document.getElementById('adminDashboard').style.display = '';
+  document.getElementById('adminUserName').textContent = adminState.userName;
+
+  if (APPS_SCRIPT_URL === 'TU_APPS_SCRIPT_URL_AQUI') {
+    document.getElementById('adminConfigBanner').style.display = '';
+  }
+
+  adminLoadMatches();
+}
+
+function adminLogout() {
+  adminState.loggedIn = false;
+  adminState.userName = '';
+  adminState.matches = [];
+  document.getElementById('adminLogin').style.display = '';
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('adminPinInput').value = '';
+}
+
+async function adminLoadMatches() {
+  const container = document.getElementById('adminMatchList');
+  container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>';
+
+  try {
+    if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatches');
+      const json = await res.json();
+      if (json.ok) {
+        adminState.matches = json.matches;
+      } else {
+        throw new Error(json.error || 'Error al cargar');
+      }
+    } else {
+      // Fallback: leer desde gviz directamente
+      const { cols, rows } = await fetchSheetRaw('Completar Partidos');
+      adminState.matches = rows.filter(r => r[0] && String(r[0]).trim()).map((r, idx) => {
+        const partido = String(r[0] || '');
+        const fechaMatch = partido.match(/^(F\d+)/);
+        return {
+          rowIndex: idx + 2,
+          partido: partido,
+          fecha: fechaMatch ? fechaMatch[1] : '',
+          resLocal: r[1] !== null && r[1] !== undefined ? String(r[1]) : '',
+          resVisitante: r[2] !== null && r[2] !== undefined ? String(r[2]) : '',
+          resultado: r[3] || '',
+          jugado: r[4] || '',
+          equipoL: r[6] || '',
+          equipoV: r[7] || '',
+          isSenior: partido.includes('(S)'),
+          isLibre: partido.toUpperCase().includes('LIBRE'),
+          amonestadosL: extractAmonestadosFromRaw(r, 8, 17),
+          amonestadosV: extractAmonestadosFromRaw(r, 18, 27),
+          rojasL: extractAmonestadosFromRaw(r, 28, 32),
+          rojasV: extractAmonestadosFromRaw(r, 33, 37)
+        };
+      });
+    }
+
+    adminRenderFechaTabs();
+    adminRenderMatchList();
+  } catch(e) {
+    container.innerHTML = `<div class="error-box">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">Error</div>
+      <div class="error-msg">${e.message}</div>
+      <button class="retry-btn" onclick="adminLoadMatches()">Reintentar</button>
+    </div>`;
+  }
+}
+
+function extractAmonestadosFromRaw(row, start, end) {
+  var names = [];
+  for (var i = start; i <= end && i < row.length; i++) {
+    var val = String(row[i] || '').trim();
+    if (val) names.push(val);
+  }
+  return names;
+}
+
+function adminRenderFechaTabs() {
+  const fechas = [...new Set(adminState.matches.map(m => m.fecha).filter(Boolean))];
+  fechas.sort((a, b) => {
+    const na = parseInt(a.replace('F', ''));
+    const nb = parseInt(b.replace('F', ''));
+    return na - nb;
+  });
+
+  if (!adminState.currentFecha && fechas.length) adminState.currentFecha = fechas[0];
+
+  let html = '<button class="tab-pill ' + (!adminState.currentFecha ? 'active' : '') + '" onclick="adminFilterFecha(\'\', this)">Todos</button>';
+  fechas.forEach(f => {
+    html += `<button class="tab-pill ${adminState.currentFecha === f ? 'active' : ''}" onclick="adminFilterFecha('${f}', this)">${f}</button>`;
+  });
+  document.getElementById('adminFechaTabs').innerHTML = html;
+}
+
+function adminFilterFecha(fecha, btn) {
+  adminState.currentFecha = fecha;
+  document.querySelectorAll('#adminFechaTabs .tab-pill').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  adminRenderMatchList();
+}
+
+function adminRenderMatchList() {
+  document.getElementById('adminMatchEditor').style.display = 'none';
+  document.getElementById('adminMatchList').style.display = '';
+
+  let matches = adminState.matches;
+  if (adminState.currentFecha) {
+    matches = matches.filter(m => m.fecha === adminState.currentFecha);
+  }
+
+  if (!matches.length) {
+    document.getElementById('adminMatchList').innerHTML = '<div class="empty">No hay partidos para esta fecha</div>';
+    return;
+  }
+
+  // Separar libres y senior
+  const libres = matches.filter(m => !m.isSenior && !m.isLibre);
+  const libre = matches.filter(m => m.isLibre);
+  const senior = matches.filter(m => m.isSenior);
+
+  let html = '';
+
+  if (libres.length) {
+    html += '<div class="zone-divider">Libres</div>';
+    libres.forEach(m => { html += adminMatchRowHtml(m); });
+  }
+  if (libre.length) {
+    html += '<div class="zone-divider">Libre (Descansa)</div>';
+    libre.forEach(m => { html += adminMatchRowHtml(m); });
+  }
+  if (senior.length) {
+    html += '<div class="zone-divider">Sénior</div>';
+    senior.forEach(m => { html += adminMatchRowHtml(m); });
+  }
+
+  document.getElementById('adminMatchList').innerHTML = html;
+}
+
+function adminMatchRowHtml(m) {
+  const isPlayed = m.jugado === 'Jugado';
+  const isNR = m.jugado === 'NR';
+  const statusClass = isPlayed ? 'played' : (isNR ? 'nr' : 'pending');
+  const resultDisplay = isPlayed ? m.resultado : (isNR ? 'NR' : 'vs');
+  const statusBadge = isPlayed
+    ? '<span class="badge" style="font-size:9px">✓ Jugado</span>'
+    : (isNR ? '<span class="badge yellow" style="font-size:9px">NR</span>' : '<span class="badge gray" style="font-size:9px">Pendiente</span>');
+
+  return `<div class="admin-match-row ${statusClass}" onclick="adminOpenMatch(${m.rowIndex})">
+    <div class="match-teams">
+      <strong>${m.equipoL || '?'} vs ${m.equipoV || '?'}</strong>
+      <div style="font-size:11px;color:var(--text-dimmer);margin-top:2px">${m.fecha} ${statusBadge}</div>
+    </div>
+    <div class="match-result">${resultDisplay}</div>
+    <div class="match-edit-icon">✏️</div>
+  </div>`;
+}
+
+async function adminOpenMatch(rowIndex) {
+  const match = adminState.matches.find(m => m.rowIndex === rowIndex);
+  if (!match) return;
+
+  adminState.currentMatch = match;
+
+  // Setup editor
+  document.getElementById('adminMatchList').style.display = 'none';
+  document.getElementById('adminMatchEditor').style.display = '';
+  document.getElementById('adminSaveMsg').style.display = 'none';
+
+  document.getElementById('editorPartidoTitle').textContent = match.equipoL + ' vs ' + match.equipoV;
+  document.getElementById('editorPartidoMeta').textContent = match.fecha + (match.isSenior ? ' · Sénior' : ' · Libres');
+
+  document.getElementById('editorEqL').textContent = match.equipoL;
+  document.getElementById('editorEqV').textContent = match.equipoV;
+
+  // Set resultado
+  const jugado = match.jugado || '';
+  document.getElementById('editorJugado').value = jugado === 'Jugado' ? 'Jugado' : 'NR';
+
+  const resL = match.resLocal === 'NR' ? 0 : (parseInt(match.resLocal) || 0);
+  const resV = match.resVisitante === 'NR' ? 0 : (parseInt(match.resVisitante) || 0);
+  document.getElementById('editorGolesL').value = resL;
+  document.getElementById('editorGolesV').value = resV;
+
+  // Labels
+  document.getElementById('golLabelL').textContent = match.equipoL;
+  document.getElementById('golLabelV').textContent = match.equipoV;
+  document.getElementById('amLabelL').textContent = match.equipoL;
+  document.getElementById('amLabelV').textContent = match.equipoV;
+  document.getElementById('rojaLabelL').textContent = match.equipoL;
+  document.getElementById('rojaLabelV').textContent = match.equipoV;
+
+  // Init editor data from existing match data
+  adminState.editorData = {
+    goleadoresL: (match.goleadoresL || []).map(g => ({ jugador: g.jugador, goles: g.goles })),
+    goleadoresV: (match.goleadoresV || []).map(g => ({ jugador: g.jugador, goles: g.goles })),
+    amonestadosL: [...(match.amonestadosL || [])],
+    amonestadosV: [...(match.amonestadosV || [])],
+    rojasL: [...(match.rojasL || [])],
+    rojasV: [...(match.rojasV || [])]
+  };
+
+  // Load goleadores from Apps Script if available
+  if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex);
+      const json = await res.json();
+      if (json.ok) {
+        adminState.editorData.goleadoresL = (json.goleadoresL || []).map(g => ({ jugador: g.jugador, goles: g.goles }));
+        adminState.editorData.goleadoresV = (json.goleadoresV || []).map(g => ({ jugador: g.jugador, goles: g.goles }));
+        adminState.editorData.amonestadosL = json.amonestadosL || [];
+        adminState.editorData.amonestadosV = json.amonestadosV || [];
+        adminState.editorData.rojasL = json.rojasL || [];
+        adminState.editorData.rojasV = json.rojasV || [];
+      }
+    } catch(e) { /* fallback to local data */ }
+  }
+
+  // Render current tags
+  renderPlayerTags();
+
+  // Load rosters for dropdowns
+  await loadRosterForTeam(match.equipoL, 'L');
+  await loadRosterForTeam(match.equipoV, 'V');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function adminCloseEditor() {
+  document.getElementById('adminMatchEditor').style.display = 'none';
+  document.getElementById('adminMatchList').style.display = '';
+}
+
+async function loadRosterForTeam(team, side) {
+  if (!team || team === 'LIBRE') {
+    populateSelects(side, []);
+    return;
+  }
+
+  if (adminState.rostersCache[team]) {
+    populateSelects(side, adminState.rostersCache[team]);
+    return;
+  }
+
+  try {
+    let players = [];
+    if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team));
+      const json = await res.json();
+      players = json.players || [];
+    } else {
+      // Fallback: leer de hoja única "Planteles" via gviz
+      try {
+        const data = await fetchSheet('Planteles');
+        const teamUpper = team.trim().toUpperCase();
+        players = data
+          .filter(r => String(r['Equipo'] || '').trim().toUpperCase() === teamUpper)
+          .map(r => String(r['Jugador'] || '').trim())
+          .filter(n => n && n !== '← Completar con jugadores');
+        players.sort();
+      } catch(e) { players = []; }
+    }
+
+    adminState.rostersCache[team] = players;
+    populateSelects(side, players);
+  } catch(e) {
+    populateSelects(side, []);
+  }
+}
+
+function populateSelects(side, players) {
+  const sorted = [...players].sort();
+  const optHtml = '<option value="">Elegir jugador...</option>' +
+    sorted.map(p => `<option value="${p}">${p}</option>`).join('');
+
+  document.getElementById('goleador' + (side === 'L' ? 'Local' : 'Visitante') + 'Select').innerHTML = optHtml;
+  document.getElementById('amarilla' + (side === 'L' ? 'Local' : 'Visitante') + 'Select').innerHTML = optHtml;
+  document.getElementById('roja' + (side === 'L' ? 'Local' : 'Visitante') + 'Select').innerHTML = optHtml;
+}
+
+// ─── Tag management ───
+function renderPlayerTags() {
+  renderGolTags('L');
+  renderGolTags('V');
+  renderAmarillaTags('L');
+  renderAmarillaTags('V');
+  renderRojaTags('L');
+  renderRojaTags('V');
+}
+
+function renderGolTags(side) {
+  const list = side === 'L' ? adminState.editorData.goleadoresL : adminState.editorData.goleadoresV;
+  const containerId = 'goleadores' + (side === 'L' ? 'Local' : 'Visitante') + 'List';
+  const html = list.map((g, i) =>
+    `<span class="admin-player-tag gol">
+      ⚽ ${g.jugador}
+      <input type="number" class="admin-goles-input" value="${g.goles}" min="1" max="20"
+        onchange="updateGolesCount('${side}',${i},this.value)">
+      <span class="remove-tag" onclick="removeGoleador('${side}',${i})">×</span>
+    </span>`
+  ).join('');
+  document.getElementById(containerId).innerHTML = html || '<span style="font-size:11px;color:var(--text-dimmer)">Sin goleadores</span>';
+}
+
+function renderAmarillaTags(side) {
+  const list = side === 'L' ? adminState.editorData.amonestadosL : adminState.editorData.amonestadosV;
+  const containerId = 'amarillas' + (side === 'L' ? 'Local' : 'Visitante') + 'List';
+  const html = list.map((name, i) =>
+    `<span class="admin-player-tag amarilla">
+      🟨 ${name}
+      <span class="remove-tag" onclick="removeAmarilla('${side}',${i})">×</span>
+    </span>`
+  ).join('');
+  document.getElementById(containerId).innerHTML = html || '<span style="font-size:11px;color:var(--text-dimmer)">Sin amarillas</span>';
+}
+
+function renderRojaTags(side) {
+  const list = side === 'L' ? adminState.editorData.rojasL : adminState.editorData.rojasV;
+  const containerId = 'rojas' + (side === 'L' ? 'Local' : 'Visitante') + 'List';
+  const html = list.map((name, i) =>
+    `<span class="admin-player-tag roja">
+      🟥 ${name}
+      <span class="remove-tag" onclick="removeRoja('${side}',${i})">×</span>
+    </span>`
+  ).join('');
+  document.getElementById(containerId).innerHTML = html || '<span style="font-size:11px;color:var(--text-dimmer)">Sin rojas</span>';
+}
+
+function addGoleador(side) {
+  const selectId = 'goleador' + (side === 'L' ? 'Local' : 'Visitante') + 'Select';
+  const sel = document.getElementById(selectId);
+  const name = sel.value;
+  if (!name) return;
+
+  const list = side === 'L' ? adminState.editorData.goleadoresL : adminState.editorData.goleadoresV;
+  const exists = list.find(g => g.jugador === name);
+  if (exists) {
+    exists.goles++;
+  } else {
+    list.push({ jugador: name, goles: 1 });
+  }
+  sel.value = '';
+  renderGolTags(side);
+}
+
+function removeGoleador(side, idx) {
+  const list = side === 'L' ? adminState.editorData.goleadoresL : adminState.editorData.goleadoresV;
+  list.splice(idx, 1);
+  renderGolTags(side);
+}
+
+function updateGolesCount(side, idx, value) {
+  const list = side === 'L' ? adminState.editorData.goleadoresL : adminState.editorData.goleadoresV;
+  if (list[idx]) list[idx].goles = parseInt(value) || 1;
+}
+
+function addAmarilla(side) {
+  const selectId = 'amarilla' + (side === 'L' ? 'Local' : 'Visitante') + 'Select';
+  const sel = document.getElementById(selectId);
+  const name = sel.value;
+  if (!name) return;
+  const list = side === 'L' ? adminState.editorData.amonestadosL : adminState.editorData.amonestadosV;
+  if (!list.includes(name)) list.push(name);
+  sel.value = '';
+  renderAmarillaTags(side);
+}
+
+function removeAmarilla(side, idx) {
+  const list = side === 'L' ? adminState.editorData.amonestadosL : adminState.editorData.amonestadosV;
+  list.splice(idx, 1);
+  renderAmarillaTags(side);
+}
+
+function addRoja(side) {
+  const selectId = 'roja' + (side === 'L' ? 'Local' : 'Visitante') + 'Select';
+  const sel = document.getElementById(selectId);
+  const name = sel.value;
+  if (!name) return;
+  const list = side === 'L' ? adminState.editorData.rojasL : adminState.editorData.rojasV;
+  if (!list.includes(name)) list.push(name);
+  sel.value = '';
+  renderRojaTags(side);
+}
+
+function removeRoja(side, idx) {
+  const list = side === 'L' ? adminState.editorData.rojasL : adminState.editorData.rojasV;
+  list.splice(idx, 1);
+  renderRojaTags(side);
+}
+
+// ─── SAVE ───
+async function adminSaveMatch() {
+  const match = adminState.currentMatch;
+  if (!match) return;
+
+  const btn = document.getElementById('adminSaveBtn');
+  const msgDiv = document.getElementById('adminSaveMsg');
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+  msgDiv.style.display = 'none';
+
+  const jugado = document.getElementById('editorJugado').value;
+  const isNR = jugado === 'NR';
+  const golesL = isNR ? 'NR' : document.getElementById('editorGolesL').value;
+  const golesV = isNR ? 'NR' : document.getElementById('editorGolesV').value;
+
+  const payload = {
+    action: 'saveMatch',
+    rowIndex: match.rowIndex,
+    resLocal: golesL,
+    resVisitante: golesV,
+    jugado: jugado,
+    amonestadosL: adminState.editorData.amonestadosL,
+    amonestadosV: adminState.editorData.amonestadosV,
+    rojasL: adminState.editorData.rojasL,
+    rojasV: adminState.editorData.rojasV,
+    goleadoresL: adminState.editorData.goleadoresL,
+    goleadoresV: adminState.editorData.goleadoresV
+  };
+
+  try {
+    if (APPS_SCRIPT_URL === 'TU_APPS_SCRIPT_URL_AQUI') {
+      throw new Error('Configurá APPS_SCRIPT_URL para guardar. Sin ella, solo podés visualizar datos.');
+    }
+
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+
+    if (json.ok) {
+      msgDiv.textContent = '✅ ' + (json.msg || 'Guardado correctamente');
+      msgDiv.style.color = 'var(--green)';
+      msgDiv.style.display = '';
+
+      // Update local state
+      match.resLocal = golesL;
+      match.resVisitante = golesV;
+      match.resultado = '[' + golesL + '-' + golesV + ']';
+      match.jugado = jugado;
+      match.amonestadosL = [...adminState.editorData.amonestadosL];
+      match.amonestadosV = [...adminState.editorData.amonestadosV];
+      match.rojasL = [...adminState.editorData.rojasL];
+      match.rojasV = [...adminState.editorData.rojasV];
+
+      // Also refresh the public fixture view
+      state.fixture = null;
+      state.posiciones = {};
+      state.goleadores = {};
+      state.disciplina = {};
+    } else {
+      throw new Error(json.error || 'Error al guardar');
+    }
+  } catch(e) {
+    msgDiv.textContent = '❌ ' + e.message;
+    msgDiv.style.color = 'var(--red)';
+    msgDiv.style.display = '';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '💾 Guardar Partido';
+}
 
 // ============================================================
 // SERVICE WORKER
