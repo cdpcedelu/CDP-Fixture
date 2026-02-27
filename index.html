@@ -2447,6 +2447,7 @@ window.addEventListener('scroll', () => {
 let adminState = {
   loggedIn: false,
   userName: '',
+  token: sessionStorage.getItem('cdp_token') || '',
   matches: [],
   currentFecha: '',
   currentMatch: null,
@@ -2482,29 +2483,22 @@ async function adminDoLogin() {
   errDiv.style.display = 'none';
 
   try {
-    if (APPS_SCRIPT_URL === 'TU_APPS_SCRIPT_URL_AQUI') {
-      // Fallback: verificar contra el sheet directamente via gviz
-      const data = await fetchSheet('Usuarios');
-      const user = data.find(r => String(r['CONTRASEÑA'] || '').trim() === pin && String(r['TIPO'] || '').trim() === 'Administrador');
-      if (user) {
-        adminState.loggedIn = true;
-        adminState.userName = user['NOMBRE'] || 'Admin';
-        adminOnLoginSuccess();
-      } else {
-        errDiv.textContent = 'PIN incorrecto';
-        errDiv.style.display = '';
-      }
+    // PIN enviado via POST (no queda en URL ni logs)
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', pin })
+    });
+    const json = await res.json();
+    if (json.ok && json.token) {
+      adminState.loggedIn = true;
+      adminState.userName = json.nombre || 'Admin';
+      adminState.token = json.token;
+      sessionStorage.setItem('cdp_token', json.token); // persiste durante la sesión del tab
+      adminOnLoginSuccess();
     } else {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=login&pin=' + encodeURIComponent(pin));
-      const json = await res.json();
-      if (json.ok) {
-        adminState.loggedIn = true;
-        adminState.userName = json.nombre || 'Admin';
-        adminOnLoginSuccess();
-      } else {
-        errDiv.textContent = json.error || 'PIN incorrecto';
-        errDiv.style.display = '';
-      }
+      errDiv.textContent = json.error || 'PIN incorrecto';
+      errDiv.style.display = '';
     }
   } catch(e) {
     errDiv.textContent = 'Error de conexión: ' + e.message;
@@ -2529,7 +2523,9 @@ function adminOnLoginSuccess() {
 function adminLogout() {
   adminState.loggedIn = false;
   adminState.userName = '';
+  adminState.token = '';
   adminState.matches = [];
+  sessionStorage.removeItem('cdp_token');
   document.getElementById('adminLogin').style.display = '';
   document.getElementById('adminDashboard').style.display = 'none';
   document.getElementById('adminPinInput').value = '';
@@ -2541,7 +2537,7 @@ async function adminLoadMatches() {
 
   try {
     if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatches');
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatches&token=' + encodeURIComponent(adminState.token));
       const json = await res.json();
       if (json.ok) {
         adminState.matches = json.matches;
@@ -2765,7 +2761,7 @@ async function loadRosterForTeam(team, side) {
   try {
     let players = [];
     if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team));
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team) + '&token=' + encodeURIComponent(adminState.token));
       const json = await res.json();
       players = json.players || [];
     } else {
@@ -2973,10 +2969,11 @@ async function adminSaveMatch() {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ ...payload, token: adminState.token })
     });
     const json = await res.json();
 
+    if (json.auth === false) { adminLogout(); alert('Sesión expirada. Ingresá nuevamente.'); return; }
     if (json.ok) {
       msgDiv.textContent = '✅ ' + (json.msg || 'Guardado correctamente');
       msgDiv.style.color = 'var(--green)';
@@ -3126,6 +3123,7 @@ async function saveRoja() {
       articulo,
       habFecha
     });
+    params.set('token', adminState.token);
     const res  = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
     const json = await res.json();
 
