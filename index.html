@@ -3443,7 +3443,7 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
     const alerts = [];
     dates.forEach((d, i) => {
       const dow = new Date(d + 'T12:00:00').getDay(); // 4=Jue 5=Vie 6=Sáb
-      if ([4,5,6].includes(dow)) {
+      if ([5,6].includes(dow)) {
         const wmo = getWmo(codes[i]);
         if (codes[i] >= 95) {
           alerts.push({ type:'storm', dia: DIAS_FULL[dow], fecha: d, icon: wmo.icon, desc: wmo.desc, mm: mm[i], prob: prob[i] });
@@ -3468,13 +3468,13 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
     }
 
     // ── Días de partido destacados ──
-    html += `<div class="clima-section-title">⚽ Días de partido — Jue / Vie / Sáb</div>`;
+    html += `<div class="clima-section-title">⚽ Días de partido — Viernes y Sábados</div>`;
     html += '<div class="clima-grid">';
 
     dates.forEach((d, i) => {
       const dt  = new Date(d + 'T12:00:00');
       const dow = dt.getDay();
-      if (![4,5,6].includes(dow)) return;
+      if (![5,6].includes(dow)) return;
 
       const [,mes,dia] = d.split('-');
       const wmo    = getWmo(codes[i]);
@@ -3521,7 +3521,7 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
       const [,mes,dia] = d.split('-');
       const wmo    = getWmo(codes[i]);
       const hl     = cardHighlight(prob[i], mm[i], codes[i]);
-      const badge  = badgeText(prob[i], mm[i], codes[i], [4,5,6].includes(dow));
+      const badge  = badgeText(prob[i], mm[i], codes[i], [5,6].includes(dow));
       const fillW  = Math.min(100, prob[i]);
       const isToday = (i === 0);
 
