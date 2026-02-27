@@ -2784,7 +2784,6 @@ async function adminSaveMatch() {
       msgDiv.style.color = 'var(--green)';
       msgDiv.style.display = '';
 
-      // Update local state
       match.resLocal = golesL;
       match.resVisitante = golesV;
       match.resultado = '[' + golesL + '-' + golesV + ']';
@@ -2794,18 +2793,20 @@ async function adminSaveMatch() {
       match.rojasL = [...adminState.editorData.rojasL];
       match.rojasV = [...adminState.editorData.rojasV];
 
-      // Also refresh the public fixture view
+      // Refrescar vistas públicas
       state.fixture = null;
       state.posiciones = {};
       state.goleadores = {};
       state.disciplina = {};
     } else {
-      throw new Error(json.error || 'Error al guardar');
+      // Mostrar error exacto que devuelve Apps Script
+      throw new Error('Apps Script error: ' + (json.error || JSON.stringify(json)));
     }
   } catch(e) {
     msgDiv.textContent = '❌ ' + e.message;
-    msgDiv.style.color = 'var(--red)';
+    msgDiv.style.color = '#ef4444';
     msgDiv.style.display = '';
+    console.error('Save error:', e);
   }
 
   btn.disabled = false;
