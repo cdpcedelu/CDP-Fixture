@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com https://docs.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com https://spreadsheets.google.com; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com https://docs.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com https://spreadsheets.google.com https://api.open-meteo.com; frame-ancestors 'none';">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -1123,6 +1123,171 @@
       grid-template-columns: 1fr !important;
     }
   }
+
+  /* ─── CLIMA ─────────────────────────────────────── */
+  .clima-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 16px;
+  }
+  .clima-card {
+    background: var(--bg2);
+    border-radius: 16px;
+    border: 2px solid var(--border2);
+    padding: 14px 12px;
+    text-align: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .clima-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+  .clima-card.highlight {
+    border-color: var(--green);
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    box-shadow: 0 4px 16px rgba(22,163,74,.15);
+  }
+  .clima-card.highlight-rain {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    box-shadow: 0 4px 16px rgba(59,130,246,.15);
+  }
+  .clima-card.highlight-storm {
+    border-color: var(--red);
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    box-shadow: 0 4px 16px rgba(220,38,38,.15);
+  }
+  .clima-badge {
+    position: absolute;
+    top: -8px; right: -8px;
+    background: var(--green);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .clima-badge.badge-rain { background: #3b82f6; }
+  .clima-badge.badge-storm { background: var(--red); }
+  .clima-dia {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dimmer);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .clima-fecha-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Bebas Neue', sans-serif;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .clima-icon { font-size: 34px; margin: 4px 0; line-height: 1; }
+  .clima-temp {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    margin-bottom: 8px;
+  }
+  .clima-temp span { font-size: 13px; color: var(--text-dimmer); font-weight: 400; }
+  .clima-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 6px;
+    border-top: 1px solid var(--border2);
+    padding-top: 8px;
+  }
+  .clima-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .clima-stat-val {
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .clima-stat-val.rain-high { color: #2563eb; }
+  .clima-stat-val.rain-med  { color: #7c3aed; }
+  .clima-stat-val.rain-low  { color: var(--green); }
+  .clima-lluvia-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--bg4);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 3px;
+  }
+  .clima-lluvia-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: #3b82f6;
+    transition: width 0.5s ease;
+  }
+  .clima-desc {
+    font-size: 11px;
+    color: var(--text-dimmer);
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .clima-alerta {
+    margin: 0 16px 12px;
+    background: #eff6ff;
+    border: 1.5px solid #3b82f6;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .clima-alerta.alerta-storm {
+    background: #fef2f2;
+    border-color: var(--red);
+  }
+  .clima-alerta-icon { font-size: 22px; flex-shrink: 0; }
+  .clima-alerta-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .clima-alerta-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .clima-updated {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dimmer);
+    padding: 8px 16px 16px;
+    font-style: italic;
+  }
+  .clima-partido-dia {
+    margin: 0 16px 8px;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    border-left: 4px solid var(--green);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .clima-partido-dia strong { color: var(--text); }
+  .clima-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 16px 4px;
+  }
+  .clima-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dimmer);
+  }
 </style>
 </head>
 <body>
@@ -1159,6 +1324,9 @@
     </button>
     <button class="nav-btn" onclick="showSection('reglamentos')" id="nav-reglamentos">
       <span class="nav-icon">📋</span> Reglamentos
+    </button>
+    <button class="nav-btn" onclick="showSection('clima')" id="nav-clima">
+      <span class="nav-icon">🌧️</span> Clima
     </button>
     <button class="nav-btn" onclick="showSection('admin')" id="nav-admin" style="margin-left:auto">
       <span class="nav-icon">⚙️</span> Admin
@@ -1341,6 +1509,18 @@
     </div>
     <div id="sponsorsContainer">
       <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando sponsors...</div></div>
+    </div>
+  </section>
+
+
+  <!-- ================== CLIMA ================== -->
+  <section class="section" id="section-clima">
+    <div class="section-header">
+      <div class="section-title">🌧️ Clima — Concepción del Uruguay</div>
+    </div>
+
+    <div id="climaContainer">
+      <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando pronóstico...</div></div>
     </div>
   </section>
 
@@ -1753,6 +1933,7 @@ function showSection(id) {
 
   // Lazy load
   if (id === 'fixture' && !state.fixture) loadFixture();
+  if (id === 'clima') loadClima();
   if (id === 'posiciones' && !state.posiciones['zona-a-libres']) loadPosiciones();
   if (id === 'goleadores' && !state.goleadores['libres-a']) loadGoleadores();
   if (id === 'disciplina' && !state.disciplina['rojas']) loadDisciplina();
@@ -2502,7 +2683,7 @@ async function adminDoLogin() {
     // PIN enviado via POST (no queda en URL ni logs)
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', pin })
     });
     const json = await res.json();
@@ -3165,6 +3346,219 @@ async function saveRoja() {
 document.getElementById('rojaModalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeRojaModal();
 });
+
+  // ═══════════════════════════════════════════════
+  // CLIMA — Open-Meteo API (gratuita, sin API key)
+  // Concepción del Uruguay: lat=-32.4833, lon=-58.2333
+  // ═══════════════════════════════════════════════
+  const CLIMA_LAT = -32.4833;
+  const CLIMA_LON = -58.2333;
+  let climaLoaded = false;
+
+  const WMO_CODES = {
+    0:  { icon:'☀️',  desc:'Despejado' },
+    1:  { icon:'🌤️', desc:'Mayormente despejado' },
+    2:  { icon:'⛅',  desc:'Parcialmente nublado' },
+    3:  { icon:'☁️',  desc:'Nublado' },
+    45: { icon:'🌫️', desc:'Neblina' },
+    48: { icon:'🌫️', desc:'Neblina con escarcha' },
+    51: { icon:'🌦️', desc:'Llovizna leve' },
+    53: { icon:'🌦️', desc:'Llovizna moderada' },
+    55: { icon:'🌧️', desc:'Llovizna intensa' },
+    61: { icon:'🌧️', desc:'Lluvia leve' },
+    63: { icon:'🌧️', desc:'Lluvia moderada' },
+    65: { icon:'🌧️', desc:'Lluvia intensa' },
+    71: { icon:'❄️',  desc:'Nieve leve' },
+    73: { icon:'❄️',  desc:'Nieve moderada' },
+    75: { icon:'❄️',  desc:'Nieve intensa' },
+    77: { icon:'🌨️', desc:'Granizo' },
+    80: { icon:'🌦️', desc:'Chaparrón leve' },
+    81: { icon:'🌧️', desc:'Chaparrón moderado' },
+    82: { icon:'⛈️',  desc:'Chaparrón intenso' },
+    85: { icon:'🌨️', desc:'Nevada leve' },
+    86: { icon:'🌨️', desc:'Nevada intensa' },
+    95: { icon:'⛈️',  desc:'Tormenta eléctrica' },
+    96: { icon:'⛈️',  desc:'Tormenta con granizo' },
+    99: { icon:'⛈️',  desc:'Tormenta fuerte con granizo' },
+  };
+
+  const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const DIAS_FULL = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  function getWmo(code) {
+    return WMO_CODES[code] || { icon:'🌡️', desc:'Sin datos' };
+  }
+
+  function rainClass(prob) {
+    if (prob >= 70) return 'rain-high';
+    if (prob >= 40) return 'rain-med';
+    return 'rain-low';
+  }
+
+  function cardHighlight(prob, mm, code) {
+    if (code >= 95) return 'highlight-storm';
+    if (prob >= 70 || mm >= 10) return 'highlight-rain';
+    if (prob < 20 && mm < 1) return 'highlight';
+    return '';
+  }
+
+  function badgeText(prob, mm, code, isGameDay) {
+    if (code >= 95) return { text:'⚡ TORMENTA', cls:'badge-storm' };
+    if (prob >= 70 || mm >= 10) return { text:'🌧️ LLUVIA', cls:'badge-rain' };
+    if (isGameDay && prob < 20) return { text:'✅ JUGABLE', cls:'' };
+    return null;
+  }
+
+  async function loadClima() {
+    if (climaLoaded) return;
+    const container = document.getElementById('climaContainer');
+    container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Obteniendo pronóstico...</div></div>';
+
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${CLIMA_LAT}&longitude=${CLIMA_LON}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=10`;
+
+      const res  = await fetch(url);
+      const data = await res.json();
+      renderClima(data.daily);
+      climaLoaded = true;
+    } catch (err) {
+      container.innerHTML = `<div class="clima-error">⚠️ No se pudo cargar el pronóstico.<br><small>${err.message}</small><br><br><button class="btn-primary" onclick="climaLoaded=false;loadClima()">Reintentar</button></div>`;
+    }
+  }
+
+  function renderClima(daily) {
+    const container = document.getElementById('climaContainer');
+    const dates     = daily.time;           // ["2026-02-27", ...]
+    const codes     = daily.weathercode;
+    const tmax      = daily.temperature_2m_max;
+    const tmin      = daily.temperature_2m_min;
+    const mm        = daily.precipitation_sum;
+    const prob      = daily.precipitation_probability_max;
+    const viento    = daily.windspeed_10m_max;
+
+    let html = '';
+
+    // ── Alertas para días de partido (Jue/Vie/Sáb) ──
+    const alerts = [];
+    dates.forEach((d, i) => {
+      const dow = new Date(d + 'T12:00:00').getDay(); // 4=Jue 5=Vie 6=Sáb
+      if ([4,5,6].includes(dow)) {
+        const wmo = getWmo(codes[i]);
+        if (codes[i] >= 95) {
+          alerts.push({ type:'storm', dia: DIAS_FULL[dow], fecha: d, icon: wmo.icon, desc: wmo.desc, mm: mm[i], prob: prob[i] });
+        } else if (prob[i] >= 60 || mm[i] >= 5) {
+          alerts.push({ type:'rain', dia: DIAS_FULL[dow], fecha: d, icon: wmo.icon, desc: wmo.desc, mm: mm[i], prob: prob[i] });
+        }
+      }
+    });
+
+    if (alerts.length > 0) {
+      alerts.forEach(a => {
+        const [,mes,dia] = a.fecha.split('-');
+        html += `
+        <div class="clima-alerta ${a.type==='storm'?'alerta-storm':''}">
+          <div class="clima-alerta-icon">${a.type==='storm'?'⚡':'🌧️'}</div>
+          <div class="clima-alerta-text">
+            <strong>${a.type==='storm'?'⚠️ Alerta tormenta':'🌧️ Lluvia probable'} — ${a.dia} ${dia}/${mes}</strong>
+            ${a.desc} · ${a.prob}% prob. · ${a.mm.toFixed(1)} mm esperados
+          </div>
+        </div>`;
+      });
+    }
+
+    // ── Días de partido destacados ──
+    html += `<div class="clima-section-title">⚽ Días de partido — Jue / Vie / Sáb</div>`;
+    html += '<div class="clima-grid">';
+
+    dates.forEach((d, i) => {
+      const dt  = new Date(d + 'T12:00:00');
+      const dow = dt.getDay();
+      if (![4,5,6].includes(dow)) return;
+
+      const [,mes,dia] = d.split('-');
+      const wmo    = getWmo(codes[i]);
+      const hl     = cardHighlight(prob[i], mm[i], codes[i]);
+      const badge  = badgeText(prob[i], mm[i], codes[i], true);
+      const fillW  = Math.min(100, prob[i]);
+
+      html += `
+      <div class="clima-card ${hl}">
+        ${badge ? `<div class="clima-badge ${badge.cls}">${badge.text}</div>` : ''}
+        <div class="clima-dia">${DIAS[dow]}</div>
+        <div class="clima-fecha-num">${dia}/${mes}</div>
+        <div class="clima-icon">${wmo.icon}</div>
+        <div class="clima-temp">${Math.round(tmax[i])}° <span>/ ${Math.round(tmin[i])}°</span></div>
+        <div class="clima-stats">
+          <div class="clima-stat">
+            <span>🌧️ Prob.</span>
+            <span class="clima-stat-val ${rainClass(prob[i])}">${prob[i]}%</span>
+          </div>
+          <div class="clima-lluvia-bar">
+            <div class="clima-lluvia-fill" style="width:${fillW}%"></div>
+          </div>
+          <div class="clima-stat">
+            <span>💧 mm</span>
+            <span class="clima-stat-val ${prob[i]>=40?'rain-high':''}">${mm[i].toFixed(1)} mm</span>
+          </div>
+          <div class="clima-stat">
+            <span>💨 Viento</span>
+            <span class="clima-stat-val">${Math.round(viento[i])} km/h</span>
+          </div>
+        </div>
+        <div class="clima-desc">${wmo.desc}</div>
+      </div>`;
+    });
+    html += '</div>';
+
+    // ── Todos los días ──
+    html += `<div class="clima-section-title" style="margin-top:8px">📅 Pronóstico completo — 10 días</div>`;
+    html += '<div class="clima-grid">';
+
+    dates.forEach((d, i) => {
+      const dt  = new Date(d + 'T12:00:00');
+      const dow = dt.getDay();
+      const [,mes,dia] = d.split('-');
+      const wmo    = getWmo(codes[i]);
+      const hl     = cardHighlight(prob[i], mm[i], codes[i]);
+      const badge  = badgeText(prob[i], mm[i], codes[i], [4,5,6].includes(dow));
+      const fillW  = Math.min(100, prob[i]);
+      const isToday = (i === 0);
+
+      html += `
+      <div class="clima-card ${hl}">
+        ${isToday ? '<div class="clima-badge">HOY</div>' : (badge ? `<div class="clima-badge ${badge.cls}">${badge.text}</div>` : '')}
+        <div class="clima-dia">${DIAS[dow]}</div>
+        <div class="clima-fecha-num">${dia}/${mes}</div>
+        <div class="clima-icon">${wmo.icon}</div>
+        <div class="clima-temp">${Math.round(tmax[i])}° <span>/ ${Math.round(tmin[i])}°</span></div>
+        <div class="clima-stats">
+          <div class="clima-stat">
+            <span>🌧️ Prob.</span>
+            <span class="clima-stat-val ${rainClass(prob[i])}">${prob[i]}%</span>
+          </div>
+          <div class="clima-lluvia-bar">
+            <div class="clima-lluvia-fill" style="width:${fillW}%"></div>
+          </div>
+          <div class="clima-stat">
+            <span>💧 mm</span>
+            <span class="clima-stat-val ${prob[i]>=40?'rain-high':''}">${mm[i].toFixed(1)} mm</span>
+          </div>
+          <div class="clima-stat">
+            <span>💨 Viento</span>
+            <span class="clima-stat-val">${Math.round(viento[i])} km/h</span>
+          </div>
+        </div>
+        <div class="clima-desc">${wmo.desc}</div>
+      </div>`;
+    });
+
+    html += '</div>';
+    html += `<div class="clima-updated">Fuente: Open-Meteo.com · Se actualiza cada vez que abrís esta sección</div>`;
+
+    container.innerHTML = html;
+  }
+
 </script>
 
 </body>
