@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com https://docs.google.com https://www.google-analytics.com; connect-src 'self' https://script.google.com https://docs.google.com https://spreadsheets.google.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com https://docs.google.com; connect-src 'self' https://script.google.com https://docs.google.com https://spreadsheets.google.com; frame-ancestors 'none';">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -1124,21 +1124,6 @@
     }
   }
 </style>
-
-  <!-- GOOGLE ANALYTICS 4 — reemplazá G-XXXXXXXXXX con tu Measurement ID -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E192VPEL01"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-E192VPEL01', {
-      page_title: 'CDP — Club de Profesionales',
-      page_location: window.location.href
-    });
-    function gaSección(nombre) {
-      gtag('event', 'ver_seccion', { event_category: 'Navegación', event_label: nombre });
-    }
-  </script>
 </head>
 <body>
 
@@ -1157,7 +1142,7 @@
 
 <nav class="nav">
   <div class="nav-inner">
-    <button class="nav-btn active" onclick="showSection('fixture'); gaSección('Fixture')" id="nav-fixture">
+    <button class="nav-btn active" onclick="showSection('fixture')" id="nav-fixture">
       <span class="nav-icon">📅</span> Fixture
     </button>
     <button class="nav-btn" onclick="showSection('posiciones')" id="nav-posiciones">
@@ -1166,13 +1151,13 @@
     <button class="nav-btn" onclick="showSection('goleadores')" id="nav-goleadores">
       <span class="nav-icon">⚽</span> Goleadores
     </button>
-    <button class="nav-btn" onclick="showSection('disciplina'); gaSección('Disciplina')" id="nav-disciplina">
+    <button class="nav-btn" onclick="showSection('disciplina')" id="nav-disciplina">
       <span class="nav-icon">🟨</span> Disciplina
     </button>
-    <button class="nav-btn" onclick="showSection('sponsors'); gaSección('Sponsors')" id="nav-sponsors">
+    <button class="nav-btn" onclick="showSection('sponsors')" id="nav-sponsors">
       <span class="nav-icon">⭐</span> Sponsors
     </button>
-    <button class="nav-btn" onclick="showSection('reglamentos'); gaSección('Reglamentos')" id="nav-reglamentos">
+    <button class="nav-btn" onclick="showSection('reglamentos')" id="nav-reglamentos">
       <span class="nav-icon">📋</span> Reglamentos
     </button>
     <button class="nav-btn" onclick="showSection('admin')" id="nav-admin" style="margin-left:auto">
