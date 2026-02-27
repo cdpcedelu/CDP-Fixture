@@ -1855,23 +1855,23 @@ function renderFixture() {
       const infoL = golesL ? `<div class="fixture-scorers">${golesL}</div>` : '';
       const infoV = golesV ? `<div class="fixture-scorers">${golesV}</div>` : '';
 
-      html += \`<div class="partido-row \${rowClass}">
+      html += `<div class="partido-row ${rowClass}">
         <div class="equipo-fixture">
-          \${escudoLocal}
+          ${escudoLocal}
           <div>
-            <div class="equipo-name">\${local}</div>
-            \${infoL}\${tarjL}
+            <div class="equipo-name">${local}</div>
+            ${infoL}${tarjL}
           </div>
         </div>
-        <div class="resultado-box">\${result}\${p.canchaHora ? \`<div class="partido-meta">\${p.canchaHora}</div>\` : ''}</div>
+        <div class="resultado-box">${result}${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}</div>
         <div class="equipo-fixture right">
           <div style="text-align:right">
-            <div class="equipo-name right">\${visitante}</div>
-            \${infoV}\${tarjV}
+            <div class="equipo-name right">${visitante}</div>
+            ${infoV}${tarjV}
           </div>
-          \${escudoVisit}
+          ${escudoVisit}
         </div>
-      </div>\`;
+      </div>`;
     });
     html += `</div>`;
   });
