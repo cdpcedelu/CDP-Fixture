@@ -430,6 +430,25 @@
     color: var(--red);
   }
 
+  .pos-num.oro {
+    background: linear-gradient(135deg, #fef08a, #fbbf24);
+    color: #78350f;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(251,191,36,.4);
+  }
+  .pos-num.plata {
+    background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+    color: #1e293b;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(148,163,184,.4);
+  }
+  .pos-num.bronce {
+    background: linear-gradient(135deg, #fed7aa, #cd7f32);
+    color: #431407;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(205,127,50,.4);
+  }
+
   .team-cell {
     display: flex;
     align-items: center;
@@ -2073,7 +2092,10 @@ function renderPos(view) {
 
     let posClass = '';
     if (isSenior || isGeneral) {
-      // Senior y General: sin colores
+      // Senior: oro 1-4, plata 5-8, bronce 9-12
+      if (i < 4)       posClass = 'oro';
+      else if (i < 8)  posClass = 'plata';
+      else             posClass = 'bronce';
     } else if (view === 'zona-a-libres') {
       // Zona A: top 4 verde, 5-9 amarillo
       if (i < 4) posClass = 'top';
