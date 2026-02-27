@@ -2577,7 +2577,6 @@ async function adminOpenMatch(rowIndex) {
 
   // Set resultado
   const jugado = match.jugado || '';
-  document.getElementById('editorJugado').value = jugado === 'Jugado' ? 'Jugado' : 'NR';
 
   const resL = match.resLocal === 'NR' ? 0 : (parseInt(match.resLocal) || 0);
   const resV = match.resVisitante === 'NR' ? 0 : (parseInt(match.resVisitante) || 0);
