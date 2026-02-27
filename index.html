@@ -1753,14 +1753,63 @@ async function loadFixture(forceAppsScript) {
   }
 }
 
-function toggleDetails(pid) {
+async function toggleDetails(pid, rowIndex) {
   const el = document.getElementById(pid);
   if (!el) return;
   const isOpen = el.classList.contains('open');
+
+  // Find the button inside the resultado-box of the previous partido-row
+  const btn = document.querySelector(`[onclick*="toggleDetails('${pid}"]`);
+
+  if (!isOpen && !el.dataset.loaded) {
+    // Lazy-load from Apps Script
+    el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-dimmer);font-size:12px">Cargando...</div>';
+    el.classList.add('open');
+    if (btn) btn.textContent = '▲ Ocultar';
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex);
+      const json = await res.json();
+      if (json.ok) {
+        el.innerHTML = buildDetailsHTML(json);
+        el.dataset.loaded = '1';
+      } else {
+        el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-dimmer);font-size:12px">Sin datos disponibles</div>';
+      }
+    } catch(e) {
+      el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-dimmer);font-size:12px">Error al cargar</div>';
+    }
+    return;
+  }
+
   el.classList.toggle('open', !isOpen);
-  // Update button text
-  const btn = el.previousElementSibling?.querySelector('.fixture-ver-btn');
   if (btn) btn.textContent = isOpen ? '▼ Ver detalles' : '▲ Ocultar';
+}
+
+function buildDetailsHTML(json) {
+  const local = json.equipoL || '';
+  const visit = json.equipoV || '';
+
+  function buildSide(goles, amarillas, rojas) {
+    let items = [];
+    (goles||[]).forEach(g => items.push(`<div class="details-incident">⚽ ${g.jugador}${g.goles>1?' x'+g.goles:''}</div>`));
+    (amarillas||[]).forEach(n => items.push(`<div class="details-incident">🟨 ${n}</div>`));
+    (rojas||[]).forEach(n => items.push(`<div class="details-incident">🟥 ${n}</div>`));
+    return items.length ? items.join('') : '<div class="details-empty">Sin incidencias</div>';
+  }
+
+  const htmlL = buildSide(json.goleadoresL, json.amonestadosL, json.rojasL);
+  const htmlV = buildSide(json.goleadoresV, json.amonestadosV, json.rojasV);
+
+  return `<div class="details-grid">
+    <div>
+      <div class="details-team-label">${local}</div>
+      ${htmlL}
+    </div>
+    <div style="text-align:right">
+      <div class="details-team-label" style="text-align:right">${visit}</div>
+      ${htmlV}
+    </div>
+  </div>`;
 }
 
 function filterFixture(filter, btn) {
@@ -1909,25 +1958,14 @@ function renderFixture() {
         <div class="resultado-box">
           ${result}
           ${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}
-          ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}')">▼ Ver detalles</div>` : ''}
+          ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0})">▼ Ver detalles</div>` : ''}
         </div>
         <div class="equipo-fixture right">
           <div class="equipo-name right">${visitante}</div>
           ${escudoVisit}
         </div>
       </div>
-      ${jugado ? `<div class="fixture-details" id="${pid}">
-        <div class="details-grid">
-          <div>
-            <div class="details-team-label">${local}</div>
-            ${detHtmlL}
-          </div>
-          <div style="text-align:right">
-            <div class="details-team-label" style="text-align:right">${visitante}</div>
-            ${detHtmlV}
-          </div>
-        </div>
-      </div>` : ''}`;
+      ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}`;
     });
     html += `</div>`;
   });
