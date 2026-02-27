@@ -1650,7 +1650,7 @@ let state = {
 // HELPERS — Google Visualization API JSON parser
 // ============================================================
 async function fetchSheet(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&r=${Date.now()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const text = await res.text();
@@ -1678,7 +1678,7 @@ function gvizCellValue(cell) {
 
 // Fetch raw — returns rows as arrays
 async function fetchSheetRaw(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&r=${Date.now()}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const text = await res.text();
