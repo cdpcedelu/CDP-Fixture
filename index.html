@@ -1753,7 +1753,7 @@ async function loadFixture(forceAppsScript) {
   }
 }
 
-async function toggleDetails(pid, rowIndex) {
+async function toggleDetails(pid, rowIndex, partidoEnc) {
   const el = document.getElementById(pid);
   if (!el) return;
   const isOpen = el.classList.contains('open');
@@ -1767,7 +1767,8 @@ async function toggleDetails(pid, rowIndex) {
     el.classList.add('open');
     if (btn) btn.textContent = '▲ Ocultar';
     try {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex);
+      const url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
+      const res = await fetch(url);
       const json = await res.json();
       if (json.ok) {
         el.innerHTML = buildDetailsHTML(json);
@@ -1958,7 +1959,7 @@ function renderFixture() {
         <div class="resultado-box">
           ${result}
           ${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}
-          ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0})">▼ Ver detalles</div>` : ''}
+          ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')">▼ Ver detalles</div>` : ''}
         </div>
         <div class="equipo-fixture right">
           <div class="equipo-name right">${visitante}</div>
@@ -2699,7 +2700,8 @@ async function adminOpenMatch(rowIndex) {
   // Load goleadores from Apps Script if available
   if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
     try {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex);
+      const url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
+      const res = await fetch(url);
       const json = await res.json();
       if (json.ok) {
         adminState.editorData.goleadoresL = (json.goleadoresL || []).map(g => ({ jugador: g.jugador, goles: g.goles }));
