@@ -268,6 +268,8 @@
   }
 
   .partido-row.jugado { border-left: 4px solid var(--green); }
+  .fixture-scorers { font-size: 11px; color: var(--text-dimmer); margin-top: 3px; line-height: 1.4; }
+  .fixture-cards   { font-size: 13px; margin-top: 2px; }
   .partido-row.pendiente { border-left: 4px solid var(--border2); }
   .partido-row.senior { border-left: 4px solid var(--gold); }
 
@@ -1369,20 +1371,17 @@
         <div class="card" style="margin-bottom:16px">
           <div class="card-header">
             <span class="card-title">⚽ Resultado</span>
-            <select id="editorJugado" class="admin-select-inline">
-              <option value="Jugado">Jugado</option>
-              <option value="NR">No Realizado (NR)</option>
-            </select>
+<span id="editorJugadoBadge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--surface-alt);color:var(--text-dimmer)">NR</span>
           </div>
           <div style="padding:20px;display:flex;align-items:center;gap:16px;justify-content:center">
             <div style="text-align:center;flex:1">
               <div id="editorEqL" class="equipo-name" style="font-size:15px;margin-bottom:8px"></div>
-              <input type="number" id="editorGolesL" class="admin-score-input" min="0" max="99" value="0">
+              <input type="number" id="editorGolesL" class="admin-score-input" min="0" max="99" oninput="actualizarJugadoBadge()" value="0">
             </div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text-dimmer)">—</div>
             <div style="text-align:center;flex:1">
               <div id="editorEqV" class="equipo-name" style="font-size:15px;margin-bottom:8px"></div>
-              <input type="number" id="editorGolesV" class="admin-score-input" min="0" max="99" value="0">
+              <input type="number" id="editorGolesV" class="admin-score-input" min="0" max="99" oninput="actualizarJugadoBadge()" value="0">
             </div>
           </div>
         </div>
@@ -1461,9 +1460,13 @@
               <div>
                 <div class="admin-label" id="rojaLabelL">Local</div>
                 <div id="rojasLocalList" class="admin-player-list"></div>
-                <div style="display:flex;gap:6px;margin-top:8px">
-                  <select id="rojaLocalSelect" class="admin-select" style="flex:1">
+                <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+                  <select id="rojaLocalSelect" class="admin-select" style="flex:1;min-width:120px">
                     <option value="">Elegir jugador...</option>
+                  </select>
+                  <select id="rojaLocalTipo" class="admin-select" style="width:130px">
+                    <option value="directa">🟥 Directa</option>
+                    <option value="doble_amarilla">🟨🟨 Doble amarilla</option>
                   </select>
                   <button class="admin-btn small red" onclick="addRoja('L')">+</button>
                 </div>
@@ -1471,9 +1474,13 @@
               <div>
                 <div class="admin-label" id="rojaLabelV">Visitante</div>
                 <div id="rojasVisitanteList" class="admin-player-list"></div>
-                <div style="display:flex;gap:6px;margin-top:8px">
-                  <select id="rojaVisitanteSelect" class="admin-select" style="flex:1">
+                <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+                  <select id="rojaVisitanteSelect" class="admin-select" style="flex:1;min-width:120px">
                     <option value="">Elegir jugador...</option>
+                  </select>
+                  <select id="rojaVisitanteTipo" class="admin-select" style="width:130px">
+                    <option value="directa">🟥 Directa</option>
+                    <option value="doble_amarilla">🟨🟨 Doble amarilla</option>
                   </select>
                   <button class="admin-btn small red" onclick="addRoja('V')">+</button>
                 </div>
@@ -1826,17 +1833,45 @@ function renderFixture() {
 
       const escudoLocal = getEscudo(local, 32);
       const escudoVisit = getEscudo(visitante, 32);
-      html += `<div class="partido-row ${rowClass}">
+
+      // Goleadores
+      let golesL = '', golesV = '';
+      if (jugado && p.amonestadosL !== undefined) {
+        // Datos vienen del Apps Script (tienen goleadores)
+        if (p.goleadoresL && p.goleadoresL.length) {
+          golesL = p.goleadoresL.map(g => `⚽ ${g.jugador}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
+        }
+        if (p.goleadoresV && p.goleadoresV.length) {
+          golesV = p.goleadoresV.map(g => `⚽ ${g.jugador}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
+        }
+      }
+      // Tarjetas
+      const amarL = (p.amonestadosL || []).map(n => `🟨`).join('');
+      const amarV = (p.amonestadosV || []).map(n => `🟨`).join('');
+      const rojL  = (p.rojasL || []).map(n => `🟥`).join('');
+      const rojV  = (p.rojasV || []).map(n => `🟥`).join('');
+      const tarjL = (amarL + rojL) ? `<div class="fixture-cards">${amarL}${rojL}</div>` : '';
+      const tarjV = (amarV + rojV) ? `<div class="fixture-cards">${amarV}${rojV}</div>` : '';
+      const infoL = golesL ? `<div class="fixture-scorers">${golesL}</div>` : '';
+      const infoV = golesV ? `<div class="fixture-scorers">${golesV}</div>` : '';
+
+      html += \`<div class="partido-row \${rowClass}">
         <div class="equipo-fixture">
-          ${escudoLocal}
-          <div class="equipo-name">${local}</div>
+          \${escudoLocal}
+          <div>
+            <div class="equipo-name">\${local}</div>
+            \${infoL}\${tarjL}
+          </div>
         </div>
-        <div class="resultado-box">${result}${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}</div>
+        <div class="resultado-box">\${result}\${p.canchaHora ? \`<div class="partido-meta">\${p.canchaHora}</div>\` : ''}</div>
         <div class="equipo-fixture right">
-          <div class="equipo-name right">${visitante}</div>
-          ${escudoVisit}
+          <div style="text-align:right">
+            <div class="equipo-name right">\${visitante}</div>
+            \${infoV}\${tarjV}
+          </div>
+          \${escudoVisit}
         </div>
-      </div>`;
+      </div>\`;
     });
     html += `</div>`;
   });
@@ -2559,6 +2594,7 @@ async function adminOpenMatch(rowIndex) {
   const resV = match.resVisitante === 'NR' ? 0 : (parseInt(match.resVisitante) || 0);
   document.getElementById('editorGolesL').value = resL;
   document.getElementById('editorGolesV').value = resV;
+  actualizarJugadoBadge();
 
   // Labels
   document.getElementById('golLabelL').textContent = match.equipoL;
@@ -2695,13 +2731,31 @@ function renderAmarillaTags(side) {
 function renderRojaTags(side) {
   const list = side === 'L' ? adminState.editorData.rojasL : adminState.editorData.rojasV;
   const containerId = 'rojas' + (side === 'L' ? 'Local' : 'Visitante') + 'List';
-  const html = list.map((name, i) =>
-    `<span class="admin-player-tag roja">
-      🟥 ${name}
+  const html = list.map((entry, i) => {
+    const parts = typeof entry === 'string' ? entry.split('|') : [entry, 'directa'];
+    const name  = parts[0];
+    const tipo  = parts[1] || 'directa';
+    const emoji = tipo === 'doble_amarilla' ? '🟨🟨' : '🟥';
+    const label = tipo === 'doble_amarilla' ? 'Doble 🟨' : 'Directa';
+    return `<span class="admin-player-tag roja" title="${label}">
+      ${emoji} ${name}
       <span class="remove-tag" onclick="removeRoja('${side}',${i})">×</span>
-    </span>`
-  ).join('');
+    </span>`;
+  }).join('');
   document.getElementById(containerId).innerHTML = html || '<span style="font-size:11px;color:var(--text-dimmer)">Sin rojas</span>';
+}
+
+function actualizarJugadoBadge() {
+  const rawL = document.getElementById('editorGolesL')?.value;
+  const rawV = document.getElementById('editorGolesV')?.value;
+  const badge = document.getElementById('editorJugadoBadge');
+  if (!badge) return;
+  const isNR = (!rawL && rawL !== '0') || (!rawV && rawV !== '0') || isNaN(Number(rawL)) || isNaN(Number(rawV));
+  if (isNR) {
+    badge.textContent = 'NR'; badge.style.background = 'var(--surface-alt)'; badge.style.color = 'var(--text-dimmer)';
+  } else {
+    badge.textContent = 'Jugado ✓'; badge.style.background = '#dcfce7'; badge.style.color = '#16a34a';
+  }
 }
 
 function addGoleador(side) {
@@ -2751,11 +2805,15 @@ function removeAmarilla(side, idx) {
 
 function addRoja(side) {
   const selectId = 'roja' + (side === 'L' ? 'Local' : 'Visitante') + 'Select';
-  const sel = document.getElementById(selectId);
+  const tipoId   = 'roja' + (side === 'L' ? 'Local' : 'Visitante') + 'Tipo';
+  const sel  = document.getElementById(selectId);
+  const tipo = document.getElementById(tipoId);
   const name = sel.value;
   if (!name) return;
   const list = side === 'L' ? adminState.editorData.rojasL : adminState.editorData.rojasV;
-  if (!list.includes(name)) list.push(name);
+  // Guardar como "NOMBRE|tipo" para distinguir directa vs doble amarilla
+  const entry = name + '|' + (tipo ? tipo.value : 'directa');
+  if (!list.find(r => r.split('|')[0] === name)) list.push(entry);
   sel.value = '';
   renderRojaTags(side);
 }
@@ -2777,10 +2835,13 @@ async function adminSaveMatch() {
   btn.textContent = '⏳ Guardando...';
   msgDiv.style.display = 'none';
 
-  const jugado = document.getElementById('editorJugado').value;
-  const isNR = jugado === 'NR';
-  const golesL = isNR ? 'NR' : document.getElementById('editorGolesL').value;
-  const golesV = isNR ? 'NR' : document.getElementById('editorGolesV').value;
+  // Jugado se determina automático: si ambos goles son números → Jugado, sino → NR
+  const rawL = document.getElementById('editorGolesL').value;
+  const rawV = document.getElementById('editorGolesV').value;
+  const isNR = (rawL === '' || rawV === '' || isNaN(Number(rawL)) || isNaN(Number(rawV)));
+  const golesL = isNR ? 'NR' : rawL;
+  const golesV = isNR ? 'NR' : rawV;
+  const jugado = isNR ? 'NR' : 'Jugado';
 
   const payload = {
     action: 'saveMatch',
@@ -2790,8 +2851,10 @@ async function adminSaveMatch() {
     jugado: jugado,
     amonestadosL: adminState.editorData.amonestadosL,
     amonestadosV: adminState.editorData.amonestadosV,
-    rojasL: adminState.editorData.rojasL,
-    rojasV: adminState.editorData.rojasV,
+    rojasL: adminState.editorData.rojasL.map(r => typeof r === 'string' ? r.split('|')[0] : r),
+    rojasV: adminState.editorData.rojasV.map(r => typeof r === 'string' ? r.split('|')[0] : r),
+    rojasLTipo: adminState.editorData.rojasL.map(r => typeof r === 'string' ? (r.split('|')[1]||'directa') : 'directa'),
+    rojasVTipo: adminState.editorData.rojasV.map(r => typeof r === 'string' ? (r.split('|')[1]||'directa') : 'directa'),
     goleadoresL: adminState.editorData.goleadoresL,
     goleadoresV: adminState.editorData.goleadoresV
   };
