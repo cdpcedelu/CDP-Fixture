@@ -1719,28 +1719,28 @@ function showSection(id) {
 // ============================================================
 // FIXTURE
 // ============================================================
-async function loadFixture() {
+async function loadFixture(forceAppsScript) {
   try {
-    // Leer desde Apps Script (sin cache) en vez de gviz (con cache)
-    const res = await fetch(APPS_SCRIPT_URL + '?action=getFixture&t=' + Date.now());
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || 'Error');
-    state.fixture = json.matches;
-    renderFixture();
-  } catch(e) {
-    // Fallback a gviz si Apps Script falla
-    try {
+    if (forceAppsScript) {
+      // Después de guardar: leer de Apps Script (datos frescos, sin cache de gviz)
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getFixture&t=' + Date.now());
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Error');
+      state.fixture = json.matches;
+    } else {
+      // Carga inicial: usar gviz (rápido)
       const { cols, rows } = await fetchSheetRaw('Fixture');
       state.fixture = rows.filter(r => r[2] && String(r[2]).trim() !== '').map(r => ({
         fecha: r[0], cancha: r[1], partido: r[2], resultado: r[3],
         canchaHora: r[4], jugado: r[5],
         isSenior: r[2] ? String(r[2]).includes('(S)') : false,
-        fechaDate: r[13]
+        fechaDate: r[13],
+        amonestadosL: [], amonestadosV: [], rojasL: [], rojasV: []
       }));
-      renderFixture();
-    } catch(e2) {
-      showError('fixtureContainer', 'No se pudo cargar el fixture', loadFixture);
     }
+    renderFixture();
+  } catch(e) {
+    showError('fixtureContainer', 'No se pudo cargar el fixture', loadFixture);
   }
 }
 
@@ -1911,38 +1911,27 @@ async function showPos(view, btn) {
   }
 }
 
-async function loadPosView(view) {
+async function loadPosView(view, forceAppsScript) {
   try {
     const sheetName = POS_SHEETS[view];
-    // Leer desde Apps Script (sin cache) en vez de gviz (con cache)
-    const res = await fetch(APPS_SCRIPT_URL + '?action=getStandings&tabla=' + encodeURIComponent(sheetName) + '&t=' + Date.now());
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || 'Error');
-    // Convertir al formato que espera renderPos (keys en español)
-    state.posiciones[view] = json.rows.map(r => ({
-      'Pos':        r.pos,
-      'Equipo':     r.equipo,
-      'PJ':         r.pj,
-      'Puntos':     r.pts,
-      'PG':         r.pg,
-      'PE':         r.pe,
-      'PP':         r.pp,
-      'GF':         r.gf,
-      'GC':         r.gc,
-      'Diferencia': r.dif,
-      'Img':        r.img
-    }));
-    renderPos(view);
-  } catch(e) {
-    // Fallback a gviz si Apps Script falla
-    try {
-      const sheetName = POS_SHEETS[view];
+    if (forceAppsScript) {
+      // Después de guardar: Apps Script (datos frescos)
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getStandings&tabla=' + encodeURIComponent(sheetName) + '&t=' + Date.now());
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Error');
+      state.posiciones[view] = json.rows.map(r => ({
+        'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+        'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+        'Diferencia': r.dif, 'Img': r.img
+      }));
+    } else {
+      // Carga inicial: gviz (rápido)
       const data = await fetchSheet(sheetName);
       state.posiciones[view] = data.filter(r => r['Equipo'] || r['Equipo '] || r['Equipos']);
-      renderPos(view);
-    } catch(e2) {
-      showError('posContainer', 'No se pudo cargar la tabla', () => loadPosView(view));
     }
+    renderPos(view);
+  } catch(e) {
+    showError('posContainer', 'No se pudo cargar la tabla', () => loadPosView(view));
   }
 }
 
@@ -2892,11 +2881,11 @@ async function adminSaveMatch() {
       state.disciplina = {};
       // Recargar fixture inmediatamente (sin esperar que el usuario navegue)
       setTimeout(() => {
-        loadFixture();
-        loadPosView('zona-a-libres');
-        loadPosView('zona-b-libres');
-        loadPosView('general-senior');
-      }, 1500); // 1.5s para dar tiempo al Apps Script de terminar de escribir
+        loadFixture(true);
+        loadPosView('zona-a-libres', true);
+        loadPosView('zona-b-libres', true);
+        loadPosView('general-senior', true);
+      }, 1500);
     } else {
       // Mostrar error exacto que devuelve Apps Script
       throw new Error('Apps Script error: ' + (json.error || JSON.stringify(json)));
