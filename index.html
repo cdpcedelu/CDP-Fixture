@@ -270,6 +270,15 @@
   .partido-row.jugado { border-left: 4px solid var(--green); }
   .fixture-scorers { font-size: 11px; color: var(--text-dimmer); margin-top: 3px; line-height: 1.4; }
   .fixture-cards   { font-size: 13px; margin-top: 2px; }
+  .fixture-details { display:none; border-top:1px solid var(--border); margin-top:8px; padding:12px 16px; background:var(--surface-alt); border-radius:0 0 12px 12px; }
+  .fixture-details.open { display:block; }
+  .fixture-ver-btn { text-align:center; font-size:11px; font-weight:600; color:var(--green); cursor:pointer; padding:4px 0 0; letter-spacing:.5px; text-transform:uppercase; }
+  .fixture-ver-btn:hover { text-decoration:underline; }
+  .details-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .details-team-label { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:6px; }
+  .details-incident { font-size:12px; padding:3px 0; display:flex; align-items:center; gap:6px; color:var(--text); }
+  .details-incident.right { justify-content:flex-end; }
+  .details-empty { font-size:12px; color:var(--text-dimmer); font-style:italic; }
   .partido-row.pendiente { border-left: 4px solid var(--border2); }
   .partido-row.senior { border-left: 4px solid var(--gold); }
 
@@ -1744,6 +1753,16 @@ async function loadFixture(forceAppsScript) {
   }
 }
 
+function toggleDetails(pid) {
+  const el = document.getElementById(pid);
+  if (!el) return;
+  const isOpen = el.classList.contains('open');
+  el.classList.toggle('open', !isOpen);
+  // Update button text
+  const btn = el.previousElementSibling?.querySelector('.fixture-ver-btn');
+  if (btn) btn.textContent = isOpen ? '▼ Ver detalles' : '▲ Ocultar';
+}
+
 function filterFixture(filter, btn) {
   document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1855,22 +1874,59 @@ function renderFixture() {
       const infoL = golesL ? `<div class="fixture-scorers">${golesL}</div>` : '';
       const infoV = golesV ? `<div class="fixture-scorers">${golesV}</div>` : '';
 
-      html += `<div class="partido-row ${rowClass}">
-        <div class="equipo-fixture">
-          ${escudoLocal}
-          <div>
+      // Build details panel
+      const hasDetails = jugado && (
+        (p.goleadoresL && p.goleadoresL.length) ||
+        (p.goleadoresV && p.goleadoresV.length) ||
+        (p.amonestadosL && p.amonestadosL.length) ||
+        (p.amonestadosV && p.amonestadosV.length) ||
+        (p.rojasL && p.rojasL.length) ||
+        (p.rojasV && p.rojasV.length)
+      );
+      const pid = 'det_' + p.partido.replace(/[^a-z0-9]/gi,'_');
+
+      let detHtmlL = '', detHtmlV = '';
+      if (jugado) {
+        // Local
+        let incL = [];
+        (p.goleadoresL||[]).forEach(g => incL.push(`<div class="details-incident">⚽ ${g.jugador}${g.goles>1?' x'+g.goles:''}</div>`));
+        (p.amonestadosL||[]).forEach(n => incL.push(`<div class="details-incident">🟨 ${n}</div>`));
+        (p.rojasL||[]).forEach(n => incL.push(`<div class="details-incident">🟥 ${n}</div>`));
+        detHtmlL = incL.length ? incL.join('') : '<div class="details-empty">Sin incidencias</div>';
+        // Visitante
+        let incV = [];
+        (p.goleadoresV||[]).forEach(g => incV.push(`<div class="details-incident right">⚽ ${g.jugador}${g.goles>1?' x'+g.goles:''}</div>`));
+        (p.amonestadosV||[]).forEach(n => incV.push(`<div class="details-incident right">🟨 ${n}</div>`));
+        (p.rojasV||[]).forEach(n => incV.push(`<div class="details-incident right">🟥 ${n}</div>`));
+        detHtmlV = incV.length ? incV.join('') : '<div class="details-empty" style="text-align:right">Sin incidencias</div>';
+      }
+
+      html += `<div class="partido-row ${rowClass}" style="flex-direction:column;align-items:stretch;padding:0">
+        <div style="display:flex;align-items:center;padding:12px 16px">
+          <div class="equipo-fixture">
+            ${escudoLocal}
             <div class="equipo-name">${local}</div>
-            ${infoL}${tarjL}
           </div>
-        </div>
-        <div class="resultado-box">${result}${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}</div>
-        <div class="equipo-fixture right">
-          <div style="text-align:right">
+          <div class="resultado-box">${result}${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}
+            ${jugado ? `<div class="fixture-ver-btn" onclick="toggleDetails('${pid}')">▼ Ver detalles</div>` : ''}
+          </div>
+          <div class="equipo-fixture right">
             <div class="equipo-name right">${visitante}</div>
-            ${infoV}${tarjV}
+            ${escudoVisit}
           </div>
-          ${escudoVisit}
         </div>
+        ${jugado ? `<div class="fixture-details" id="${pid}">
+          <div class="details-grid">
+            <div>
+              <div class="details-team-label">${local}</div>
+              ${detHtmlL}
+            </div>
+            <div style="text-align:right">
+              <div class="details-team-label" style="text-align:right">${visitante}</div>
+              ${detHtmlV}
+            </div>
+          </div>
+        </div>` : ''}
       </div>`;
     });
     html += `</div>`;
