@@ -1714,21 +1714,26 @@ function showSection(id) {
 // ============================================================
 async function loadFixture() {
   try {
-    const { cols, rows } = await fetchSheetRaw('Fixture');
-    // cols: Fecha, Cancha, Partido, Resultado, Cancha y Hora, Jugado, Color, ...
-    state.fixture = rows.filter(r => r[2] && String(r[2]).trim() !== '').map(r => ({
-      fecha: r[0],
-      cancha: r[1],
-      partido: r[2],
-      resultado: r[3],
-      canchaHora: r[4],
-      jugado: r[5],
-      isSenior: r[2] ? String(r[2]).includes('(S)') : false,
-      fechaDate: r[13]
-    }));
+    // Leer desde Apps Script (sin cache) en vez de gviz (con cache)
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getFixture&t=' + Date.now());
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error');
+    state.fixture = json.matches;
     renderFixture();
   } catch(e) {
-    showError('fixtureContainer', 'No se pudo cargar el fixture', loadFixture);
+    // Fallback a gviz si Apps Script falla
+    try {
+      const { cols, rows } = await fetchSheetRaw('Fixture');
+      state.fixture = rows.filter(r => r[2] && String(r[2]).trim() !== '').map(r => ({
+        fecha: r[0], cancha: r[1], partido: r[2], resultado: r[3],
+        canchaHora: r[4], jugado: r[5],
+        isSenior: r[2] ? String(r[2]).includes('(S)') : false,
+        fechaDate: r[13]
+      }));
+      renderFixture();
+    } catch(e2) {
+      showError('fixtureContainer', 'No se pudo cargar el fixture', loadFixture);
+    }
   }
 }
 
@@ -1874,11 +1879,35 @@ async function showPos(view, btn) {
 async function loadPosView(view) {
   try {
     const sheetName = POS_SHEETS[view];
-    const data = await fetchSheet(sheetName);
-    state.posiciones[view] = data.filter(r => r['Equipo'] || r['Equipo '] || r['Equipos']);
+    // Leer desde Apps Script (sin cache) en vez de gviz (con cache)
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getStandings&tabla=' + encodeURIComponent(sheetName) + '&t=' + Date.now());
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Error');
+    // Convertir al formato que espera renderPos (keys en español)
+    state.posiciones[view] = json.rows.map(r => ({
+      'Pos':        r.pos,
+      'Equipo':     r.equipo,
+      'PJ':         r.pj,
+      'Puntos':     r.pts,
+      'PG':         r.pg,
+      'PE':         r.pe,
+      'PP':         r.pp,
+      'GF':         r.gf,
+      'GC':         r.gc,
+      'Diferencia': r.dif,
+      'Img':        r.img
+    }));
     renderPos(view);
   } catch(e) {
-    showError('posContainer', 'No se pudo cargar la tabla', () => loadPosView(view));
+    // Fallback a gviz si Apps Script falla
+    try {
+      const sheetName = POS_SHEETS[view];
+      const data = await fetchSheet(sheetName);
+      state.posiciones[view] = data.filter(r => r['Equipo'] || r['Equipo '] || r['Equipos']);
+      renderPos(view);
+    } catch(e2) {
+      showError('posContainer', 'No se pudo cargar la tabla', () => loadPosView(view));
+    }
   }
 }
 
