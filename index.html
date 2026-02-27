@@ -1650,8 +1650,8 @@ let state = {
 // HELPERS — Google Visualization API JSON parser
 // ============================================================
 async function fetchSheet(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&r=${Date.now()}`;
-  const res = await fetch(url);
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const text = await res.text();
   if (!text.includes('google.visualization')) throw new Error('Respuesta invalida');
@@ -1678,8 +1678,8 @@ function gvizCellValue(cell) {
 
 // Fetch raw — returns rows as arrays
 async function fetchSheetRaw(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&r=${Date.now()}`;
-  const res = await fetch(url);
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const text = await res.text();
   if (!text.includes('google.visualization')) throw new Error('Respuesta invalida');
@@ -2793,11 +2793,18 @@ async function adminSaveMatch() {
       match.rojasL = [...adminState.editorData.rojasL];
       match.rojasV = [...adminState.editorData.rojasV];
 
-      // Refrescar vistas públicas
+      // Refrescar vistas públicas - forzar recarga inmediata
       state.fixture = null;
       state.posiciones = {};
       state.goleadores = {};
       state.disciplina = {};
+      // Recargar fixture inmediatamente (sin esperar que el usuario navegue)
+      setTimeout(() => {
+        loadFixture();
+        loadPosView('zona-a-libres');
+        loadPosView('zona-b-libres');
+        loadPosView('general-senior');
+      }, 1500); // 1.5s para dar tiempo al Apps Script de terminar de escribir
     } else {
       // Mostrar error exacto que devuelve Apps Script
       throw new Error('Apps Script error: ' + (json.error || JSON.stringify(json)));
