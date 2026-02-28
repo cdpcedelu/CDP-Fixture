@@ -2683,7 +2683,7 @@ async function adminDoLogin() {
     // PIN enviado via POST (no queda en URL ni logs)
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'login', pin })
     });
     const json = await res.json();
