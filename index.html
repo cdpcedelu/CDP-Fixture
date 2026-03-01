@@ -2196,17 +2196,30 @@ function filterByEquipo(equipo) {
   const statusCls = completa ? 'completa' : '';
   const statusTxt = completa ? '✓ Completa' : `${pendientes} pendiente${pendientes !== 1 ? 's' : ''}`;
 
-  // ── Selector de fecha ──
-  const opts = fechaKeys.map(k => {
-    const todos    = groups[k];
-    const sinLib   = todos.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
-    const jug      = sinLib.filter(p => p.jugado === 'Jugado').length;
-    const tot      = sinLib.length;
-    const lbl      = `Fecha ${k}  (${jug}/${tot} jugados)`;
-    return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
-  }).join('');
+  // ── Si hay filtro de equipo: mostrar todos los partidos sin selector de fecha ──
+  const itemsToRender = state.currentEquipo ? items : selItems;
 
-  let html = `
+  let html = '';
+  if (state.currentEquipo) {
+    const totalEquipo = items.length;
+    const jugadosEquipo = items.filter(p => p.jugado === 'Jugado').length;
+    html = `
+  <div class="fecha-selector-wrap">
+    <span class="fecha-selector-label">🛡️ ${state.currentEquipo}</span>
+    <span class="fecha-selector-status">${jugadosEquipo}/${totalEquipo} jugados</span>
+  </div>`;
+  } else {
+    // ── Selector de fecha ──
+    const opts = fechaKeys.map(k => {
+      const todos    = groups[k];
+      const sinLib   = todos.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
+      const jug      = sinLib.filter(p => p.jugado === 'Jugado').length;
+      const tot      = sinLib.length;
+      const lbl      = `Fecha ${k}  (${jug}/${tot} jugados)`;
+      return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
+    }).join('');
+
+    html = `
   <div class="fecha-selector-wrap">
     <span class="fecha-selector-label">📅 Fecha ${selKey}</span>
     <span class="fecha-selector-status ${statusCls}">${statusTxt}</span>
@@ -2214,9 +2227,19 @@ function filterByEquipo(equipo) {
       ${opts}
     </select>
   </div>`;
+  }
 
-  // ── Partidos de la fecha seleccionada ──
-  selItems.forEach(p => {
+  // ── Partidos a renderizar ──
+  // Cuando hay equipo: agrupar por fecha con separador visual
+  let lastFecha = null;
+  itemsToRender.forEach(p => {
+    if (state.currentEquipo) {
+      const fNum = p.fecha != null ? String(p.fecha) : '?';
+      if (fNum !== lastFecha) {
+        html += `<div class="fecha-label" style="margin:12px 0 6px">📅 Fecha ${fNum}</div>`;
+        lastFecha = fNum;
+      }
+    }
     const jugado = p.jugado === 'Jugado';
     const nrCase = p.jugado === 'NR';
     const rowClass = p.isSenior ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
