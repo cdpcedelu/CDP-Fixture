@@ -2152,7 +2152,11 @@ function filterByEquipo(equipo) {
   // Agrupar por fecha (número). Libres y no-libres de la misma fecha van juntos.
   const groups = {};
   items.forEach(p => {
-    const key = p.fecha != null ? String(p.fecha) : '0';
+    // Normalizar clave: "1 LIBRE", "F1 LIBRE", "1" → todos van al grupo "1"
+    let rawFecha = p.fecha != null ? String(p.fecha) : '0';
+    // Extraer solo el número de fecha
+    const numMatch = rawFecha.match(/(\d+)/);
+    const key = numMatch ? numMatch[1] : rawFecha;
     if (!groups[key]) groups[key] = [];
     groups[key].push(p);
   });
@@ -2161,7 +2165,14 @@ function filterByEquipo(equipo) {
 
   // Una fecha está completa si todos sus partidos son Jugado o NR
   function fechaCompleta(partidos) {
-    return partidos.every(p => p.jugado === 'Jugado' || p.jugado === 'NR');
+    // Solo cuenta como completa si TODOS están Jugados (NR = no jugado = pendiente)
+    // Los partidos LIBRE no cuentan para determinar si la fecha está completa
+    const sinLibre = partidos.filter(p => {
+      const vis = String(p.partido || '').toLowerCase();
+      return !vis.includes('libre');
+    });
+    if (!sinLibre.length) return true; // todos son libre
+    return sinLibre.every(p => p.jugado === 'Jugado');
   }
 
   // Primera fecha incompleta (o la última si todas completas)
@@ -2178,15 +2189,20 @@ function filterByEquipo(equipo) {
   const selKey    = state.fechaSeleccionada;
   const selItems  = groups[selKey] || [];
   const completa  = fechaCompleta(selItems);
-  const jugados   = selItems.filter(p => p.jugado === 'Jugado' || p.jugado === 'NR').length;
+  // No contar LIBRE para el badge de estado
+  const sinLibre  = selItems.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
+  const jugados   = sinLibre.filter(p => p.jugado === 'Jugado').length;
+  const pendientes = sinLibre.length - jugados;
   const statusCls = completa ? 'completa' : '';
-  const statusTxt = completa ? '✓ Completa' : `${selItems.length - jugados} pendientes`;
+  const statusTxt = completa ? '✓ Completa' : `${pendientes} pendiente${pendientes !== 1 ? 's' : ''}`;
 
   // ── Selector de fecha ──
   const opts = fechaKeys.map(k => {
-    const tot = groups[k].length;
-    const jug = groups[k].filter(p => p.jugado === 'Jugado' || p.jugado === 'NR').length;
-    const lbl = `Fecha ${k}  (${jug}/${tot} jugados)`;
+    const todos    = groups[k];
+    const sinLib   = todos.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
+    const jug      = sinLib.filter(p => p.jugado === 'Jugado').length;
+    const tot      = sinLib.length;
+    const lbl      = `Fecha ${k}  (${jug}/${tot} jugados)`;
     return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
   }).join('');
 
