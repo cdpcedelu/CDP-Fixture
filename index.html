@@ -1288,6 +1288,70 @@
     padding: 40px 20px;
     color: var(--text-dimmer);
   }
+
+  /* ─── FECHA COLAPSABLE ───────────────────────────────────── */
+  .fecha-group { margin-bottom: 8px; }
+  .fecha-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border2);
+    margin-bottom: 4px;
+    user-select: none;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .fecha-header:hover { background: var(--bg3); border-color: var(--green); }
+  .fecha-header.open  { background: var(--green-xlight); border-color: rgba(22,163,74,0.4); }
+  .fecha-header-left  { display: flex; align-items: center; gap: 10px; }
+  .fecha-label-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--green);
+  }
+  .fecha-header.open .fecha-label-text { color: var(--green); }
+  .fecha-badge {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+  .fecha-badge.badge-actual {
+    background: var(--green);
+    color: white;
+  }
+  .fecha-badge.badge-completa {
+    background: var(--bg4);
+    color: var(--text-dimmer);
+  }
+  .fecha-badge.badge-pendiente {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .fecha-stats {
+    font-size: 12px;
+    color: var(--text-dimmer);
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .fecha-chevron {
+    font-size: 11px;
+    color: var(--text-dimmer);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .fecha-header.open .fecha-chevron { transform: rotate(180deg); }
+  .fecha-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+  }
+  .fecha-body.open { max-height: 9999px; }
 </style>
 </head>
 <body>
@@ -2030,6 +2094,7 @@ function buildDetailsHTML(json) {
 }
 
 function filterFixture(filter, btn) {
+  if (state.fechasAbiertas) state.fechasAbiertas = {};
   document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentFixtureFilter = filter;
@@ -2042,6 +2107,16 @@ function filterByEquipo(equipo) {
   renderFixture();
 }
 
+
+  function toggleFecha(safeKey, fechaKey, headerEl) {
+    const body = document.getElementById('fb_' + safeKey);
+    if (!body) return;
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    headerEl.classList.toggle('open', !isOpen);
+    if (!state.fechasAbiertas) state.fechasAbiertas = {};
+    state.fechasAbiertas[fechaKey] = !isOpen;
+  }
 function renderFixture() {
   const container = document.getElementById('fixtureContainer');
   let items = state.fixture || [];
@@ -2091,10 +2166,45 @@ function renderFixture() {
     groups[key].push(p);
   });
 
+  // ── Detectar primera fecha incompleta ──
+  const fechaKeys = Object.keys(groups);
+  // Una fecha está "completa" si todos sus partidos son Jugado o NR
+  function fechaCompleta(partidos) {
+    return partidos.every(p => p.jugado === 'Jugado' || p.jugado === 'NR');
+  }
+  // Primera fecha con al menos un partido pendiente
+  const primeraActiva = fechaKeys.find(k => !fechaCompleta(groups[k])) || fechaKeys[0];
+
+  // Estado de apertura por fecha (persiste en state)
+  if (!state.fechasAbiertas) state.fechasAbiertas = {};
+  // Si no hay estado previo, solo abrir la primera activa
+  fechaKeys.forEach(k => {
+    if (state.fechasAbiertas[k] === undefined) {
+      state.fechasAbiertas[k] = (k === primeraActiva);
+    }
+  });
+
   let html = '';
   Object.entries(groups).forEach(([fecha, partidos]) => {
+    const isOpen      = state.fechasAbiertas[fecha];
+    const completa    = fechaCompleta(partidos);
+    const esActual    = (fecha === primeraActiva);
+    const totalJugados = partidos.filter(p => p.jugado === 'Jugado' || p.jugado === 'NR').length;
+    const pend         = partidos.length - totalJugados;
+    const badgeCls     = esActual ? 'badge-actual' : (completa ? 'badge-completa' : 'badge-pendiente');
+    const badgeText    = esActual ? '▶ EN CURSO' : (completa ? '✓ COMPLETA' : `${pend} pendientes`);
+    const safeKey      = fecha.replace(/[^a-z0-9]/gi, '_');
+
     html += `<div class="fecha-group">
-      <div class="fecha-label">${fecha}</div>`;
+      <div class="fecha-header ${isOpen?'open':''}" onclick="toggleFecha('${safeKey}', '${fecha}', this)">
+        <div class="fecha-header-left">
+          <span class="fecha-label-text">${fecha}</span>
+          <span class="fecha-badge ${badgeCls}">${badgeText}</span>
+          <span class="fecha-stats">${totalJugados}/${partidos.length} jugados</span>
+        </div>
+        <span class="fecha-chevron">▼</span>
+      </div>
+      <div class="fecha-body ${isOpen?'open':''}" id="fb_${safeKey}">`;
     partidos.forEach(p => {
       const jugado = p.jugado === 'Jugado';
       const nrCase = p.jugado === 'NR';
@@ -2184,7 +2294,7 @@ function renderFixture() {
       </div>
       ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}`;
     });
-    html += `</div>`;
+    html += `</div></div>`;
   });
 
   container.innerHTML = html;
