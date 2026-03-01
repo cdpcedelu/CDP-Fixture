@@ -1289,69 +1289,71 @@
     color: var(--text-dimmer);
   }
 
-  /* ─── FECHA COLAPSABLE ───────────────────────────────────── */
-  .fecha-group { margin-bottom: 8px; }
-  .fecha-header {
+  /* ─── FECHA SELECTOR ─────────────────────────────────────── */
+  .fecha-group { margin-bottom: 24px; }
+  .fecha-selector-wrap {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    padding: 9px 14px;
-    border-radius: 12px;
+    gap: 10px;
+    padding: 10px 14px;
     background: var(--bg2);
+    border-radius: 12px;
     border: 1.5px solid var(--border2);
-    margin-bottom: 4px;
-    user-select: none;
-    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 12px;
   }
-  .fecha-header:hover { background: var(--bg3); border-color: var(--green); }
-  .fecha-header.open  { background: var(--green-xlight); border-color: rgba(22,163,74,0.4); }
-  .fecha-header-left  { display: flex; align-items: center; gap: 10px; }
-  .fecha-label-text {
+  .fecha-selector-label {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 16px;
     letter-spacing: 2px;
     color: var(--green);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-  .fecha-header.open .fecha-label-text { color: var(--green); }
-  .fecha-badge {
+  .fecha-selector-status {
     font-size: 11px;
     font-weight: 700;
     font-family: 'Barlow Condensed', sans-serif;
     padding: 2px 8px;
     border-radius: 10px;
-    letter-spacing: 0.5px;
-  }
-  .fecha-badge.badge-actual {
     background: var(--green);
     color: white;
-  }
-  .fecha-badge.badge-completa {
-    background: var(--bg4);
-    color: var(--text-dimmer);
-  }
-  .fecha-badge.badge-pendiente {
-    background: #fef3c7;
-    color: #92400e;
-  }
-  .fecha-stats {
-    font-size: 12px;
-    color: var(--text-dimmer);
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .fecha-chevron {
-    font-size: 11px;
-    color: var(--text-dimmer);
-    transition: transform 0.25s;
+    white-space: nowrap;
     flex-shrink: 0;
   }
-  .fecha-header.open .fecha-chevron { transform: rotate(180deg); }
-  .fecha-body {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.3s ease;
+  .fecha-selector-status.completa { background: var(--bg4); color: var(--text-dimmer); }
+  .fecha-selector-select {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border2);
+    background: var(--bg3);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
   }
-  .fecha-body.open { max-height: 9999px; }
+  .fecha-selector-select:focus { border-color: var(--green); }
+  .fecha-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--green);
+    padding: 5px 12px;
+    background: var(--green-xlight);
+    border: 1px solid rgba(22,163,74,0.2);
+    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
@@ -2094,7 +2096,6 @@ function buildDetailsHTML(json) {
 }
 
 function filterFixture(filter, btn) {
-  if (state.fechasAbiertas) state.fechasAbiertas = {};
   document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentFixtureFilter = filter;
@@ -2108,26 +2109,18 @@ function filterByEquipo(equipo) {
 }
 
 
-  function toggleFecha(safeKey, fechaKey, headerEl) {
-    const body = document.getElementById('fb_' + safeKey);
-    if (!body) return;
-    const isOpen = body.classList.contains('open');
-    body.classList.toggle('open', !isOpen);
-    headerEl.classList.toggle('open', !isOpen);
-    if (!state.fechasAbiertas) state.fechasAbiertas = {};
-    state.fechasAbiertas[fechaKey] = !isOpen;
-  }
-function renderFixture() {
+  function renderFixture() {
   const container = document.getElementById('fixtureContainer');
   let items = state.fixture || [];
 
+  // Filtros de categoría
   if (state.currentFixtureFilter === 'libres') items = items.filter(p => !p.isSenior);
   if (state.currentFixtureFilter === 'senior') items = items.filter(p => p.isSenior);
-  if (state.currentFixtureFilter === 'pendiente') items = items.filter(p => p.jugado !== 'Jugado' && p.jugado !== 'NR');
-  // Filtro por equipo — match exacto contra local y visitante
+
+  // Filtro por equipo
   if (state.currentEquipo) {
     const eqNorm = state.currentEquipo.trim().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // quitar tildes
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     items = items.filter(p => {
       if (!p.partido) return false;
       const m = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
@@ -2142,14 +2135,12 @@ function renderFixture() {
     return;
   }
 
-  // Ordenar dentro de cada fecha: Viernes primero, luego Sábado por horario
+  // Ordenar: fecha asc, luego Viernes antes Sábado, luego horario
   function diaHoraSort(p) {
     const ch = String(p.canchaHora || '').toLowerCase();
-    const esViernes = ch.includes('vie') || ch.includes('viernes');
-    const esSabado  = ch.includes('sab') || ch.includes('sabado');
-    const diaPrio   = esViernes ? 0 : esSabado ? 1 : 2;
-    const mHora     = ch.match(/(\d{1,2}):(\d{2})/);
-    const mins      = mHora ? parseInt(mHora[1]) * 60 + parseInt(mHora[2]) : 9999;
+    const diaPrio = ch.includes('vie') ? 0 : ch.includes('sab') ? 1 : 2;
+    const mHora   = ch.match(/(\d{1,2}):(\d{2})/);
+    const mins    = mHora ? parseInt(mHora[1]) * 60 + parseInt(mHora[2]) : 9999;
     return diaPrio * 10000 + mins;
   }
   items.sort((a, b) => {
@@ -2158,162 +2149,150 @@ function renderFixture() {
     return diaHoraSort(a) - diaHoraSort(b);
   });
 
-  // Group by Fecha (round)
+  // Agrupar por fecha (número). Libres y no-libres de la misma fecha van juntos.
   const groups = {};
   items.forEach(p => {
-    const key = p.fecha ? 'Fecha ' + p.fecha : 'Sin fecha';
+    const key = p.fecha != null ? String(p.fecha) : '0';
     if (!groups[key]) groups[key] = [];
     groups[key].push(p);
   });
 
-  // ── Detectar primera fecha incompleta ──
-  const fechaKeys = Object.keys(groups);
-  // Una fecha está "completa" si todos sus partidos son Jugado o NR
+  const fechaKeys = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
+
+  // Una fecha está completa si todos sus partidos son Jugado o NR
   function fechaCompleta(partidos) {
     return partidos.every(p => p.jugado === 'Jugado' || p.jugado === 'NR');
   }
-  // Primera fecha con al menos un partido pendiente
-  const primeraActiva = fechaKeys.find(k => !fechaCompleta(groups[k])) || fechaKeys[0];
 
-  // Estado de apertura por fecha (persiste en state)
-  if (!state.fechasAbiertas) state.fechasAbiertas = {};
-  // Si no hay estado previo, solo abrir la primera activa
-  fechaKeys.forEach(k => {
-    if (state.fechasAbiertas[k] === undefined) {
-      state.fechasAbiertas[k] = (k === primeraActiva);
+  // Primera fecha incompleta (o la última si todas completas)
+  const defaultKey = fechaKeys.find(k => !fechaCompleta(groups[k])) || fechaKeys[fechaKeys.length - 1];
+
+  // Respetar selección previa del usuario (si no cambió el filtro)
+  const filterTag = (state.currentFixtureFilter || 'todos') + '_' + (state.currentEquipo || '');
+  if (state.fechaTag !== filterTag) {
+    state.fechaSeleccionada = defaultKey;
+    state.fechaTag = filterTag;
+  }
+  if (!fechaKeys.includes(state.fechaSeleccionada)) state.fechaSeleccionada = defaultKey;
+
+  const selKey    = state.fechaSeleccionada;
+  const selItems  = groups[selKey] || [];
+  const completa  = fechaCompleta(selItems);
+  const jugados   = selItems.filter(p => p.jugado === 'Jugado' || p.jugado === 'NR').length;
+  const statusCls = completa ? 'completa' : '';
+  const statusTxt = completa ? '✓ Completa' : `${selItems.length - jugados} pendientes`;
+
+  // ── Selector de fecha ──
+  const opts = fechaKeys.map(k => {
+    const tot = groups[k].length;
+    const jug = groups[k].filter(p => p.jugado === 'Jugado' || p.jugado === 'NR').length;
+    const lbl = `Fecha ${k}  (${jug}/${tot} jugados)`;
+    return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
+  }).join('');
+
+  let html = `
+  <div class="fecha-selector-wrap">
+    <span class="fecha-selector-label">📅 Fecha ${selKey}</span>
+    <span class="fecha-selector-status ${statusCls}">${statusTxt}</span>
+    <select class="fecha-selector-select" onchange="selectFecha(this.value)">
+      ${opts}
+    </select>
+  </div>`;
+
+  // ── Partidos de la fecha seleccionada ──
+  selItems.forEach(p => {
+    const jugado = p.jugado === 'Jugado';
+    const nrCase = p.jugado === 'NR';
+    const rowClass = p.isSenior ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
+    let local = '', visitante = '', result = '';
+
+    if (p.partido) {
+      const match = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+      if (match) { local = match[1].trim(); visitante = match[2].trim(); }
+      else { local = p.partido; visitante = ''; }
     }
-  });
 
-  let html = '';
-  Object.entries(groups).forEach(([fecha, partidos]) => {
-    const isOpen      = state.fechasAbiertas[fecha];
-    const completa    = fechaCompleta(partidos);
-    const esActual    = (fecha === primeraActiva);
-    const totalJugados = partidos.filter(p => p.jugado === 'Jugado' || p.jugado === 'NR').length;
-    const pend         = partidos.length - totalJugados;
-    const badgeCls     = esActual ? 'badge-actual' : (completa ? 'badge-completa' : 'badge-pendiente');
-    const badgeText    = esActual ? '▶ EN CURSO' : (completa ? '✓ COMPLETA' : `${pend} pendientes`);
-    const safeKey      = fecha.replace(/[^a-z0-9]/gi, '_');
+    if (jugado && p.resultado) {
+      result = `<div class="score">${escapeHTML(p.resultado)}</div>`;
+    } else if (nrCase) {
+      result = `<div class="score pendiente">NR</div>`;
+    } else {
+      result = `<div class="score pendiente">vs</div>`;
+    }
 
-    html += `<div class="fecha-group">
-      <div class="fecha-header ${isOpen?'open':''}" onclick="toggleFecha('${safeKey}', '${fecha}', this)">
-        <div class="fecha-header-left">
-          <span class="fecha-label-text">${fecha}</span>
-          <span class="fecha-badge ${badgeCls}">${badgeText}</span>
-          <span class="fecha-stats">${totalJugados}/${partidos.length} jugados</span>
-        </div>
-        <span class="fecha-chevron">▼</span>
+    const escudoLocal = getEscudo(local, 32);
+    const escudoVisit = getEscudo(visitante, 32);
+
+    // Goleadores y tarjetas
+    let golesL = '', golesV = '';
+    if (jugado) {
+      if (p.goleadoresL && p.goleadoresL.length)
+        golesL = p.goleadoresL.map(g => `⚽ ${escapeHTML(g.jugador)}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
+      if (p.goleadoresV && p.goleadoresV.length)
+        golesV = p.goleadoresV.map(g => `⚽ ${escapeHTML(g.jugador)}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
+    }
+    const amarL = (p.amonestadosL || []).map(() => '🟨').join('');
+    const amarV = (p.amonestadosV || []).map(() => '🟨').join('');
+    const rojL  = (p.rojasL  || []).map(() => '🟥').join('');
+    const rojV  = (p.rojasV  || []).map(() => '🟥').join('');
+    const tarjL = (amarL + rojL) ? `<div class="fixture-cards">${amarL}${rojL}</div>` : '';
+    const tarjV = (amarV + rojV) ? `<div class="fixture-cards">${amarV}${rojV}</div>` : '';
+    const infoL = golesL ? `<div class="fixture-scorers">${golesL}</div>` : '';
+    const infoV = golesV ? `<div class="fixture-scorers">${golesV}</div>` : '';
+
+    const hasDetails = jugado && (
+      (p.goleadoresL && p.goleadoresL.length) ||
+      (p.goleadoresV && p.goleadoresV.length) ||
+      (p.amonestadosL && p.amonestadosL.length) ||
+      (p.amonestadosV && p.amonestadosV.length) ||
+      (p.rojasL && p.rojasL.length) ||
+      (p.rojasV && p.rojasV.length)
+    );
+    const pid = 'det_' + (p.partido || '').replace(/[^a-z0-9]/gi, '_');
+
+    let detHtmlL = '', detHtmlV = '';
+    if (jugado) {
+      let incL = [];
+      (p.goleadoresL||[]).forEach(g => incL.push(`<div class="details-incident">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' x'+g.goles:''}</div>`));
+      (p.amonestadosL||[]).forEach(n => incL.push(`<div class="details-incident">🟨 ${escapeHTML(n)}</div>`));
+      (p.rojasL||[]).forEach(n => incL.push(`<div class="details-incident">🟥 ${escapeHTML(n)}</div>`));
+      detHtmlL = incL.length ? incL.join('') : '<div class="details-empty">Sin incidencias</div>';
+      let incV = [];
+      (p.goleadoresV||[]).forEach(g => incV.push(`<div class="details-incident right">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' x'+g.goles:''}</div>`));
+      (p.amonestadosV||[]).forEach(n => incV.push(`<div class="details-incident right">🟨 ${escapeHTML(n)}</div>`));
+      (p.rojasV||[]).forEach(n => incV.push(`<div class="details-incident right">🟥 ${escapeHTML(n)}</div>`));
+      detHtmlV = incV.length ? incV.join('') : '<div class="details-empty" style="text-align:right">Sin incidencias</div>';
+    }
+
+    html += `<div class="partido-row ${rowClass}">
+      <div class="equipo-fixture">
+        ${escudoLocal}
+        <div class="equipo-name">${escapeHTML(local)}</div>
       </div>
-      <div class="fecha-body ${isOpen?'open':''}" id="fb_${safeKey}">`;
-    partidos.forEach(p => {
-      const jugado = p.jugado === 'Jugado';
-      const nrCase = p.jugado === 'NR';
-      const rowClass = p.isSenior ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
-      let local = '', visitante = '', result = '';
-
-      if (p.partido) {
-        // Format: "F1. Equipo A vs Equipo B"
-        const match = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
-        if (match) { local = match[1]; visitante = match[2]; }
-        else { local = p.partido; visitante = ''; }
-      }
-
-      if (jugado && p.resultado) {
-        result = `<div class="score">${p.resultado}</div>`;
-      } else if (nrCase) {
-        result = `<div class="score pendiente">NR</div>`;
-      } else {
-        result = `<div class="score pendiente">vs</div>`;
-      }
-
-      const escudoLocal = getEscudo(local, 32);
-      const escudoVisit = getEscudo(visitante, 32);
-
-      // Goleadores
-      let golesL = '', golesV = '';
-      if (jugado && p.amonestadosL !== undefined) {
-        // Datos vienen del Apps Script (tienen goleadores)
-        if (p.goleadoresL && p.goleadoresL.length) {
-          golesL = p.goleadoresL.map(g => `⚽ ${g.jugador}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
-        }
-        if (p.goleadoresV && p.goleadoresV.length) {
-          golesV = p.goleadoresV.map(g => `⚽ ${g.jugador}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
-        }
-      }
-      // Tarjetas
-      const amarL = (p.amonestadosL || []).map(n => `🟨`).join('');
-      const amarV = (p.amonestadosV || []).map(n => `🟨`).join('');
-      const rojL  = (p.rojasL || []).map(n => `🟥`).join('');
-      const rojV  = (p.rojasV || []).map(n => `🟥`).join('');
-      const tarjL = (amarL + rojL) ? `<div class="fixture-cards">${amarL}${rojL}</div>` : '';
-      const tarjV = (amarV + rojV) ? `<div class="fixture-cards">${amarV}${rojV}</div>` : '';
-      const infoL = golesL ? `<div class="fixture-scorers">${golesL}</div>` : '';
-      const infoV = golesV ? `<div class="fixture-scorers">${golesV}</div>` : '';
-
-      // Build details panel
-      const hasDetails = jugado && (
-        (p.goleadoresL && p.goleadoresL.length) ||
-        (p.goleadoresV && p.goleadoresV.length) ||
-        (p.amonestadosL && p.amonestadosL.length) ||
-        (p.amonestadosV && p.amonestadosV.length) ||
-        (p.rojasL && p.rojasL.length) ||
-        (p.rojasV && p.rojasV.length)
-      );
-      const pid = 'det_' + p.partido.replace(/[^a-z0-9]/gi,'_');
-
-      let detHtmlL = '', detHtmlV = '';
-      if (jugado) {
-        // Local
-        let incL = [];
-        (p.goleadoresL||[]).forEach(g => incL.push(`<div class="details-incident">⚽ ${g.jugador}${g.goles>1?' x'+g.goles:''}</div>`));
-        (p.amonestadosL||[]).forEach(n => incL.push(`<div class="details-incident">🟨 ${n}</div>`));
-        (p.rojasL||[]).forEach(n => incL.push(`<div class="details-incident">🟥 ${n}</div>`));
-        detHtmlL = incL.length ? incL.join('') : '<div class="details-empty">Sin incidencias</div>';
-        // Visitante
-        let incV = [];
-        (p.goleadoresV||[]).forEach(g => incV.push(`<div class="details-incident right">⚽ ${g.jugador}${g.goles>1?' x'+g.goles:''}</div>`));
-        (p.amonestadosV||[]).forEach(n => incV.push(`<div class="details-incident right">🟨 ${n}</div>`));
-        (p.rojasV||[]).forEach(n => incV.push(`<div class="details-incident right">🟥 ${n}</div>`));
-        detHtmlV = incV.length ? incV.join('') : '<div class="details-empty" style="text-align:right">Sin incidencias</div>';
-      }
-
-      html += `<div class="partido-row ${rowClass}">
-        <div class="equipo-fixture">
-          ${escudoLocal}
-          <div class="equipo-name">${local}</div>
-        </div>
-        <div class="resultado-box">
-          ${result}
-          ${p.canchaHora ? `<div class="partido-meta">${p.canchaHora}</div>` : ''}
-          ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')">▼ Ver detalles</div>` : ''}
-        </div>
-        <div class="equipo-fixture right">
-          <div class="equipo-name right">${visitante}</div>
-          ${escudoVisit}
-        </div>
+      <div class="resultado-box">
+        ${result}
+        ${p.canchaHora ? `<div class="partido-meta">${escapeHTML(p.canchaHora)}</div>` : ''}
+        ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')">▼ Ver detalles</div>` : ''}
       </div>
-      ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}`;
-    });
-    html += `</div></div>`;
+      <div class="equipo-fixture right">
+        <div class="equipo-name right">${escapeHTML(visitante)}</div>
+        ${escudoVisit}
+      </div>
+    </div>
+    ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}`;
   });
 
   container.innerHTML = html;
 }
 
-// ============================================================
-// POSICIONES
-// ============================================================
-const POS_SHEETS = {
-  'zona-a-libres': 'Pos Libres ZONA A',
-  'zona-b-libres': 'Pos Libres ZONA B',
-  'general-senior': 'Tabla de Pos SENIOR',
-  'zona-a-senior': 'Pos Senior ZONA A',
-  'zona-b-senior': 'Pos Senior ZONA B',
-  'z-camp': 'Z. Campeonato A',
-  'z-desc': 'Z. Descenso A',
-  'z-asc': 'Z. Ascenso B',
-  'z-promo': 'Z. Promo B'
-};
+function selectFecha(key) {
+  state.fechaSeleccionada = key;
+  renderFixture();
+  // Scroll top suave
+  const c = document.getElementById('fixtureContainer');
+  if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 
 async function loadPosiciones() {
   await loadPosView('zona-a-libres');
