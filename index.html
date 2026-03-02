@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com https://docs.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com https://spreadsheets.google.com https://api.open-meteo.com; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.open-meteo.com; frame-ancestors 'none';">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -1599,10 +1599,10 @@
         <div style="text-align:center;margin-bottom:20px">
           <div style="font-size:48px;margin-bottom:10px">🔐</div>
           <div class="section-title" style="font-size:26px">Panel Administrador</div>
-          <div style="color:var(--text-dimmer);font-size:14px;margin-top:4px">Ingresá tu PIN para acceder</div>
+          <div style="color:var(--text-dimmer);font-size:14px;margin-top:4px">Ingresá tu contraseña para acceder</div>
         </div>
-        <input type="password" id="adminPinInput" class="admin-input" placeholder="PIN de administrador"
-          onkeydown="if(event.key==='Enter') adminDoLogin()" autocomplete="off" maxlength="20">
+        <input type="password" id="adminPinInput" class="admin-input" placeholder="Contraseña de administrador"
+          onkeydown="if(event.key==='Enter') adminDoLogin()" autocomplete="off" maxlength="64">
         <div id="adminLoginError" style="color:var(--red);font-size:13px;text-align:center;margin:8px 0;display:none"></div>
         <button class="admin-btn primary full" onclick="adminDoLogin()" id="adminLoginBtn">
           Ingresar
@@ -1620,12 +1620,6 @@
             · <a href="javascript:void(0)" onclick="adminLogout()" style="color:var(--red);text-decoration:none;font-weight:600">Cerrar sesión</a>
           </div>
         </div>
-      </div>
-
-      <!-- Config URL banner -->
-      <div id="adminConfigBanner" class="config-banner" style="display:none">
-        ⚠️ Necesitás configurar la URL de Apps Script. Editá <code>APPS_SCRIPT_URL</code> en el código.
-        <a href="javascript:void(0)" onclick="document.getElementById('adminConfigBanner').style.display='none'" style="float:right;color:#92400e;font-weight:700">✕</a>
       </div>
 
       <!-- Fecha tabs -->
@@ -1902,11 +1896,11 @@ function getEscudo(nombre, size) {
 }
 
 // ============================================================
-// CONFIGURACIÓN — REEMPLAZÁ CON TU SHEET ID
+// CONFIGURACIÓN — Solo Apps Script URL (Sheet es PRIVADO)
 // ============================================================
-const SHEET_ID = '1pmv5pDVTfa8gCYQPz1ZbqgyyM7zNtd7vELtN9vuYEY0';
-const PUBLISHED_ID = '2PACX-1vSUVv4GkwAreYqXyaD6LOpVLpjQTHw1vy4z_6N3xj2wjphMUcJTPy-MJQXlX-ySD6-QCB8-PWsktFKV';
-// Ejemplo: '1pmv5pDVTfa8gCYQPz1ZbqgyyM7zNtd7vELtN9vuYEY0'
+// El Sheet ya NO necesita ser público.
+// Toda la data se lee a través de Apps Script.
+// ============================================================
 
 // ═══════════════════════════════════════════════
 // ADMIN — URL del Apps Script (completar después de implementar)
@@ -1924,11 +1918,22 @@ function escapeHTML(str) {
     .replace(/'/g, '&#39;');
 }
 
-const API_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
-const API_BASE_PUB = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?output=csv&gid=`;
-
-// ============================================================
-// ESTADO
+// ── Helper: fetch desde Apps Script ─────────────────────────
+async function fetchAPI(action, params) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  url.searchParams.set('t', Date.now());
+  if (params) {
+    for (const [k, val] of Object.entries(params)) {
+      url.searchParams.set(k, val);
+    }
+  }
+  const res = await fetch(url.toString(), { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json;
+}
 // ============================================================
 let state = {
   fixture: null,
@@ -1942,51 +1947,6 @@ let state = {
   currentDisc: 'rojas',
   currentEquipo: ''
 };
-
-// ============================================================
-// HELPERS — Google Visualization API JSON parser
-// ============================================================
-async function fetchSheet(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const text = await res.text();
-  if (!text.includes('google.visualization')) throw new Error('Respuesta invalida');
-  const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-  if (!json.table) throw new Error('Sin datos');
-  return parseGvizTable(json.table);
-}
-
-function parseGvizTable(table) {
-  if (!table || !table.rows) return [];
-  const cols = table.cols.map(c => c.label || '');
-  return table.rows.map(row => {
-    const obj = {};
-    row.c.forEach((cell, i) => {
-      obj[cols[i]] = cell ? cell.v : null;
-    });
-    return obj;
-  });
-}
-
-function gvizCellValue(cell) {
-  return cell ? cell.v : null;
-}
-
-// Fetch raw — returns rows as arrays
-async function fetchSheetRaw(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const text = await res.text();
-  if (!text.includes('google.visualization')) throw new Error('Respuesta invalida');
-  const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-  const table = json.table;
-  if (!table || !table.rows) return { cols: [], rows: [] };
-  const cols = table.cols.map(c => c.label || '');
-  const rows = table.rows.map(row => row.c ? row.c.map(c => c ? c.v : null) : []);
-  return { cols, rows };
-}
 
 // ============================================================
 // NAVIGATION
@@ -2010,25 +1970,11 @@ function showSection(id) {
 // ============================================================
 // FIXTURE
 // ============================================================
-async function loadFixture(forceAppsScript) {
+async function loadFixture() {
   try {
-    if (forceAppsScript) {
-      // Después de guardar: leer de Apps Script (datos frescos, sin cache de gviz)
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getFixture&t=' + Date.now());
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || 'Error');
-      state.fixture = json.matches;
-    } else {
-      // Carga inicial: usar gviz (rápido)
-      const { cols, rows } = await fetchSheetRaw('Fixture');
-      state.fixture = rows.filter(r => r[2] && String(r[2]).trim() !== '').map(r => ({
-        fecha: r[0], cancha: r[1], partido: r[2], resultado: r[3],
-        canchaHora: r[4], jugado: r[5],
-        isSenior: r[2] ? String(r[2]).includes('(S)') : false,
-        fechaDate: r[13],
-        amonestadosL: [], amonestadosV: [], rojasL: [], rojasV: []
-      }));
-    }
+    const json = await fetchAPI('getFixture');
+    if (!json.ok) throw new Error(json.error || 'Error');
+    state.fixture = json.matches;
     renderFixture();
   } catch(e) {
     showError('fixtureContainer', 'No se pudo cargar el fixture', loadFixture);
@@ -2333,6 +2279,12 @@ function selectFecha(key) {
 }
 
 
+const POS_SHEETS = {
+  'zona-a-libres':  'Pos Libres ZONA A',
+  'zona-b-libres':  'Pos Libres ZONA B',
+  'general-senior': 'Tabla de Pos SENIOR'
+};
+
 async function loadPosiciones() {
   await loadPosView('zona-a-libres');
 }
@@ -2350,24 +2302,16 @@ async function showPos(view, btn) {
   }
 }
 
-async function loadPosView(view, forceAppsScript) {
+async function loadPosView(view) {
   try {
     const sheetName = POS_SHEETS[view];
-    if (forceAppsScript) {
-      // Después de guardar: Apps Script (datos frescos)
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getStandings&tabla=' + encodeURIComponent(sheetName) + '&t=' + Date.now());
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || 'Error');
-      state.posiciones[view] = json.rows.map(r => ({
-        'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
-        'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
-        'Diferencia': r.dif, 'Img': r.img
-      }));
-    } else {
-      // Carga inicial: gviz (rápido)
-      const data = await fetchSheet(sheetName);
-      state.posiciones[view] = data.filter(r => r['Equipo'] || r['Equipo '] || r['Equipos']);
-    }
+    const json = await fetchAPI('getStandings', { tabla: sheetName });
+    if (!json.ok) throw new Error(json.error || 'Error');
+    state.posiciones[view] = json.rows.map(r => ({
+      'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+      'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+      'Diferencia': r.dif, 'Img': r.img
+    }));
     renderPos(view);
   } catch(e) {
     showError('posContainer', 'No se pudo cargar la tabla', () => loadPosView(view));
@@ -2482,14 +2426,14 @@ async function showScorers(view, btn) {
 
 async function loadScorersView(view) {
   try {
-    const sheetName = SCORER_SHEETS[view];
-    const data = await fetchSheet(sheetName);
-    const key = view === 'senior' ? 'Total' : 'Total';
-    const processed = data
-      .filter(r => r['Jugador'] && r[key] > 0)
-      .sort((a, b) => (b[key] || 0) - (a[key] || 0))
-      .slice(0, 40);
-    state.goleadores[view] = processed;
+    const json = await fetchAPI('getScorers', { vista: view });
+    if (!json.ok) throw new Error(json.error || 'Error');
+    // Mapear al formato que espera renderScorers
+    state.goleadores[view] = json.scorers.map(s => ({
+      'Jugador': s.jugador,
+      'Equipo':  s.equipo,
+      'Total':   s.total
+    }));
     renderScorers(view);
   } catch(e) {
     showError('scorersContainer', 'No se pudo cargar goleadores', () => loadScorersView(view));
@@ -2567,18 +2511,30 @@ async function showDisc(view, btn) {
 
 async function loadDiscView(view) {
   try {
-    const sheetName = DISC_SHEETS[view];
-    const data = await fetchSheet(sheetName);
-    // Para rojas, añadir _rowIndex basado en posición en el sheet (fila 2 = índice 0)
-    const filtered = data.filter(r => r['Jugador'] && r['Jugador'] !== '');
+    const json = await fetchAPI('getDisciplina', { vista: view });
+    if (!json.ok) throw new Error(json.error || 'Error');
+
     if (view === 'rojas') {
-      let rowCounter = 2;
-      data.forEach(r => {
-        if (r['Jugador'] && r['Jugador'] !== '') r._rowIndex = rowCounter;
-        rowCounter++;
-      });
+      // Mapear campos del endpoint
+      state.disciplina[view] = json.rows.map(r => ({
+        '_rowIndex':        r._rowIndex,
+        'Fecha':            r.fecha,
+        'Jugador':          r.jugador,
+        'Equipo':           r.equipo,
+        'Partidos':         r.partidos,
+        'Artículo':         r.articulo,
+        'Habilitado FECHA': r.habilitadoFecha,
+        'Senior':           r.isSenior,
+        'Tipo':             r.tipo
+      }));
+    } else {
+      // Amarillas: mapear al formato que espera renderDisc
+      state.disciplina[view] = json.rows.map(r => ({
+        'Jugador': r.jugador,
+        'Equipo':  r.equipo,
+        'Total':   r.total
+      }));
     }
-    state.disciplina[view] = filtered;
     renderDisc(view);
   } catch(e) {
     showError('discContainer', 'No se pudo cargar disciplina', () => loadDiscView(view));
@@ -2682,8 +2638,15 @@ function renderDisc(view) {
 // ============================================================
 async function loadSponsors() {
   try {
-    const data = await fetchSheet('Nuestros Sponsors');
-    state.sponsors = data.filter(r => r['Sponsor']);
+    const json = await fetchAPI('getSponsors');
+    if (!json.ok) throw new Error(json.error || 'Error');
+    // Mapear al formato que espera renderSponsors
+    state.sponsors = json.sponsors.map(s => ({
+      'Sponsor':      s.nombre,
+      'Informacion':  s.info,
+      'Direccion':    s.dir,
+      'Telefono':     s.tel
+    }));
     renderSponsors();
   } catch(e) {
     showError('sponsorsContainer', 'No se pudo cargar sponsors', loadSponsors);
@@ -2743,18 +2706,14 @@ function renderSponsors() {
 // ERROR HELPER
 // ============================================================
 function showError(containerId, msg, retryFn) {
-  const isSheetNotConfigured = SHEET_ID === 'TU_SHEET_ID_AQUI';
   document.getElementById(containerId).innerHTML = `
     <div class="error-box">
-      <div class="error-icon">${isSheetNotConfigured ? '⚙️' : '⚠️'}</div>
-      <div class="error-title">${isSheetNotConfigured ? 'Configuración requerida' : 'Error de conexión'}</div>
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">Error de conexión</div>
       <div class="error-msg">
-        ${isSheetNotConfigured
-          ? 'Necesitás reemplazar <code>TU_SHEET_ID_AQUI</code> en el código con el ID de tu Google Sheet.<br><br>El ID está en la URL del sheet: <code>docs.google.com/spreadsheets/d/<strong>ESTE_ES_EL_ID</strong>/edit</code>'
-          : msg + '. Verificá que el Sheet sea público (cualquiera con el link puede ver).'
-        }
+        ${msg}. Verificá tu conexión a internet e intentá nuevamente.
       </div>
-      ${!isSheetNotConfigured ? `<button class="retry-btn" onclick="(${retryFn.toString()})()">Reintentar</button>` : ''}
+      <button class="retry-btn" onclick="(${retryFn.toString()})()">Reintentar</button>
     </div>`;
 }
 
@@ -2791,15 +2750,11 @@ function initAdmin() {
   if (adminState.loggedIn) return;
   document.getElementById('adminLogin').style.display = '';
   document.getElementById('adminDashboard').style.display = 'none';
-  // Check if URL is configured
-  if (APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxELCSZ_1um1fExggTpzybMmNQBQWOV3KwOPVjwPcUsIiPl1n8baRSNOwFSIMcdhEAe/exec') {
-    // Show config needed msg after login
-  }
 }
 
 async function adminDoLogin() {
-  const pin = document.getElementById('adminPinInput').value.trim();
-  if (!pin) return;
+  const password = document.getElementById('adminPinInput').value.trim();
+  if (!password) return;
 
   const btn = document.getElementById('adminLoginBtn');
   const errDiv = document.getElementById('adminLoginError');
@@ -2808,11 +2763,11 @@ async function adminDoLogin() {
   errDiv.style.display = 'none';
 
   try {
-    // PIN enviado via POST (no queda en URL ni logs)
+    // Contraseña enviada via POST (no queda en URL ni logs)
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'login', pin })
+      body: JSON.stringify({ action: 'login', password })
     });
     const json = await res.json();
     if (json.ok && json.token) {
@@ -2837,11 +2792,6 @@ function adminOnLoginSuccess() {
   document.getElementById('adminLogin').style.display = 'none';
   document.getElementById('adminDashboard').style.display = '';
   document.getElementById('adminUserName').textContent = adminState.userName;
-
-  if (APPS_SCRIPT_URL === 'TU_APPS_SCRIPT_URL_AQUI') {
-    document.getElementById('adminConfigBanner').style.display = '';
-  }
-
   adminLoadMatches();
 }
 
@@ -2861,38 +2811,13 @@ async function adminLoadMatches() {
   container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>';
 
   try {
-    if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getMatches&token=' + encodeURIComponent(adminState.token));
-      const json = await res.json();
-      if (json.ok) {
-        adminState.matches = json.matches;
-      } else {
-        throw new Error(json.error || 'Error al cargar');
-      }
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getMatches&token=' + encodeURIComponent(adminState.token));
+    const json = await res.json();
+    if (json.auth === false) { adminLogout(); alert('Sesión expirada. Ingresá nuevamente.'); return; }
+    if (json.ok) {
+      adminState.matches = json.matches;
     } else {
-      // Fallback: leer desde gviz directamente
-      const { cols, rows } = await fetchSheetRaw('Completar Partidos');
-      adminState.matches = rows.filter(r => r[0] && String(r[0]).trim()).map((r, idx) => {
-        const partido = String(r[0] || '');
-        const fechaMatch = partido.match(/^(F\d+)/);
-        return {
-          rowIndex: idx + 2,
-          partido: partido,
-          fecha: fechaMatch ? fechaMatch[1] : '',
-          resLocal: r[1] !== null && r[1] !== undefined ? String(r[1]) : '',
-          resVisitante: r[2] !== null && r[2] !== undefined ? String(r[2]) : '',
-          resultado: r[3] || '',
-          jugado: r[4] || '',
-          equipoL: r[6] || '',
-          equipoV: r[7] || '',
-          isSenior: partido.includes('(S)'),
-          isLibre: partido.toUpperCase().includes('LIBRE'),
-          amonestadosL: extractAmonestadosFromRaw(r, 8, 17),
-          amonestadosV: extractAmonestadosFromRaw(r, 18, 27),
-          rojasL: extractAmonestadosFromRaw(r, 28, 32),
-          rojasV: extractAmonestadosFromRaw(r, 33, 37)
-        };
-      });
+      throw new Error(json.error || 'Error al cargar');
     }
 
     adminRenderFechaTabs();
@@ -2901,19 +2826,10 @@ async function adminLoadMatches() {
     container.innerHTML = `<div class="error-box">
       <div class="error-icon">⚠️</div>
       <div class="error-title">Error</div>
-      <div class="error-msg">${e.message}</div>
+      <div class="error-msg">${escapeHTML(e.message)}</div>
       <button class="retry-btn" onclick="adminLoadMatches()">Reintentar</button>
     </div>`;
   }
-}
-
-function extractAmonestadosFromRaw(row, start, end) {
-  var names = [];
-  for (var i = start; i <= end && i < row.length; i++) {
-    var val = String(row[i] || '').trim();
-    if (val) names.push(val);
-  }
-  return names;
 }
 
 function adminRenderFechaTabs() {
@@ -3040,9 +2956,8 @@ async function adminOpenMatch(rowIndex) {
     rojasV: [...(match.rojasV || [])]
   };
 
-  // Load goleadores from Apps Script if available
-  if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
-    try {
+  // Load goleadores from Apps Script
+  try {
       const url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
       const res = await fetch(url);
       const json = await res.json();
@@ -3055,7 +2970,6 @@ async function adminOpenMatch(rowIndex) {
         adminState.editorData.rojasV = json.rojasV || [];
       }
     } catch(e) { /* fallback to local data */ }
-  }
 
   // Render current tags
   renderPlayerTags();
@@ -3085,22 +2999,10 @@ async function loadRosterForTeam(team, side) {
 
   try {
     let players = [];
-    if (APPS_SCRIPT_URL !== 'TU_APPS_SCRIPT_URL_AQUI') {
-      const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team) + '&token=' + encodeURIComponent(adminState.token));
-      const json = await res.json();
-      players = json.players || [];
-    } else {
-      // Fallback: leer de hoja única "Planteles" via gviz
-      try {
-        const data = await fetchSheet('Planteles');
-        const teamUpper = team.trim().toUpperCase();
-        players = data
-          .filter(r => String(r['Equipo'] || '').trim().toUpperCase() === teamUpper)
-          .map(r => String(r['Jugador'] || '').trim())
-          .filter(n => n && n !== '← Completar con jugadores');
-        players.sort();
-      } catch(e) { players = []; }
-    }
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team) + '&token=' + encodeURIComponent(adminState.token));
+    const json = await res.json();
+    if (json.auth === false) { adminLogout(); alert('Sesión expirada.'); return; }
+    players = json.players || [];
 
     adminState.rostersCache[team] = players;
     populateSelects(side, players);
@@ -3287,10 +3189,6 @@ async function adminSaveMatch() {
   };
 
   try {
-    if (APPS_SCRIPT_URL === 'TU_APPS_SCRIPT_URL_AQUI') {
-      throw new Error('Configurá APPS_SCRIPT_URL para guardar. Sin ella, solo podés visualizar datos.');
-    }
-
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -3313,17 +3211,16 @@ async function adminSaveMatch() {
       match.rojasL = [...adminState.editorData.rojasL];
       match.rojasV = [...adminState.editorData.rojasV];
 
-      // Refrescar vistas públicas - forzar recarga inmediata
+      // Refrescar vistas públicas
       state.fixture = null;
       state.posiciones = {};
       state.goleadores = {};
       state.disciplina = {};
-      // Recargar fixture inmediatamente (sin esperar que el usuario navegue)
       setTimeout(() => {
-        loadFixture(true);
-        loadPosView('zona-a-libres', true);
-        loadPosView('zona-b-libres', true);
-        loadPosView('general-senior', true);
+        loadFixture();
+        loadPosView('zona-a-libres');
+        loadPosView('zona-b-libres');
+        loadPosView('general-senior');
       }, 1500);
     } else {
       // Mostrar error exacto que devuelve Apps Script
@@ -3353,11 +3250,6 @@ if ('serviceWorker' in navigator) {
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-  // Check sheet config
-  if (SHEET_ID === 'TU_SHEET_ID_AQUI') {
-    document.getElementById('statusDot').style.background = 'var(--yellow)';
-    document.getElementById('statusDot').style.boxShadow = '0 0 8px var(--yellow)';
-  }
   loadFixture();
 });
 </script>
