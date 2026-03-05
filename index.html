@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-03-04 18:30 ARG -->
+<!-- CDP Fixture — index.html — 2026-03-05 12:00 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -2575,6 +2575,14 @@ function renderDisc(view) {
   let html = '<div class="card">';
 
   if (isRojas) {
+    // Admin banner
+    if (adminState.loggedIn) {
+      html += `<div style="padding:12px 18px;background:#dcfce7;border-bottom:1px solid #bbf7d0;display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px">🔓</span>
+        <span style="font-size:12px;font-weight:600;color:#16a34a">Modo admin — tocá una fila para editar la sanción</span>
+      </div>`;
+    }
+
     data.forEach((r, idx) => {
       const fechaHabRaw = r['Habilitado FECHA'];
       const partidos    = r['Partidos'];
@@ -2591,7 +2599,20 @@ function renderDisc(view) {
             fechaHabStr = 'F' + fechaHabRaw;
           }
         } else {
-          fechaHabStr = String(fechaHabRaw);
+          // Handle ISO date strings like "2026-05-11T03:00:00.000Z"
+          const str = String(fechaHabRaw);
+          if (str.includes('T') && str.includes('-') && str.length > 10) {
+            try {
+              const d = new Date(str);
+              if (!isNaN(d.getTime())) {
+                fechaHabStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+              } else {
+                fechaHabStr = str;
+              }
+            } catch(e) { fechaHabStr = str; }
+          } else {
+            fechaHabStr = str;
+          }
         }
       }
 
@@ -2609,7 +2630,10 @@ function renderDisc(view) {
         habFecha: (fechaHabRaw !== undefined && fechaHabRaw !== null) ? String(fechaHabRaw) : ''
       }));
 
-      html += `<div class="disc-row" style="${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}">
+      const isAdmin = adminState.loggedIn;
+      const rowClick = isAdmin ? `onclick="openRojaModal(decodeURIComponent('${rojaData}'))" style="cursor:pointer;${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}"` : `style="${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}"`;
+
+      html += `<div class="disc-row" ${rowClick}>
         <div class="disc-info" style="flex:1">
           <div class="disc-name">${r['Jugador'] || '-'}</div>
           <div class="disc-team" style="display:flex;align-items:center;gap:5px">
@@ -2623,9 +2647,19 @@ function renderDisc(view) {
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
           ${fechaHabStr ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
         </div>
-        ${adminState.loggedIn ? `<button onclick="openRojaModal(decodeURIComponent('${rojaData}'))" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-size:11px;cursor:pointer;color:var(--text-dimmer);margin-left:8px;flex-shrink:0">✏️ Editar</button>` : ''}
+        ${isAdmin ? '<div style="color:var(--green);font-size:16px;margin-left:6px;flex-shrink:0">✏️</div>' : ''}
       </div>`;
     });
+
+    // Botón agregar nueva roja (solo admin)
+    if (adminState.loggedIn) {
+      html += `<div style="padding:14px 18px;border-top:2px dashed var(--border2)">
+        <button onclick="openRojaModalNew()" style="width:100%;background:none;border:1.5px dashed var(--red);border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--red);cursor:pointer;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s"
+          onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+          ＋ Agregar Tarjeta Roja
+        </button>
+      </div>`;
+    }
   } else {
     // Amarillas — sort by total desc
     const sorted = [...data]
@@ -2816,6 +2850,8 @@ function adminOnLoginSuccess() {
   document.getElementById('adminDashboard').style.display = '';
   document.getElementById('adminUserName').textContent = adminState.userName;
   adminLoadMatches();
+  // Invalidar cache de disciplina para que se re-rendericen con botones de editar
+  state.disciplina = {};
 }
 
 function adminLogout() {
@@ -2824,9 +2860,12 @@ function adminLogout() {
   adminState.token = '';
   adminState.matches = [];
   sessionStorage.removeItem('cdp_token');
+  state.disciplina = {};
   document.getElementById('adminLogin').style.display = '';
   document.getElementById('adminDashboard').style.display = 'none';
   document.getElementById('adminPinInput').value = '';
+  // Re-render disciplina (to hide edit buttons)
+  if (state.disciplina['rojas']) renderDisc('rojas');
 }
 
 async function adminLoadMatches() {
@@ -3278,8 +3317,8 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <!-- ═══ MODAL: Completar Sanción Tarjeta Roja ═══ -->
-<div id="rojaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:400px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+<div id="rojaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:16px;width:100%;max-width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
       <span style="font-size:24px">🟥</span>
       <div style="flex:1">
@@ -3289,22 +3328,51 @@ window.addEventListener('DOMContentLoaded', () => {
       <button onclick="closeRojaModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-dimmer)">✕</button>
     </div>
 
+    <!-- Campos para NUEVA roja (ocultos en modo edición) -->
+    <div id="rojaNewFields" style="display:none">
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Jugador</label>
+        <input id="rojaInputJugador" type="text" placeholder="Nombre completo del jugador"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Equipo</label>
+        <input id="rojaInputEquipo" type="text" placeholder="Ej: Abogados A, Docentes B (S)"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div>
+          <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Nro de Fecha</label>
+          <input id="rojaInputFechaNum" type="number" placeholder="Ej: 2" min="1"
+            style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Tipo</label>
+          <select id="rojaInputTipo" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+            <option value="directa">🟥 Directa</option>
+            <option value="doble_amarilla">🟨🟨 Doble amarilla</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campos comunes (edit y new) -->
     <div style="margin-bottom:14px">
       <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Partidos de suspensión</label>
       <input id="rojaInputPartidos" type="text" placeholder="Ej: 3  o  1 año 1 fecha"
-        style="width:100%;box-sizing:border-box;background:var(--input-bg,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+        style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
     </div>
 
     <div style="margin-bottom:14px">
       <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Artículo del reglamento</label>
       <input id="rojaInputArticulo" type="text" placeholder="Ej: 45"
-        style="width:100%;box-sizing:border-box;background:var(--input-bg,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+        style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
     </div>
 
     <div style="margin-bottom:20px">
       <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Habilitado a partir de (fecha o nro de fecha)</label>
       <input id="rojaInputHabFecha" type="text" placeholder="Ej: F5  o  15/04/2026"
-        style="width:100%;box-sizing:border-box;background:var(--input-bg,#1a1a2e);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+        style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
     </div>
 
     <div id="rojaModalError" style="display:none;color:#ef4444;font-size:12px;margin-bottom:10px;text-align:center"></div>
@@ -3313,23 +3381,54 @@ window.addEventListener('DOMContentLoaded', () => {
       style="width:100%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:17px;cursor:pointer;letter-spacing:1px">
       💾 GUARDAR SANCIÓN
     </button>
+
+    <!-- Botón eliminar (solo en modo edición) -->
+    <button onclick="deleteRoja()" id="rojaModalDeleteBtn"
+      style="display:none;width:100%;background:none;color:#ef4444;border:1.5px solid #fecaca;border-radius:10px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-top:10px">
+      🗑️ Eliminar esta roja
+    </button>
   </div>
 </div>
 
 <script>
 // ─── Roja Modal ───
 let _rojaModalData = null;
+let _rojaModalMode = 'edit'; // 'edit' | 'new'
 
+// Abrir en modo EDITAR (desde el botón ✏️ en cada fila)
 function openRojaModal(jsonStr) {
   try { _rojaModalData = JSON.parse(jsonStr); } catch(e) { return; }
-  document.getElementById('rojaModalTitle').textContent  = _rojaModalData.jugador || 'Completar Sanción';
-  document.getElementById('rojaModalSub').textContent    = (_rojaModalData.equipo || '') + (_rojaModalData.fecha ? ' · F' + _rojaModalData.fecha : '');
-  document.getElementById('rojaInputPartidos').value  = _rojaModalData.partidos || '';
-  document.getElementById('rojaInputArticulo').value  = _rojaModalData.articulo || '';
-  document.getElementById('rojaInputHabFecha').value  = _rojaModalData.habFecha || '';
+  _rojaModalMode = 'edit';
+  document.getElementById('rojaNewFields').style.display = 'none';
+  document.getElementById('rojaModalDeleteBtn').style.display = '';
+  document.getElementById('rojaModalTitle').textContent = _rojaModalData.jugador || 'Completar Sanción';
+  document.getElementById('rojaModalSub').textContent = (_rojaModalData.equipo || '') + (_rojaModalData.fecha ? ' · F' + _rojaModalData.fecha : '');
+  document.getElementById('rojaInputPartidos').value = _rojaModalData.partidos || '';
+  document.getElementById('rojaInputArticulo').value = _rojaModalData.articulo || '';
+  document.getElementById('rojaInputHabFecha').value = _rojaModalData.habFecha || '';
   document.getElementById('rojaModalError').style.display = 'none';
-  const overlay = document.getElementById('rojaModalOverlay');
-  overlay.style.display = 'flex';
+  document.getElementById('rojaModalSaveBtn').textContent = '💾 GUARDAR SANCIÓN';
+  document.getElementById('rojaModalOverlay').style.display = 'flex';
+}
+
+// Abrir en modo NUEVA ROJA (desde el botón "Agregar Tarjeta Roja")
+function openRojaModalNew() {
+  _rojaModalData = {};
+  _rojaModalMode = 'new';
+  document.getElementById('rojaNewFields').style.display = '';
+  document.getElementById('rojaModalDeleteBtn').style.display = 'none';
+  document.getElementById('rojaModalTitle').textContent = 'Nueva Tarjeta Roja';
+  document.getElementById('rojaModalSub').textContent = 'Completá los datos del jugador sancionado';
+  document.getElementById('rojaInputJugador').value = '';
+  document.getElementById('rojaInputEquipo').value = '';
+  document.getElementById('rojaInputFechaNum').value = '';
+  document.getElementById('rojaInputTipo').value = 'directa';
+  document.getElementById('rojaInputPartidos').value = '';
+  document.getElementById('rojaInputArticulo').value = '';
+  document.getElementById('rojaInputHabFecha').value = '';
+  document.getElementById('rojaModalError').style.display = 'none';
+  document.getElementById('rojaModalSaveBtn').textContent = '🟥 AGREGAR ROJA';
+  document.getElementById('rojaModalOverlay').style.display = 'flex';
 }
 
 function closeRojaModal() {
@@ -3338,51 +3437,130 @@ function closeRojaModal() {
 }
 
 async function saveRoja() {
-  if (!_rojaModalData) return;
-  const btn      = document.getElementById('rojaModalSaveBtn');
-  const errDiv   = document.getElementById('rojaModalError');
-  const partidos = document.getElementById('rojaInputPartidos').value.trim();
-  const articulo = document.getElementById('rojaInputArticulo').value.trim();
-  const habFecha = document.getElementById('rojaInputHabFecha').value.trim();
+  const btn    = document.getElementById('rojaModalSaveBtn');
+  const errDiv = document.getElementById('rojaModalError');
+  errDiv.style.display = 'none';
 
-  if (!partidos) {
-    errDiv.textContent = 'Ingresá la cantidad de partidos de suspensión';
-    errDiv.style.display = 'block'; return;
+  if (_rojaModalMode === 'new') {
+    // ── MODO NUEVA ROJA ──
+    const jugador  = document.getElementById('rojaInputJugador').value.trim();
+    const equipo   = document.getElementById('rojaInputEquipo').value.trim();
+    const fechaNum = document.getElementById('rojaInputFechaNum').value.trim();
+    const tipo     = document.getElementById('rojaInputTipo').value;
+    const partidos = document.getElementById('rojaInputPartidos').value.trim();
+    const articulo = document.getElementById('rojaInputArticulo').value.trim();
+    const habFecha = document.getElementById('rojaInputHabFecha').value.trim();
+
+    if (!jugador) { errDiv.textContent = 'Ingresá el nombre del jugador'; errDiv.style.display = 'block'; return; }
+    if (!equipo)  { errDiv.textContent = 'Ingresá el equipo'; errDiv.style.display = 'block'; return; }
+    if (!fechaNum){ errDiv.textContent = 'Ingresá el número de fecha'; errDiv.style.display = 'block'; return; }
+
+    btn.textContent = 'Agregando...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: 'addRoja',
+          token: adminState.token,
+          jugador, equipo, fechaNum, tipo, partidos, articulo, habFecha
+        })
+      });
+      const json = await res.json();
+      if (json.auth === false) { adminLogout(); alert('Sesión expirada.'); return; }
+      if (json.ok) {
+        state.disciplina = {};
+        closeRojaModal();
+        showDisc('rojas', document.querySelector('#section-disciplina .tab-pill.active'));
+      } else {
+        errDiv.textContent = json.error || 'Error al agregar';
+        errDiv.style.display = 'block';
+      }
+    } catch(e) {
+      errDiv.textContent = 'Error de conexión: ' + e.message;
+      errDiv.style.display = 'block';
+    }
+    btn.textContent = '🟥 AGREGAR ROJA';
+    btn.disabled = false;
+
+  } else {
+    // ── MODO EDITAR (existente) ──
+    if (!_rojaModalData) return;
+    const partidos = document.getElementById('rojaInputPartidos').value.trim();
+    const articulo = document.getElementById('rojaInputArticulo').value.trim();
+    const habFecha = document.getElementById('rojaInputHabFecha').value.trim();
+
+    if (!partidos) { errDiv.textContent = 'Ingresá la cantidad de partidos de suspensión'; errDiv.style.display = 'block'; return; }
+
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    try {
+      const params = new URLSearchParams({
+        action: 'updateRoja',
+        rowIndex: _rojaModalData.rowIndex || '',
+        jugador: _rojaModalData.jugador || '',
+        fecha: _rojaModalData.fecha || '',
+        partidos, articulo, habFecha
+      });
+      params.set('token', adminState.token);
+      const res = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+      const json = await res.json();
+
+      if (json.ok) {
+        state.disciplina = {};
+        closeRojaModal();
+        loadDisciplina();
+      } else {
+        errDiv.textContent = json.error || 'Error al guardar';
+        errDiv.style.display = 'block';
+      }
+    } catch(e) {
+      errDiv.textContent = 'Error de conexión: ' + e.message;
+      errDiv.style.display = 'block';
+    }
+    btn.textContent = '💾 GUARDAR SANCIÓN';
+    btn.disabled = false;
   }
+}
 
-  btn.textContent = 'Guardando...';
-  btn.disabled    = true;
+async function deleteRoja() {
+  if (!_rojaModalData || _rojaModalMode !== 'edit') return;
+  const jugador = _rojaModalData.jugador || 'este jugador';
+  if (!confirm(`¿Eliminar la roja de ${jugador}? Esta acción no se puede deshacer.`)) return;
+
+  const btn = document.getElementById('rojaModalDeleteBtn');
+  btn.textContent = 'Eliminando...';
+  btn.disabled = true;
 
   try {
-    const params = new URLSearchParams({
-      action:    'updateRoja',
-      rowIndex:  _rojaModalData.rowIndex || '',
-      jugador:   _rojaModalData.jugador  || '',
-      fecha:     _rojaModalData.fecha    || '',
-      partidos,
-      articulo,
-      habFecha
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'deleteRoja',
+        token: adminState.token,
+        rowIndex: _rojaModalData.rowIndex || '',
+        jugador: _rojaModalData.jugador || '',
+        fecha: _rojaModalData.fecha || ''
+      })
     });
-    params.set('token', adminState.token);
-    const res  = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
     const json = await res.json();
-
+    if (json.auth === false) { adminLogout(); alert('Sesión expirada.'); return; }
     if (json.ok) {
-      // Refrescar vista de disciplina
       state.disciplina = {};
       closeRojaModal();
       loadDisciplina();
     } else {
-      errDiv.textContent = json.error || 'Error al guardar';
-      errDiv.style.display = 'block';
+      alert('Error: ' + (json.error || 'No se pudo eliminar'));
     }
   } catch(e) {
-    errDiv.textContent = 'Error de conexión: ' + e.message;
-    errDiv.style.display = 'block';
+    alert('Error de conexión: ' + e.message);
   }
-
-  btn.textContent = '💾 GUARDAR SANCIÓN';
-  btn.disabled    = false;
+  btn.textContent = '🗑️ Eliminar esta roja';
+  btn.disabled = false;
 }
 
 // Cerrar modal al click fuera
