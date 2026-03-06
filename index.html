@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-03-05 23:50 ARG -->
+<!-- CDP Fixture — index.html — 2026-03-06 10:50 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3453,12 +3453,14 @@ window.addEventListener('DOMContentLoaded', () => {
       <div style="margin-bottom:14px">
         <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Equipo</label>
         <input id="rojaInputEquipo" type="text" placeholder="Ej: Abogados A, Docentes B (S)"
+          oninput="autoCalcHab()"
           style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div>
           <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Nro de Fecha</label>
           <input id="rojaInputFechaNum" type="number" placeholder="Ej: 2" min="1"
+            oninput="autoCalcHab()"
             style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
         </div>
         <div>
@@ -3475,6 +3477,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div style="margin-bottom:14px">
       <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Partidos de suspensión</label>
       <input id="rojaInputPartidos" type="text" placeholder="Ej: 3  o  1 año 1 fecha"
+        oninput="autoCalcHab()"
         style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
     </div>
 
@@ -3485,9 +3488,10 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div style="margin-bottom:20px">
-      <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Habilitado a partir de (fecha o nro de fecha)</label>
-      <input id="rojaInputHabFecha" type="text" placeholder="Ej: F5  o  15/04/2026"
+      <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Habilitado a partir de (auto-calculado)</label>
+      <input id="rojaInputHabFecha" type="text" placeholder="Se calcula automáticamente..."
         style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+      <div id="rojaHabCalcInfo" style="display:none;margin-top:6px;font-size:11px;color:var(--text-dimmer);line-height:1.4;background:var(--bg3);padding:8px 10px;border-radius:6px"></div>
     </div>
 
     <div id="rojaModalError" style="display:none;color:#ef4444;font-size:12px;margin-bottom:10px;text-align:center"></div>
@@ -3544,6 +3548,108 @@ function openRojaModalNew() {
   document.getElementById('rojaModalError').style.display = 'none';
   document.getElementById('rojaModalSaveBtn').textContent = '🟥 AGREGAR ROJA';
   document.getElementById('rojaModalOverlay').style.display = 'flex';
+}
+
+// ── Auto-calcular fecha de habilitación ──
+// Lógica: desde la fecha de la roja + 1, contar N fechas donde el equipo
+// juega (no LIBRE). Las fechas LIBRE no cuentan como partido cumplido.
+// Habilitado = primera fecha después de cumplir las N fechas.
+function autoCalcHab() {
+  const infoDiv = document.getElementById('rojaHabCalcInfo');
+  const habInput = document.getElementById('rojaInputHabFecha');
+  if (!infoDiv) return;
+
+  // Obtener equipo y fecha según modo
+  let equipo, fechaRoja;
+  if (_rojaModalMode === 'new') {
+    equipo = (document.getElementById('rojaInputEquipo')?.value || '').trim();
+    fechaRoja = parseInt(document.getElementById('rojaInputFechaNum')?.value) || 0;
+  } else {
+    equipo = (_rojaModalData?.equipo || '').trim();
+    fechaRoja = parseInt(_rojaModalData?.fecha) || 0;
+  }
+
+  const partidosStr = (document.getElementById('rojaInputPartidos')?.value || '').trim();
+  const partidosNum = parseInt(partidosStr);
+
+  // Necesitamos equipo, fecha y partidos numérico para calcular
+  if (!equipo || !fechaRoja || !partidosNum || isNaN(partidosNum) || partidosNum <= 0) {
+    infoDiv.style.display = 'none';
+    return;
+  }
+
+  // Necesitamos el fixture cargado
+  if (!state.fixture || !state.fixture.length) {
+    infoDiv.style.display = '';
+    infoDiv.innerHTML = '⏳ Cargando fixture para calcular...';
+    if (!state.fixture) loadFixture().then(() => autoCalcHab());
+    return;
+  }
+
+  // Buscar todas las fechas del equipo en el fixture
+  const eqNorm = equipo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const fechasEquipo = {}; // { fechaNum: 'LIBRE' | 'JUEGA' }
+
+  state.fixture.forEach(p => {
+    if (!p.partido) return;
+    const numMatch = String(p.fecha || '').match(/(\d+)/);
+    if (!numMatch) return;
+    const fn = parseInt(numMatch[1]);
+
+    const m = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+    if (!m) return;
+    const local = m[1].trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const visit = m[2].trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    if (local === eqNorm || visit === eqNorm) {
+      const oponente = local === eqNorm ? visit : local;
+      fechasEquipo[fn] = oponente === 'libre' ? 'LIBRE' : 'JUEGA';
+    }
+  });
+
+  // Calcular: desde fechaRoja + 1, contar N fechas JUEGA
+  const todasFechas = Object.keys(fechasEquipo).map(Number).sort((a, b) => a - b);
+  const futuras = todasFechas.filter(f => f > fechaRoja);
+
+  let cumplidas = 0;
+  let libresEnMedio = 0;
+  let detalle = [];
+  let habFecha = null;
+
+  for (const f of futuras) {
+    if (cumplidas >= partidosNum) {
+      habFecha = f;
+      break;
+    }
+    if (fechasEquipo[f] === 'LIBRE') {
+      libresEnMedio++;
+      detalle.push(`F${f}: LIBRE (no cuenta)`);
+    } else {
+      cumplidas++;
+      detalle.push(`F${f}: cumple ${cumplidas}/${partidosNum}`);
+    }
+  }
+
+  // Si terminó de recorrer y cumplió exacto al final
+  if (habFecha === null && cumplidas >= partidosNum) {
+    // Habilitado en la siguiente fecha después de la última futura
+    const lastFutura = futuras[futuras.length - 1];
+    habFecha = lastFutura + 1;
+  }
+
+  if (habFecha !== null) {
+    habInput.value = habFecha;
+    let infoHtml = `✅ <b>Hab. Fecha ${habFecha}</b> — ${partidosNum} fecha${partidosNum > 1 ? 's' : ''} de sanción`;
+    if (libresEnMedio > 0) {
+      infoHtml += ` + ${libresEnMedio} fecha${libresEnMedio > 1 ? 's' : ''} LIBRE que no cuenta${libresEnMedio > 1 ? 'n' : ''}`;
+    }
+    infoHtml += `<br><span style="font-size:10px;color:var(--text-dimmer)">${detalle.join(' → ')}</span>`;
+    infoDiv.innerHTML = infoHtml;
+    infoDiv.style.display = '';
+  } else {
+    infoDiv.innerHTML = '⚠️ No se encontraron suficientes fechas futuras en el fixture para este equipo';
+    infoDiv.style.display = '';
+  }
 }
 
 function closeRojaModal() {
