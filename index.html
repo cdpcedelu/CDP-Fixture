@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-03-06 10:50 ARG -->
+<!-- CDP Fixture — index.html — 2026-03-06 13:40 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3446,15 +3446,36 @@ window.addEventListener('DOMContentLoaded', () => {
     <!-- Campos para NUEVA roja (ocultos en modo edición) -->
     <div id="rojaNewFields" style="display:none">
       <div style="margin-bottom:14px">
-        <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Jugador</label>
-        <input id="rojaInputJugador" type="text" placeholder="Nombre completo del jugador"
-          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+        <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Equipo</label>
+        <select id="rojaInputEquipo" onchange="onRojaEquipoChange(this.value);autoCalcHab()"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none;cursor:pointer">
+          <option value="">Elegir equipo...</option>
+          <optgroup label="── LIBRES ──">
+            <option>Abogados A</option><option>Abogados AR</option><option>Abogados B</option>
+            <option>Arquitectos</option><option>Contadores A</option><option>Contadores Z</option>
+            <option>Docentes A</option><option>Docentes B</option><option>Docentes E</option>
+            <option>Docentes W</option><option>Ingenieros</option><option>Ingenieros S</option>
+            <option>Maestros</option><option>Profesores</option><option>Psicologos</option>
+            <option>Salud B</option><option>Salud F</option><option>Salud T</option>
+            <option>Tecnicos A</option>
+          </optgroup>
+          <optgroup label="── SENIOR ──">
+            <option>Abogados A (S)</option><option>Arquitectos (S)</option>
+            <option>Contadores A (S)</option><option>Contadores Z (S)</option>
+            <option>Docentes A (S)</option><option>Docentes B (S)</option>
+            <option>Docentes F (S)</option><option>Docentes T (S)</option>
+            <option>Docentes X (S)</option><option>Licenciados (S)</option>
+            <option>Salud B (S)</option><option>Salud F (S)</option>
+          </optgroup>
+        </select>
       </div>
       <div style="margin-bottom:14px">
-        <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Equipo</label>
-        <input id="rojaInputEquipo" type="text" placeholder="Ej: Abogados A, Docentes B (S)"
-          oninput="autoCalcHab()"
-          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none">
+        <label style="font-size:11px;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Jugador</label>
+        <select id="rojaInputJugador"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none;cursor:pointer">
+          <option value="">Primero elegí un equipo...</option>
+        </select>
+        <div id="rojaJugadorLoading" style="display:none;font-size:11px;color:var(--text-dimmer);margin-top:4px">⏳ Cargando plantel...</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div>
@@ -3538,28 +3559,65 @@ function openRojaModalNew() {
   document.getElementById('rojaModalDeleteBtn').style.display = 'none';
   document.getElementById('rojaModalTitle').textContent = 'Nueva Tarjeta Roja';
   document.getElementById('rojaModalSub').textContent = 'Completá los datos del jugador sancionado';
-  document.getElementById('rojaInputJugador').value = '';
   document.getElementById('rojaInputEquipo').value = '';
+  document.getElementById('rojaInputJugador').innerHTML = '<option value="">Primero elegí un equipo...</option>';
   document.getElementById('rojaInputFechaNum').value = '';
   document.getElementById('rojaInputTipo').value = 'directa';
   document.getElementById('rojaInputPartidos').value = '';
   document.getElementById('rojaInputArticulo').value = '';
   document.getElementById('rojaInputHabFecha').value = '';
   document.getElementById('rojaModalError').style.display = 'none';
+  const infoDiv = document.getElementById('rojaHabCalcInfo');
+  if (infoDiv) infoDiv.style.display = 'none';
   document.getElementById('rojaModalSaveBtn').textContent = '🟥 AGREGAR ROJA';
   document.getElementById('rojaModalOverlay').style.display = 'flex';
 }
 
+// ── Cargar plantel al elegir equipo en modal de nueva roja ──
+async function onRojaEquipoChange(team) {
+  const jugadorSelect = document.getElementById('rojaInputJugador');
+  const loadingDiv = document.getElementById('rojaJugadorLoading');
+  
+  if (!team) {
+    jugadorSelect.innerHTML = '<option value="">Primero elegí un equipo...</option>';
+    return;
+  }
+
+  jugadorSelect.innerHTML = '<option value="">Cargando...</option>';
+  if (loadingDiv) loadingDiv.style.display = '';
+
+  try {
+    // Usar cache si existe
+    if (adminState.rostersCache[team]) {
+      populateRojaJugadorSelect(adminState.rostersCache[team]);
+    } else {
+      const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team) + '&token=' + encodeURIComponent(adminState.token));
+      const json = await res.json();
+      const players = json.players || [];
+      adminState.rostersCache[team] = players;
+      populateRojaJugadorSelect(players);
+    }
+  } catch(e) {
+    jugadorSelect.innerHTML = '<option value="">Error al cargar plantel</option>';
+  }
+  if (loadingDiv) loadingDiv.style.display = 'none';
+}
+
+function populateRojaJugadorSelect(players) {
+  const sel = document.getElementById('rojaInputJugador');
+  const sorted = [...players].sort();
+  sel.innerHTML = '<option value="">Elegir jugador...</option>' +
+    sorted.map(p => `<option value="${escapeHTML(p)}">${escapeHTML(p)}</option>`).join('');
+}
+
 // ── Auto-calcular fecha de habilitación ──
-// Lógica: desde la fecha de la roja + 1, contar N fechas donde el equipo
-// juega (no LIBRE). Las fechas LIBRE no cuentan como partido cumplido.
-// Habilitado = primera fecha después de cumplir las N fechas.
+// Cuenta N fechas donde el equipo JUEGA (no LIBRE).
+// Las fechas LIBRE no cuentan como partido cumplido → la sanción se extiende.
 function autoCalcHab() {
   const infoDiv = document.getElementById('rojaHabCalcInfo');
   const habInput = document.getElementById('rojaInputHabFecha');
   if (!infoDiv) return;
 
-  // Obtener equipo y fecha según modo
   let equipo, fechaRoja;
   if (_rojaModalMode === 'new') {
     equipo = (document.getElementById('rojaInputEquipo')?.value || '').trim();
@@ -3572,55 +3630,40 @@ function autoCalcHab() {
   const partidosStr = (document.getElementById('rojaInputPartidos')?.value || '').trim();
   const partidosNum = parseInt(partidosStr);
 
-  // Necesitamos equipo, fecha y partidos numérico para calcular
   if (!equipo || !fechaRoja || !partidosNum || isNaN(partidosNum) || partidosNum <= 0) {
     infoDiv.style.display = 'none';
     return;
   }
 
-  // Necesitamos el fixture cargado
   if (!state.fixture || !state.fixture.length) {
     infoDiv.style.display = '';
     infoDiv.innerHTML = '⏳ Cargando fixture para calcular...';
-    if (!state.fixture) loadFixture().then(() => autoCalcHab());
     return;
   }
 
-  // Buscar todas las fechas del equipo en el fixture
   const eqNorm = equipo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const fechasEquipo = {}; // { fechaNum: 'LIBRE' | 'JUEGA' }
+  const fechasEquipo = {};
 
   state.fixture.forEach(p => {
     if (!p.partido) return;
     const numMatch = String(p.fecha || '').match(/(\d+)/);
     if (!numMatch) return;
     const fn = parseInt(numMatch[1]);
-
     const m = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
     if (!m) return;
     const local = m[1].trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const visit = m[2].trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
     if (local === eqNorm || visit === eqNorm) {
       const oponente = local === eqNorm ? visit : local;
       fechasEquipo[fn] = oponente === 'libre' ? 'LIBRE' : 'JUEGA';
     }
   });
 
-  // Calcular: desde fechaRoja + 1, contar N fechas JUEGA
-  const todasFechas = Object.keys(fechasEquipo).map(Number).sort((a, b) => a - b);
-  const futuras = todasFechas.filter(f => f > fechaRoja);
-
-  let cumplidas = 0;
-  let libresEnMedio = 0;
-  let detalle = [];
-  let habFecha = null;
+  const futuras = Object.keys(fechasEquipo).map(Number).sort((a,b) => a-b).filter(f => f > fechaRoja);
+  let cumplidas = 0, libresEnMedio = 0, detalle = [], habFecha = null;
 
   for (const f of futuras) {
-    if (cumplidas >= partidosNum) {
-      habFecha = f;
-      break;
-    }
+    if (cumplidas >= partidosNum) { habFecha = f; break; }
     if (fechasEquipo[f] === 'LIBRE') {
       libresEnMedio++;
       detalle.push(`F${f}: LIBRE (no cuenta)`);
@@ -3630,24 +3673,21 @@ function autoCalcHab() {
     }
   }
 
-  // Si terminó de recorrer y cumplió exacto al final
   if (habFecha === null && cumplidas >= partidosNum) {
-    // Habilitado en la siguiente fecha después de la última futura
-    const lastFutura = futuras[futuras.length - 1];
-    habFecha = lastFutura + 1;
+    habFecha = futuras[futuras.length - 1] + 1;
   }
 
   if (habFecha !== null) {
     habInput.value = habFecha;
     let infoHtml = `✅ <b>Hab. Fecha ${habFecha}</b> — ${partidosNum} fecha${partidosNum > 1 ? 's' : ''} de sanción`;
     if (libresEnMedio > 0) {
-      infoHtml += ` + ${libresEnMedio} fecha${libresEnMedio > 1 ? 's' : ''} LIBRE que no cuenta${libresEnMedio > 1 ? 'n' : ''}`;
+      infoHtml += ` + ${libresEnMedio} LIBRE que no cuenta${libresEnMedio > 1 ? 'n' : ''}`;
     }
     infoHtml += `<br><span style="font-size:10px;color:var(--text-dimmer)">${detalle.join(' → ')}</span>`;
     infoDiv.innerHTML = infoHtml;
     infoDiv.style.display = '';
   } else {
-    infoDiv.innerHTML = '⚠️ No se encontraron suficientes fechas futuras en el fixture para este equipo';
+    infoDiv.innerHTML = '⚠️ No se encontraron suficientes fechas en el fixture para este equipo';
     infoDiv.style.display = '';
   }
 }
