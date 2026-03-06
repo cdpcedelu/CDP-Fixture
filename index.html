@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-03-05 12:00 ARG -->
+<!-- CDP Fixture — index.html — 2026-03-05 23:50 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1985,7 +1985,10 @@ function showSection(id) {
   if (id === 'clima') loadClima();
   if (id === 'posiciones' && !state.posiciones['zona-a-libres']) loadPosiciones();
   if (id === 'goleadores' && !state.goleadores['libres-a']) loadGoleadores();
-  if (id === 'disciplina' && !state.disciplina['rojas']) loadDisciplina();
+  if (id === 'disciplina') {
+    if (!state.fixture) loadFixture(); // needed for próxima fecha
+    if (!state.disciplina['rojas']) loadDisciplina();
+  }
   if (id === 'sponsors' && !state.sponsors) loadSponsors();
   if (id === 'admin') initAdmin();
 }
@@ -2575,15 +2578,103 @@ function renderDisc(view) {
   let html = '<div class="card">';
 
   if (isRojas) {
+
+    // ── Calcular próxima fecha (primera incompleta del fixture) ──
+    let proximaFecha = 999;
+    if (state.fixture && state.fixture.length) {
+      const groups = {};
+      state.fixture.forEach(p => {
+        const numMatch = String(p.fecha || '0').match(/(\d+)/);
+        const key = numMatch ? parseInt(numMatch[1]) : 0;
+        if (!key) return;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(p);
+      });
+      const fechaNums = Object.keys(groups).map(Number).sort((a,b) => a-b);
+      for (const fn of fechaNums) {
+        const sinLibre = groups[fn].filter(p => !String(p.partido||'').toLowerCase().includes('libre'));
+        const completa = sinLibre.length > 0 && sinLibre.every(p => p.jugado === 'Jugado');
+        if (!completa) { proximaFecha = fn; break; }
+      }
+    }
+
+    // ── Helper: extraer nro de fecha de habilitación ──
+    function getHabFechaNum(r) {
+      const raw = r['Habilitado FECHA'];
+      if (raw === undefined || raw === null || raw === '') return null;
+      if (typeof raw === 'number') {
+        if (raw > 40000) return null; // es fecha calendario, no nro de fecha
+        return raw;
+      }
+      const str = String(raw);
+      // "F3" or "F10" etc
+      const m = str.match(/^F?(\d+)$/i);
+      if (m) return parseInt(m[1]);
+      return null; // fecha calendario — no podemos comparar fácil
+    }
+
+    // ── Helper: sorteo por severidad (más partidos o hab más lejana primero) ──
+    function sortVal(r) {
+      const partidos = r['Partidos'];
+      const habNum = getHabFechaNum(r);
+      // Si tiene hab fecha numérica, usar eso como criterio principal
+      if (habNum !== null) return habNum;
+      // Si tiene partidos como número, usar eso
+      if (typeof partidos === 'number') return partidos;
+      // Si es texto tipo "1 año 1 fecha", poner muy arriba
+      if (typeof partidos === 'string' && partidos.toLowerCase().includes('año')) return 100;
+      return 0;
+    }
+
+    // ── Clasificar: activa vs cumplida ──
+    const activas = [];
+    const cumplidas = [];
+    const sinSancionList = [];
+
+    data.forEach(r => {
+      const partidos = r['Partidos'];
+      const sinSancion = (partidos === undefined || partidos === null || partidos === '');
+      
+      if (sinSancion) {
+        sinSancionList.push(r);
+        return;
+      }
+
+      const habNum = getHabFechaNum(r);
+      // Cumplida si la fecha de habilitación <= próxima fecha
+      if (habNum !== null && habNum <= proximaFecha) {
+        cumplidas.push(r);
+      } else {
+        activas.push(r);
+      }
+    });
+
+    // Ordenar activas: más severa primero (hab más lejana o más partidos)
+    activas.sort((a, b) => sortVal(b) - sortVal(a));
+    // Sin sanción van después de activas
+    cumplidas.sort((a, b) => sortVal(b) - sortVal(a));
+
+    const totalActivas = activas.length + sinSancionList.length;
+
+    // ── Counter badge ──
+    html += `<div style="padding:12px 18px;background:var(--bg3);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px">
+      <span style="font-size:15px">🟥</span>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text)">
+        ${totalActivas} jugador${totalActivas !== 1 ? 'es' : ''} sancionado${totalActivas !== 1 ? 's' : ''}
+      </span>
+      <span style="font-size:11px;color:var(--text-dimmer)">· próxima: Fecha ${proximaFecha}</span>
+    </div>`;
+
     // Admin banner
     if (adminState.loggedIn) {
-      html += `<div style="padding:12px 18px;background:#dcfce7;border-bottom:1px solid #bbf7d0;display:flex;align-items:center;gap:8px">
+      html += `<div style="padding:10px 18px;background:#dcfce7;border-bottom:1px solid #bbf7d0;display:flex;align-items:center;gap:8px">
         <span style="font-size:14px">🔓</span>
         <span style="font-size:12px;font-weight:600;color:#16a34a">Modo admin — tocá una fila para editar la sanción</span>
       </div>`;
     }
 
-    data.forEach((r, idx) => {
+    // ── Helper: render una fila de roja ──
+    function renderRojaRow(r) {
       const fechaHabRaw = r['Habilitado FECHA'];
       const partidos    = r['Partidos'];
       const articulo    = r['Artículo'] || r['Articulo'] || '';
@@ -2599,16 +2690,13 @@ function renderDisc(view) {
             fechaHabStr = 'F' + fechaHabRaw;
           }
         } else {
-          // Handle ISO date strings like "2026-05-11T03:00:00.000Z"
           const str = String(fechaHabRaw);
           if (str.includes('T') && str.includes('-') && str.length > 10) {
             try {
               const d = new Date(str);
               if (!isNaN(d.getTime())) {
                 fechaHabStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
-              } else {
-                fechaHabStr = str;
-              }
+              } else { fechaHabStr = str; }
             } catch(e) { fechaHabStr = str; }
           } else {
             fechaHabStr = str;
@@ -2633,7 +2721,7 @@ function renderDisc(view) {
       const isAdmin = adminState.loggedIn;
       const rowClick = isAdmin ? `onclick="openRojaModal(decodeURIComponent('${rojaData}'))" style="cursor:pointer;${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}"` : `style="${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}"`;
 
-      html += `<div class="disc-row" ${rowClick}>
+      return `<div class="disc-row" ${rowClick}>
         <div class="disc-info" style="flex:1">
           <div class="disc-name">${r['Jugador'] || '-'}</div>
           <div class="disc-team" style="display:flex;align-items:center;gap:5px">
@@ -2649,6 +2737,25 @@ function renderDisc(view) {
         </div>
         ${isAdmin ? '<div style="color:var(--green);font-size:16px;margin-left:6px;flex-shrink:0">✏️</div>' : ''}
       </div>`;
+    }
+
+    // ── Render activas ──
+    activas.forEach(r => { html += renderRojaRow(r); });
+    sinSancionList.forEach(r => { html += renderRojaRow(r); });
+
+    // ── Cumplidas (colapsadas) ──
+    if (cumplidas.length > 0) {
+      html += `<div id="cumplidas-toggle" style="padding:12px 18px;border-top:2px solid var(--border2);cursor:pointer;display:flex;align-items:center;gap:8px" onclick="toggleCumplidas()">
+        <span style="font-size:13px" id="cumplidas-arrow">▶</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text-dimmer);text-transform:uppercase;letter-spacing:0.5px">
+          Ver ${cumplidas.length} sanción${cumplidas.length !== 1 ? 'es' : ''} cumplida${cumplidas.length !== 1 ? 's' : ''}
+        </span>
+        <span style="font-size:10px;color:var(--green);font-weight:600;background:#dcfce7;padding:2px 8px;border-radius:10px">✓ Pueden jugar F${proximaFecha}</span>
+      </div>`;
+      html += `<div id="cumplidas-list" style="display:none;opacity:0.6">`;
+      cumplidas.forEach(r => { html += renderRojaRow(r); });
+      html += `</div>`;
+    }
     });
 
     // Botón agregar nueva roja (solo admin)
@@ -2688,6 +2795,15 @@ function renderDisc(view) {
 
   html += '</div>';
   document.getElementById('discContainer').innerHTML = html;
+}
+
+function toggleCumplidas() {
+  const list = document.getElementById('cumplidas-list');
+  const arrow = document.getElementById('cumplidas-arrow');
+  if (!list) return;
+  const visible = list.style.display !== 'none';
+  list.style.display = visible ? 'none' : '';
+  if (arrow) arrow.textContent = visible ? '▶' : '▼';
 }
 
 // ============================================================
