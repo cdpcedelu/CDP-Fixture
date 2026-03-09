@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-03-06 14:10 ARG -->
+<!-- CDP Fixture — index.html — 2026-03-09 16:00 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3137,6 +3137,7 @@ async function adminOpenMatch(rowIndex) {
 
   // Load goleadores from Apps Script
   try {
+      const partidoEnc = encodeURIComponent(match.partido || '');
       const url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
       const res = await fetch(url);
       const json = await res.json();
