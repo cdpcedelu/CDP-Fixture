@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-03-09 16:00 ARG -->
+<!-- CDP Fixture — index.html — 2026-04-09 16:30 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -511,6 +511,19 @@
 
   .diff-pos { color: var(--green); font-weight: 600; }
   .diff-neg { color: var(--red); font-weight: 600; }
+
+  /* Badge diferencia de gol en tabla posiciones */
+  .dif-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-left: 6px;
+    display: inline-block;
+  }
+  .dif-badge.pos { background: #dcfce7; color: #16a34a; }
+  .dif-badge.neg { background: #fee2e2; color: #dc2626; }
+  .dif-badge.zero { background: #e2e8f0; color: #64748b; }
 
   /* GOLEADORES */
   .scorer-row {
@@ -1970,7 +1983,8 @@ let state = {
   currentPos: 'general-libres',
   currentScorers: 'libres-a',
   currentDisc: 'rojas',
-  currentEquipo: ''
+  currentEquipo: '',
+  currentCategoria: 'libres' // 'libres' | 'senior' - sincroniza entre secciones
 };
 
 // ============================================================
@@ -1981,6 +1995,20 @@ function showSection(id) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
   document.getElementById('nav-' + id).classList.add('active');
+
+  // Sincronizar categoría al cambiar de sección
+  if (id === 'fixture') {
+    syncFixtureToCategoria();
+  }
+  if (id === 'posiciones') {
+    syncPosicionesToCategoria();
+  }
+  if (id === 'goleadores') {
+    syncGoleadoresToCategoria();
+  }
+  if (id === 'disciplina') {
+    syncDisciplinaToCategoria();
+  }
 
   // Lazy load
   if (id === 'fixture' && !state.fixture) loadFixture();
@@ -1993,6 +2021,71 @@ function showSection(id) {
   }
   if (id === 'sponsors' && !state.sponsors) loadSponsors();
   if (id === 'admin') initAdmin();
+}
+
+// ── Funciones de sincronización de categoría ──
+function syncFixtureToCategoria() {
+  const filter = state.currentCategoria === 'senior' ? 'senior' : 'libres';
+  if (state.currentFixtureFilter !== filter && state.currentFixtureFilter !== 'todos') {
+    state.currentFixtureFilter = filter;
+    // Actualizar botón activo
+    document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`#fixtureFilters .filter-tab[onclick*="'${filter}'"]`);
+    if (btn) btn.classList.add('active');
+    if (state.fixture) renderFixture();
+  } else if (state.currentFixtureFilter === 'todos') {
+    // Si está en "todos", igual actualizar visual si hay data
+  }
+}
+
+function syncPosicionesToCategoria() {
+  const targetView = state.currentCategoria === 'senior' ? 'general-senior' : 'zona-a-libres';
+  if (state.currentPos !== targetView) {
+    state.currentPos = targetView;
+    // Actualizar botón activo
+    document.querySelectorAll('#posTab .tab-pill').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`#posTab .tab-pill[onclick*="'${targetView}'"]`);
+    if (btn) btn.classList.add('active');
+    if (state.posiciones[targetView]) {
+      renderPos(targetView);
+    } else {
+      loadPosView(targetView);
+    }
+  }
+}
+
+function syncGoleadoresToCategoria() {
+  const targetView = state.currentCategoria === 'senior' ? 'senior' : 'libres-a';
+  if (state.currentScorers !== targetView && !(state.currentCategoria === 'libres' && (state.currentScorers === 'libres-a' || state.currentScorers === 'libres-b'))) {
+    state.currentScorers = targetView;
+    // Actualizar botón activo
+    document.querySelectorAll('#section-goleadores .tab-pill').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`#section-goleadores .tab-pill[onclick*="'${targetView}'"]`);
+    if (btn) btn.classList.add('active');
+    if (state.goleadores[targetView]) {
+      renderScorers(targetView);
+    } else {
+      loadScorersView(targetView);
+    }
+  }
+}
+
+function syncDisciplinaToCategoria() {
+  // Solo sincronizar amarillas, rojas siempre queda igual
+  if (state.currentDisc !== 'rojas') {
+    const targetView = state.currentCategoria === 'senior' ? 'amarillas-senior' : 'amarillas-a';
+    if (state.currentDisc !== targetView && !(state.currentCategoria === 'libres' && (state.currentDisc === 'amarillas-a' || state.currentDisc === 'amarillas-b'))) {
+      state.currentDisc = targetView;
+      document.querySelectorAll('#section-disciplina .tab-pill').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelector(`#section-disciplina .tab-pill[onclick*="'${targetView}'"]`);
+      if (btn) btn.classList.add('active');
+      if (state.disciplina[targetView]) {
+        renderDisc(targetView);
+      } else {
+        loadDiscView(targetView);
+      }
+    }
+  }
 }
 
 // ============================================================
@@ -2073,6 +2166,9 @@ function filterFixture(filter, btn) {
   document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentFixtureFilter = filter;
+  // Sincronizar categoría global
+  if (filter === 'senior') state.currentCategoria = 'senior';
+  else if (filter === 'libres') state.currentCategoria = 'libres';
   renderFixture();
 }
 
@@ -2321,6 +2417,9 @@ async function showPos(view, btn) {
   document.querySelectorAll('#posTab .tab-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentPos = view;
+  // Sincronizar categoría global
+  if (view === 'general-senior') state.currentCategoria = 'senior';
+  else state.currentCategoria = 'libres';
   if (state.posiciones[view]) {
     renderPos(view);
   } else {
@@ -2386,6 +2485,7 @@ function renderPos(view) {
     const gf = row['GF'] ?? '-';
     const gc = row['GC'] ?? '-';
     const dif = (row['Diferencia'] || row['Dif'] || row['DIF']);
+    const difNum = parseInt(dif) || 0;
 
     let posClass = '';
     if (isSenior || isGeneral) {
@@ -2403,12 +2503,14 @@ function renderPos(view) {
       else if (i < 10) posClass = 'mid';
     }
     const difClass = dif > 0 ? 'diff-pos' : (dif < 0 ? 'diff-neg' : '');
+    const difBadgeClass = difNum > 0 ? 'pos' : (difNum < 0 ? 'neg' : 'zero');
+    const difBadgeText = difNum > 0 ? '+' + difNum : String(difNum);
     html += `<tr>
       <td><div class="pos-num ${posClass}">${pos}</div></td>
       <td>
         <div class="team-cell">
           ${getEscudo(equipo, 28)}
-          <div class="team-name-cell">${equipo}</div>
+          <div class="team-name-cell">${equipo}<span class="dif-badge ${difBadgeClass}">${difBadgeText}</span></div>
         </div>
       </td>
       <td class="stat-cell">${pj}</td>
@@ -2443,6 +2545,9 @@ async function showScorers(view, btn) {
   document.querySelectorAll('#section-goleadores .tab-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentScorers = view;
+  // Sincronizar categoría global
+  if (view === 'senior') state.currentCategoria = 'senior';
+  else state.currentCategoria = 'libres';
   if (state.goleadores[view]) {
     renderScorers(view);
   } else {
@@ -2528,6 +2633,9 @@ async function showDisc(view, btn) {
   document.querySelectorAll('#section-disciplina .tab-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentDisc = view;
+  // Sincronizar categoría global (solo para amarillas, rojas son mixtas)
+  if (view === 'amarillas-senior') state.currentCategoria = 'senior';
+  else if (view === 'amarillas-a' || view === 'amarillas-b') state.currentCategoria = 'libres';
   if (state.disciplina[view]) {
     renderDisc(view);
   } else {
