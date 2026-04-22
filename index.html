@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-09 16:30 ARG -->
+<!-- CDP Fixture — index.html — 2026-04-22 17:00 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -28,7 +28,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
+  /* ═══ TEMAS ═══ */
+  :root, [data-theme="light"] {
     --green: #16a34a;
     --green-light: #22c55e;
     --green-xlight: #dcfce7;
@@ -48,6 +49,122 @@
     --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
   }
+
+  [data-theme="dark"] {
+    --green: #22c55e;
+    --green-light: #4ade80;
+    --green-xlight: rgba(34, 197, 94, 0.15);
+    --green-glow: rgba(34, 197, 94, 0.2);
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #334155;
+    --bg4: #475569;
+    --text: #f1f5f9;
+    --text-dim: #cbd5e1;
+    --text-dimmer: #94a3b8;
+    --border: rgba(34, 197, 94, 0.3);
+    --border2: #334155;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --gold: #f59e0b;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  [data-theme="green"] {
+    --green: #059669;
+    --green-light: #10b981;
+    --green-xlight: #d1fae5;
+    --green-glow: rgba(5, 150, 105, 0.1);
+    --bg: #ecfdf5;
+    --bg2: #f0fdf4;
+    --bg3: #dcfce7;
+    --bg4: #bbf7d0;
+    --text: #064e3b;
+    --text-dim: #047857;
+    --text-dimmer: #6ee7b7;
+    --border: rgba(5, 150, 105, 0.25);
+    --border2: #a7f3d0;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --gold: #b45309;
+    --shadow: 0 1px 3px rgba(5,150,105,0.1), 0 4px 16px rgba(5,150,105,0.08);
+    --shadow-sm: 0 1px 2px rgba(5,150,105,0.08);
+  }
+
+  [data-theme="blue"] {
+    --green: #2563eb;
+    --green-light: #3b82f6;
+    --green-xlight: #dbeafe;
+    --green-glow: rgba(37, 99, 235, 0.1);
+    --bg: #eff6ff;
+    --bg2: #f8faff;
+    --bg3: #dbeafe;
+    --bg4: #bfdbfe;
+    --text: #1e3a5f;
+    --text-dim: #1d4ed8;
+    --text-dimmer: #93c5fd;
+    --border: rgba(37, 99, 235, 0.25);
+    --border2: #93c5fd;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --gold: #b45309;
+    --shadow: 0 1px 3px rgba(37,99,235,0.1), 0 4px 16px rgba(37,99,235,0.08);
+    --shadow-sm: 0 1px 2px rgba(37,99,235,0.08);
+  }
+
+  /* ═══ THEME SWITCHER ═══ */
+  .theme-toggle {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 60;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .theme-menu {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    background: var(--bg2);
+    border: 1.5px solid var(--border2);
+    border-radius: 12px;
+    padding: 8px 0;
+    z-index: 61;
+    box-shadow: var(--shadow);
+    display: none;
+    min-width: 160px;
+  }
+  .theme-menu.open { display: block; }
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .theme-option:hover { background: var(--bg3); }
+  .theme-option.active { color: var(--green); font-weight: 700; }
+  .theme-option .theme-icon { font-size: 16px; }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -1813,7 +1930,76 @@
 
 <button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
+<!-- Theme Switcher -->
+<button class="theme-toggle" id="themeToggle" onclick="toggleThemeMenu()" title="Cambiar tema">⚙️</button>
+<div class="theme-menu" id="themeMenu">
+  <div class="theme-option" onclick="setTheme('auto')" data-theme="auto">
+    <span class="theme-icon">🌓</span> Automático
+  </div>
+  <div class="theme-option" onclick="setTheme('light')" data-theme="light">
+    <span class="theme-icon">☀️</span> Claro
+  </div>
+  <div class="theme-option" onclick="setTheme('dark')" data-theme="dark">
+    <span class="theme-icon">🌙</span> Oscuro
+  </div>
+  <div class="theme-option" onclick="setTheme('green')" data-theme="green">
+    <span class="theme-icon">🌿</span> Verde
+  </div>
+  <div class="theme-option" onclick="setTheme('blue')" data-theme="blue">
+    <span class="theme-icon">💧</span> Azul
+  </div>
+</div>
+
 <script>
+// ============================================================
+// THEME MANAGEMENT
+// ============================================================
+function getAutoTheme() {
+  const hour = new Date().getHours();
+  return (hour >= 20 || hour < 7) ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+  const effectiveTheme = theme === 'auto' ? getAutoTheme() : theme;
+  document.documentElement.setAttribute('data-theme', effectiveTheme);
+  // Update active state in menu
+  document.querySelectorAll('.theme-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.theme === theme);
+  });
+}
+
+function setTheme(theme) {
+  localStorage.setItem('cdp_theme', theme);
+  applyTheme(theme);
+  closeThemeMenu();
+}
+
+function toggleThemeMenu() {
+  const menu = document.getElementById('themeMenu');
+  menu.classList.toggle('open');
+}
+
+function closeThemeMenu() {
+  document.getElementById('themeMenu').classList.remove('open');
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#themeToggle') && !e.target.closest('#themeMenu')) {
+    closeThemeMenu();
+  }
+});
+
+// Init theme on load
+(function initTheme() {
+  const saved = localStorage.getItem('cdp_theme') || 'auto';
+  applyTheme(saved);
+  // Check auto theme every minute
+  if (saved === 'auto') {
+    setInterval(() => applyTheme('auto'), 60000);
+  }
+})();
+
 // ============================================================
 // ESCUDOS DE EQUIPOS (base64)
 // ============================================================
