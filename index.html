@@ -48,27 +48,31 @@
     --gold: #b45309;
     --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+    --header-bg: rgba(255,255,255,0.95);
+    --nav-bg: #ffffff;
   }
 
   [data-theme="dark"] {
-    --green: #22c55e;
-    --green-light: #4ade80;
-    --green-xlight: rgba(34, 197, 94, 0.15);
-    --green-glow: rgba(34, 197, 94, 0.2);
-    --bg: #0f172a;
-    --bg2: #1e293b;
-    --bg3: #334155;
-    --bg4: #475569;
-    --text: #f1f5f9;
-    --text-dim: #cbd5e1;
+    --green: #4ade80;
+    --green-light: #86efac;
+    --green-xlight: rgba(74, 222, 128, 0.15);
+    --green-glow: rgba(74, 222, 128, 0.2);
+    --bg: #0a0f1a;
+    --bg2: #141c2b;
+    --bg3: #1e293b;
+    --bg4: #334155;
+    --text: #f8fafc;
+    --text-dim: #e2e8f0;
     --text-dimmer: #94a3b8;
-    --border: rgba(34, 197, 94, 0.3);
-    --border2: #334155;
+    --border: rgba(74, 222, 128, 0.3);
+    --border2: #2d3a4f;
     --red: #f87171;
     --yellow: #fbbf24;
     --gold: #f59e0b;
-    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.5);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+    --header-bg: rgba(20,28,43,0.95);
+    --nav-bg: #141c2b;
   }
 
   [data-theme="green"] {
@@ -76,20 +80,22 @@
     --green-light: #10b981;
     --green-xlight: #d1fae5;
     --green-glow: rgba(5, 150, 105, 0.1);
-    --bg: #ecfdf5;
-    --bg2: #f0fdf4;
-    --bg3: #dcfce7;
-    --bg4: #bbf7d0;
-    --text: #064e3b;
-    --text-dim: #047857;
-    --text-dimmer: #6ee7b7;
+    --bg: #f0fdf4;
+    --bg2: #ffffff;
+    --bg3: #ecfdf5;
+    --bg4: #d1fae5;
+    --text: #14532d;
+    --text-dim: #166534;
+    --text-dimmer: #4ade80;
     --border: rgba(5, 150, 105, 0.25);
-    --border2: #a7f3d0;
+    --border2: #bbf7d0;
     --red: #dc2626;
     --yellow: #d97706;
     --gold: #b45309;
-    --shadow: 0 1px 3px rgba(5,150,105,0.1), 0 4px 16px rgba(5,150,105,0.08);
-    --shadow-sm: 0 1px 2px rgba(5,150,105,0.08);
+    --shadow: 0 1px 3px rgba(5,150,105,0.12), 0 4px 16px rgba(5,150,105,0.1);
+    --shadow-sm: 0 1px 2px rgba(5,150,105,0.1);
+    --header-bg: rgba(255,255,255,0.95);
+    --nav-bg: #ffffff;
   }
 
   [data-theme="blue"] {
@@ -97,20 +103,22 @@
     --green-light: #3b82f6;
     --green-xlight: #dbeafe;
     --green-glow: rgba(37, 99, 235, 0.1);
-    --bg: #eff6ff;
-    --bg2: #f8faff;
-    --bg3: #dbeafe;
-    --bg4: #bfdbfe;
+    --bg: #f0f7ff;
+    --bg2: #ffffff;
+    --bg3: #eff6ff;
+    --bg4: #dbeafe;
     --text: #1e3a5f;
-    --text-dim: #1d4ed8;
-    --text-dimmer: #93c5fd;
+    --text-dim: #1e40af;
+    --text-dimmer: #60a5fa;
     --border: rgba(37, 99, 235, 0.25);
-    --border2: #93c5fd;
+    --border2: #bfdbfe;
     --red: #dc2626;
     --yellow: #d97706;
     --gold: #b45309;
-    --shadow: 0 1px 3px rgba(37,99,235,0.1), 0 4px 16px rgba(37,99,235,0.08);
-    --shadow-sm: 0 1px 2px rgba(37,99,235,0.08);
+    --shadow: 0 1px 3px rgba(37,99,235,0.12), 0 4px 16px rgba(37,99,235,0.1);
+    --shadow-sm: 0 1px 2px rgba(37,99,235,0.1);
+    --header-bg: rgba(255,255,255,0.95);
+    --nav-bg: #ffffff;
   }
 
   /* ═══ THEME SWITCHER ═══ */
@@ -158,13 +166,28 @@
     font-family: 'Barlow', sans-serif;
     font-size: 13px;
     font-weight: 500;
-    color: var(--text);
+    color: #1e293b;
     cursor: pointer;
     transition: background 0.15s;
   }
-  .theme-option:hover { background: var(--bg3); }
-  .theme-option.active { color: var(--green); font-weight: 700; }
+  .theme-option:hover { background: #f1f5f9; }
+  .theme-option.active { color: #16a34a; font-weight: 700; }
   .theme-option .theme-icon { font-size: 16px; }
+  
+  /* En tema oscuro, invertir colores del menú */
+  [data-theme="dark"] .theme-menu {
+    background: #1e293b;
+    border-color: #334155;
+  }
+  [data-theme="dark"] .theme-option {
+    color: #f1f5f9;
+  }
+  [data-theme="dark"] .theme-option:hover {
+    background: #334155;
+  }
+  [data-theme="dark"] .theme-option.active {
+    color: #4ade80;
+  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -182,7 +205,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(255,255,255,0.95);
+    background: var(--header-bg);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border2);
     box-shadow: var(--shadow-sm);
@@ -248,7 +271,7 @@
 
   /* NAV */
   .nav {
-    background: white;
+    background: var(--nav-bg);
     border-bottom: 1px solid var(--border2);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1994,11 +2017,13 @@ document.addEventListener('click', function(e) {
 (function initTheme() {
   const saved = localStorage.getItem('cdp_theme') || 'auto';
   applyTheme(saved);
-  // Check auto theme every minute
-  if (saved === 'auto') {
-    setInterval(() => applyTheme('auto'), 60000);
-  }
 })();
+
+// Re-aplicar tema periódicamente (para auto) y asegurar persistencia
+setInterval(function() {
+  const saved = localStorage.getItem('cdp_theme') || 'auto';
+  applyTheme(saved);
+}, 60000);
 
 // ============================================================
 // ESCUDOS DE EQUIPOS (base64)
@@ -3724,13 +3749,16 @@ if ('serviceWorker' in navigator) {
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
+  // Re-aplicar tema guardado al cargar
+  const savedTheme = localStorage.getItem('cdp_theme') || 'auto';
+  applyTheme(savedTheme);
   loadFixture();
 });
 </script>
 
 <!-- ═══ MODAL: Completar Sanción Tarjeta Roja ═══ -->
 <div id="rojaModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
-  <div style="background:white;border-radius:16px;width:100%;max-width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+  <div style="background:var(--bg2);border-radius:16px;width:100%;max-width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
       <span style="font-size:24px">🟥</span>
       <div style="flex:1">
