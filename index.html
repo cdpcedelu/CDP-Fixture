@@ -84,9 +84,9 @@
     --bg2: #ffffff;
     --bg3: #ecfdf5;
     --bg4: #d1fae5;
-    --text: #14532d;
-    --text-dim: #166534;
-    --text-dimmer: #4ade80;
+    --text: #0f172a;
+    --text-dim: #334155;
+    --text-dimmer: #64748b;
     --border: rgba(5, 150, 105, 0.25);
     --border2: #bbf7d0;
     --red: #dc2626;
@@ -107,9 +107,9 @@
     --bg2: #ffffff;
     --bg3: #eff6ff;
     --bg4: #dbeafe;
-    --text: #1e3a5f;
-    --text-dim: #1e40af;
-    --text-dimmer: #60a5fa;
+    --text: #0f172a;
+    --text-dim: #334155;
+    --text-dimmer: #64748b;
     --border: rgba(37, 99, 235, 0.25);
     --border2: #bfdbfe;
     --red: #dc2626;
@@ -1300,9 +1300,9 @@
     padding: 16px;
   }
   .clima-card {
-    background: var(--bg2);
+    background: #ffffff;
     border-radius: 16px;
-    border: 2px solid var(--border2);
+    border: 2px solid #e2e8f0;
     padding: 14px 12px;
     text-align: center;
     transition: transform 0.15s, box-shadow 0.15s;
@@ -1310,7 +1310,7 @@
   }
   .clima-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
   .clima-card.highlight {
-    border-color: var(--green);
+    border-color: #16a34a;
     background: linear-gradient(135deg, #f0fdf4, #dcfce7);
     box-shadow: 0 4px 16px rgba(22,163,74,.15);
   }
@@ -1320,14 +1320,14 @@
     box-shadow: 0 4px 16px rgba(59,130,246,.15);
   }
   .clima-card.highlight-storm {
-    border-color: var(--red);
+    border-color: #dc2626;
     background: linear-gradient(135deg, #fef2f2, #fee2e2);
     box-shadow: 0 4px 16px rgba(220,38,38,.15);
   }
   .clima-badge {
     position: absolute;
     top: -8px; right: -8px;
-    background: var(--green);
+    background: #16a34a;
     color: white;
     font-size: 10px;
     font-weight: 700;
@@ -1337,12 +1337,12 @@
     letter-spacing: 0.5px;
   }
   .clima-badge.badge-rain { background: #3b82f6; }
-  .clima-badge.badge-storm { background: var(--red); }
+  .clima-badge.badge-storm { background: #dc2626; }
   .clima-dia {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-dimmer);
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 2px;
@@ -1350,7 +1350,7 @@
   .clima-fecha-num {
     font-size: 22px;
     font-weight: 700;
-    color: var(--text);
+    color: #0f172a;
     font-family: 'Bebas Neue', sans-serif;
     line-height: 1;
     margin-bottom: 6px;
@@ -1359,17 +1359,17 @@
   .clima-temp {
     font-size: 18px;
     font-weight: 700;
-    color: var(--text);
+    color: #0f172a;
     font-family: 'Barlow Condensed', sans-serif;
     margin-bottom: 8px;
   }
-  .clima-temp span { font-size: 13px; color: var(--text-dimmer); font-weight: 400; }
+  .clima-temp span { font-size: 13px; color: #64748b; font-weight: 400; }
   .clima-stats {
     display: flex;
     flex-direction: column;
     gap: 5px;
     margin-top: 6px;
-    border-top: 1px solid var(--border2);
+    border-top: 1px solid #e2e8f0;
     padding-top: 8px;
   }
   .clima-stat {
@@ -1377,21 +1377,21 @@
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    color: var(--text-dim);
+    color: #475569;
   }
   .clima-stat-val {
     font-weight: 700;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 13px;
-    color: var(--text);
+    color: #0f172a;
   }
   .clima-stat-val.rain-high { color: #2563eb; }
   .clima-stat-val.rain-med  { color: #7c3aed; }
-  .clima-stat-val.rain-low  { color: var(--green); }
+  .clima-stat-val.rain-low  { color: #16a34a; }
   .clima-lluvia-bar {
     width: 100%;
     height: 6px;
-    background: var(--bg4);
+    background: #e2e8f0;
     border-radius: 3px;
     overflow: hidden;
     margin-top: 3px;
@@ -1404,7 +1404,7 @@
   }
   .clima-desc {
     font-size: 11px;
-    color: var(--text-dimmer);
+    color: #64748b;
     margin-top: 4px;
     font-style: italic;
   }
@@ -1432,10 +1432,10 @@
   }
   .clima-alerta.alerta-storm {
     background: #fef2f2;
-    border-color: var(--red);
+    border-color: #dc2626;
   }
   .clima-alerta-icon { font-size: 22px; flex-shrink: 0; }
-  .clima-alerta-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .clima-alerta-text { font-size: 13px; color: #0f172a; line-height: 1.4; }
   .clima-alerta-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
   .clima-updated {
     text-align: center;
