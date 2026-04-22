@@ -126,22 +126,26 @@
     position: fixed;
     bottom: 70px;
     right: 20px;
-    width: 42px;
-    height: 42px;
+    height: 38px;
+    padding: 0 14px;
     background: var(--bg2);
     border: 1.5px solid var(--border2);
-    border-radius: 50%;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    gap: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
     cursor: pointer;
     z-index: 60;
     box-shadow: var(--shadow);
     transition: transform 0.2s, box-shadow 0.2s;
   }
   .theme-toggle:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
   .theme-menu {
@@ -1954,7 +1958,7 @@
 <button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <!-- Theme Switcher -->
-<button class="theme-toggle" id="themeToggle" onclick="toggleThemeMenu()" title="Cambiar tema">⚙️</button>
+<button class="theme-toggle" id="themeToggle" onclick="toggleThemeMenu()" title="Cambiar tema">⚙️ Tema</button>
 <div class="theme-menu" id="themeMenu">
   <div class="theme-option" onclick="setTheme('auto')" data-theme="auto">
     <span class="theme-icon">🌓</span> Automático
