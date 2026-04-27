@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-22 17:00 ARG -->
+<!-- CDP Fixture — index.html — 2026-04-27 18:20 ARG -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -2772,19 +2772,26 @@ async function showScorers(view, btn) {
   }
 }
 
-async function loadScorersView(view) {
+async function loadScorersView(view, verTodos) {
   try {
-    const json = await fetchAPI('getScorers', { vista: view });
+    var params = { vista: view };
+    if (verTodos) params.verTodos = 'true';
+    var json = await fetchAPI('getScorers', params);
     if (!json.ok) throw new Error(json.error || 'Error');
     // Mapear al formato que espera renderScorers
-    state.goleadores[view] = json.scorers.map(s => ({
-      'Jugador': s.jugador,
-      'Equipo':  s.equipo,
-      'Total':   s.total
-    }));
-    renderScorers(view);
+    state.goleadores[view] = json.scorers.map(function(s) {
+      return {
+        'Jugador': s.jugador,
+        'Equipo':  s.equipo,
+        'Total':   s.total
+      };
+    });
+    // Guardar info de "ver más"
+    state.goleadoresHayMas = state.goleadoresHayMas || {};
+    state.goleadoresHayMas[view] = { hayMas: json.hayMas, totalConUno: json.totalConUno };
+    renderScorers(view, verTodos);
   } catch(e) {
-    showError('scorersContainer', 'No se pudo cargar goleadores', () => loadScorersView(view));
+    showError('scorersContainer', 'No se pudo cargar goleadores', function() { loadScorersView(view); });
   }
 }
 
@@ -2797,34 +2804,51 @@ function filterScorers(query) {
   });
 }
 
-function renderScorers(view) {
-  const data = state.goleadores[view];
+function renderScorers(view, verTodos) {
+  var data = state.goleadores[view];
   if (!data || !data.length) {
     document.getElementById('scorersContainer').innerHTML = '<div class="empty">Sin datos disponibles</div>';
     return;
   }
 
-  let html = '<div class="card">';
-  data.forEach((p, i) => {
-    const rank = i + 1;
-    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
-    const goals = p['Total'] || 0;
-    html += `<div class="scorer-row">
-      <div class="scorer-rank ${rankClass}">${rank}</div>
-      <div class="scorer-info">
-        <div class="scorer-name">${p['Jugador'] || '-'}</div>
-        <div class="scorer-team" style="display:flex;align-items:center;gap:5px">
-          ${getEscudo(p['Equipo'] || '', 18)}
-          <span>${p['Equipo'] || '-'}</span>
-        </div>
-      </div>
-      <div>
-        <div class="scorer-goals">${goals}</div>
-        <div class="goals-label">goles</div>
-      </div>
-    </div>`;
+  var html = '<div class="card">';
+  data.forEach(function(p, i) {
+    var rank = i + 1;
+    var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    var goals = p['Total'] || 0;
+    html += '<div class="scorer-row">' +
+      '<div class="scorer-rank ' + rankClass + '">' + rank + '</div>' +
+      '<div class="scorer-info">' +
+        '<div class="scorer-name">' + (p['Jugador'] || '-') + '</div>' +
+        '<div class="scorer-team" style="display:flex;align-items:center;gap:5px">' +
+          getEscudo(p['Equipo'] || '', 18) +
+          '<span>' + (p['Equipo'] || '-') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="scorer-goals">' + goals + '</div>' +
+        '<div class="goals-label">goles</div>' +
+      '</div>' +
+    '</div>';
   });
   html += '</div>';
+  
+  // Botón "Ver más" si hay jugadores con 1 gol
+  var hayMasInfo = state.goleadoresHayMas && state.goleadoresHayMas[view];
+  if (hayMasInfo && hayMasInfo.hayMas && !verTodos) {
+    html += '<div style="text-align:center;margin-top:16px">' +
+      '<button class="btn-primary" onclick="loadScorersView(\'' + view + '\', true)" style="font-size:13px;padding:10px 20px">' +
+        'Ver ' + hayMasInfo.totalConUno + ' jugadores con 1 gol' +
+      '</button>' +
+    '</div>';
+  } else if (verTodos && hayMasInfo && hayMasInfo.totalConUno > 0) {
+    html += '<div style="text-align:center;margin-top:16px">' +
+      '<button class="btn-secondary" onclick="loadScorersView(\'' + view + '\', false)" style="font-size:13px;padding:10px 20px">' +
+        'Ocultar jugadores con 1 gol' +
+      '</button>' +
+    '</div>';
+  }
+  
   document.getElementById('scorersContainer').innerHTML = html;
   document.getElementById('scorerSearchWrap').style.display = '';
   document.getElementById('scorerSearch').value = '';
