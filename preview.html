@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 20:00 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 20:20 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -2807,22 +2807,53 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     padding: 12px;
     z-index: 500;
-    min-width: 220px;
-    max-width: 280px;
+    min-width: 240px;
+    max-width: 320px;
   }
   [data-theme="dark"] .ultimos-popup {
     background: #1e293b;
     border-color: #334155;
   }
+  .ultimos-popup-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  [data-theme="dark"] .ultimos-popup-header {
+    border-bottom-color: #334155;
+  }
+  .ultimos-popup-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+  .ultimos-popup-title-wrap {
+    flex: 1;
+    min-width: 0;
+  }
   .ultimos-popup-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 14px;
-    color: #64748b;
-    margin-bottom: 8px;
+    font-size: 16px;
+    color: #0f172a;
     letter-spacing: 1px;
+    margin: 0;
   }
   [data-theme="dark"] .ultimos-popup-title {
+    color: #f1f5f9;
+  }
+  .ultimos-popup-sub {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+  [data-theme="dark"] .ultimos-popup-sub {
     color: #94a3b8;
+  }
+  .ultimos-popup-list {
+    margin-top: 4px;
   }
   .ultimos-item {
     display: flex;
@@ -4459,12 +4490,12 @@ function filterByEquipo(equipo) {
         <div class="partido-header">
           <div class="partido-equipo-row">
             ${escudoLocal}
-            <div class="partido-equipo-nombre">${escapeHTML(local)}${getPosBadgeHtml(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
+            <div class="partido-equipo-nombre">${escapeHTML(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
             <div class="partido-equipo-score">${jugado ? p.golesL : '-'}</div>
           </div>
           <div class="partido-equipo-row">
             ${escudoVisit}
-            <div class="partido-equipo-nombre">${escapeHTML(visitante)}${getPosBadgeHtml(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
+            <div class="partido-equipo-nombre">${escapeHTML(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
             <div class="partido-equipo-score">${jugado ? p.golesV : '-'}</div>
           </div>
         </div>
@@ -4628,10 +4659,11 @@ function renderPos(view) {
     }
     
     html += '<tr>' +
-      '<td><div class="pos-num ' + posClass + '">' + pos + '</div>' + deltaHtml + '</td>' +
+      '<td><div class="pos-num ' + posClass + '">' + pos + '</div></td>' +
       '<td>' +
         '<div class="team-cell">' +
           getEscudo(equipo, 28) +
+          deltaHtml +
           '<div class="team-name-cell">' +
             '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
             '<span class="team-stats-row"><span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' + rachaHtml + '</span>' +
@@ -4936,8 +4968,48 @@ function showUltimosPartidos(equipo, btn) {
   if (!partidos || !partidos.length) return;
   
   var ultimos = partidos.slice(0, 3);
+  var ultimoPartido = ultimos[0];
   
-  var html = '<div class="ultimos-popup-title">Últimos partidos de ' + escapeHTML(equipoKey) + '</div>';
+  // Obtener info de posición actual y anterior
+  var posData = getPosicionEquipo(equipoKey);
+  var posActual = posData ? posData.pos : null;
+  var vista = posData ? posData.vista : null;
+  var posPrev = vista ? getPreviousPosition(equipoKey, vista) : null;
+  
+  // Generar encabezado contextual
+  var headerIcon = '📊';
+  var headerText = escapeHTML(equipoKey);
+  var subText = '';
+  
+  if (posActual && posPrev !== null && posPrev !== undefined && ultimoPartido) {
+    var delta = posPrev - posActual; // positivo = subió
+    var resTexto = ultimoPartido.resultado === 'W' ? 'ganar' : (ultimoPartido.resultado === 'D' ? 'empatar' : 'perder');
+    var goles = ultimoPartido.goles;
+    var rival = ultimoPartido.rival;
+    
+    if (delta > 0) {
+      headerIcon = '📈';
+      subText = 'Subió ' + delta + ' puesto' + (delta > 1 ? 's' : '') + ' (' + posPrev + '° → ' + posActual + '°) tras ' + resTexto + ' ' + goles + ' vs ' + escapeHTML(rival);
+    } else if (delta < 0) {
+      headerIcon = '📉';
+      subText = 'Bajó ' + Math.abs(delta) + ' puesto' + (Math.abs(delta) > 1 ? 's' : '') + ' (' + posPrev + '° → ' + posActual + '°) tras ' + resTexto + ' ' + goles + ' vs ' + escapeHTML(rival);
+    } else {
+      headerIcon = '➡️';
+      subText = 'Se mantuvo ' + posActual + '° tras ' + resTexto + ' ' + goles + ' vs ' + escapeHTML(rival);
+    }
+  } else if (posActual) {
+    subText = 'Actualmente en ' + posActual + '° posición';
+  }
+  
+  var html = '<div class="ultimos-popup-header">' +
+    '<span class="ultimos-popup-icon">' + headerIcon + '</span>' +
+    '<div class="ultimos-popup-title-wrap">' +
+      '<div class="ultimos-popup-title">' + headerText + '</div>' +
+      (subText ? '<div class="ultimos-popup-sub">' + subText + '</div>' : '') +
+    '</div>' +
+  '</div>';
+  
+  html += '<div class="ultimos-popup-list">';
   ultimos.forEach(function(p) {
     var resClass = p.resultado === 'W' ? 'win' : (p.resultado === 'D' ? 'draw' : 'loss');
     html += '<div class="ultimos-item">' +
@@ -4946,6 +5018,7 @@ function showUltimosPartidos(equipo, btn) {
       '<span class="ultimos-res ' + resClass + '">' + p.goles + '</span>' +
     '</div>';
   });
+  html += '</div>';
   
   // Crear popup
   var popup = document.createElement('div');
