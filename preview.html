@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 20:45 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 20:52 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -612,11 +612,11 @@
   }
 
   .partido-equipo-score {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 24px;
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 28px;
     font-weight: 400;
     color: var(--text);
-    min-width: 28px;
+    min-width: 32px;
     text-align: center;
   }
 
@@ -630,6 +630,24 @@
     justify-content: center;
     align-items: center;
     min-width: 80px;
+    position: relative;
+  }
+  .partido-sidebar.jugado {
+    min-width: 100px;
+  }
+  .partido-sidebar .jugado-stamp {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    pointer-events: none;
+    white-space: nowrap;
   }
   [data-theme="dark"] .partido-sidebar {
     background: linear-gradient(135deg, #334155 0%, #475569 100%);
@@ -4502,7 +4520,8 @@ function filterByEquipo(equipo) {
       if (canchaMatch) canchaStr = 'Cancha ' + canchaMatch[1];
     }
     const sidebarHtml = (horaStr || canchaStr) ? `
-      <div class="partido-sidebar">
+      <div class="partido-sidebar${jugado ? ' jugado' : ''}">
+        ${jugado ? '<div class="jugado-stamp">JUGADO</div>' : ''}
         ${horaStr ? `<div class="partido-sidebar-hora">${horaStr}</div>` : ''}
         ${canchaStr ? `<div class="partido-sidebar-cancha">${canchaStr}</div>` : ''}
       </div>` : '';
