@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 20:58 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 21:10 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -624,7 +624,7 @@
   .partido-sidebar {
     background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
     color: #fff;
-    padding: 12px 14px;
+    padding: 10px 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -636,27 +636,35 @@
     border-radius: 0 12px 12px 0;
   }
   .partido-sidebar.jugado {
-    min-width: 90px;
+    background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
   }
-  .partido-sidebar .jugado-stamp {
+  .partido-sidebar .jugado-badge {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-12deg);
-    font-family: Impact, 'Arial Black', sans-serif;
-    font-size: 14px;
+    top: 5px;
+    right: 5px;
+    background: rgba(255,255,255,0.95);
+    color: #166534;
+    font-size: 8px;
     font-weight: 700;
-    color: rgba(255,255,255,0.5);
+    padding: 2px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    pointer-events: none;
-    white-space: nowrap;
-    border: 2px solid rgba(255,255,255,0.4);
-    padding: 2px 8px;
-    border-radius: 4px;
+  }
+  .partido-sidebar .sidebar-arrow {
+    margin-top: 6px;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: transform 0.2s;
+  }
+  .partido-row.expanded .sidebar-arrow {
+    transform: rotate(180deg);
   }
   [data-theme="dark"] .partido-sidebar {
     background: linear-gradient(135deg, #334155 0%, #475569 100%);
+  }
+  [data-theme="dark"] .partido-sidebar.jugado {
+    background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
   }
   [data-theme="green"] .partido-sidebar {
     background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
@@ -666,17 +674,25 @@
   }
   .partido-sidebar-hora {
     font-family: Impact, 'Arial Black', sans-serif;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 400;
     letter-spacing: 0.5px;
   }
   .partido-sidebar-cancha {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.9;
     margin-top: 2px;
+  }
+  
+  /* Card clickeable cuando tiene detalles */
+  .partido-row.jugado {
+    cursor: pointer;
+  }
+  .partido-row.jugado:active {
+    transform: scale(0.99);
   }
 
   /* Ocultar viejo meta */
@@ -4231,15 +4247,15 @@ async function toggleDetails(pid, rowIndex, partidoEnc) {
   const el = document.getElementById(pid);
   if (!el) return;
   const isOpen = el.classList.contains('open');
-
-  // Find the button inside the resultado-box of the previous partido-row
-  const btn = document.querySelector(`[onclick*="toggleDetails('${pid}"]`);
+  
+  // Encontrar el partido-row padre para toggle expanded
+  const partidoRow = el.closest('.partido-row');
 
   if (!isOpen && !el.dataset.loaded) {
     // Lazy-load from Supabase
     el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-dimmer);font-size:12px">Cargando...</div>';
     el.classList.add('open');
-    if (btn) btn.textContent = '▲ Ocultar';
+    if (partidoRow) partidoRow.classList.add('expanded');
     try {
       const url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
       const res = await fetch(url);
@@ -4257,7 +4273,7 @@ async function toggleDetails(pid, rowIndex, partidoEnc) {
   }
 
   el.classList.toggle('open', !isOpen);
-  if (btn) btn.textContent = isOpen ? '▼ Ver detalles' : '▲ Ocultar';
+  if (partidoRow) partidoRow.classList.toggle('expanded', !isOpen);
 }
 
 function buildDetailsHTML(json) {
@@ -4525,14 +4541,17 @@ function filterByEquipo(equipo) {
       if (horaMatch) horaStr = horaMatch[1] + ' hs';
       if (canchaMatch) canchaStr = 'Cancha ' + canchaMatch[1];
     }
-    const sidebarHtml = (horaStr || canchaStr) ? `
+    const sidebarHtml = (horaStr || canchaStr || jugado) ? `
       <div class="partido-sidebar${jugado ? ' jugado' : ''}">
-        ${jugado ? '<div class="jugado-stamp">JUGADO</div>' : ''}
+        ${jugado ? '<div class="jugado-badge">JUGADO</div>' : ''}
         ${horaStr ? `<div class="partido-sidebar-hora">${horaStr}</div>` : ''}
         ${canchaStr ? `<div class="partido-sidebar-cancha">${canchaStr}</div>` : ''}
+        ${jugado ? '<div class="sidebar-arrow">▼</div>' : ''}
       </div>` : '';
 
-    html += `<div class="partido-row ${rowClass}">
+    const clickHandler = jugado ? `onclick="toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')"` : '';
+    
+    html += `<div class="partido-row ${rowClass}" ${clickHandler}>
       <div class="partido-content">
         <div class="partido-header">
           <div class="partido-equipo-row">
@@ -4546,7 +4565,6 @@ function filterByEquipo(equipo) {
             <div class="partido-equipo-score">${jugado ? p.golesV : '-'}</div>
           </div>
         </div>
-        ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')">▼ Ver detalles</div>` : ''}
         ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}
       </div>
       ${sidebarHtml}
