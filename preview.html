@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 20:20 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 20:35 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4490,12 +4490,12 @@ function filterByEquipo(equipo) {
         <div class="partido-header">
           <div class="partido-equipo-row">
             ${escudoLocal}
-            <div class="partido-equipo-nombre">${escapeHTML(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
+            <div class="partido-equipo-nombre">${escapeHTML(local)}${getPosBadgeHtmlSimple(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
             <div class="partido-equipo-score">${jugado ? p.golesL : '-'}</div>
           </div>
           <div class="partido-equipo-row">
             ${escudoVisit}
-            <div class="partido-equipo-nombre">${escapeHTML(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
+            <div class="partido-equipo-nombre">${escapeHTML(visitante)}${getPosBadgeHtmlSimple(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
             <div class="partido-equipo-score">${jugado ? p.golesV : '-'}</div>
           </div>
         </div>
@@ -4690,6 +4690,19 @@ function calcularPosicionesAnteriores(view) {
   var posAnt = {};
   if (!state.fixture || !state.fixture.length) return posAnt;
   
+  // Obtener lista de equipos de la tabla actual (para filtrar por zona)
+  var equiposDeTabla = {};
+  var dataPosiciones = state.posiciones[view];
+  if (dataPosiciones && dataPosiciones.length) {
+    dataPosiciones.forEach(function(row) {
+      var eq = row['Equipo'] || row['Equipo '] || '';
+      if (eq) equiposDeTabla[eq.toLowerCase()] = eq;
+    });
+  }
+  
+  // Si no hay equipos cargados, no podemos calcular
+  if (Object.keys(equiposDeTabla).length === 0) return posAnt;
+  
   // Determinar si es senior o libres
   var esSenior = view.includes('senior');
   
@@ -4708,9 +4721,20 @@ function calcularPosicionesAnteriores(view) {
   var ultimaFecha = Math.max.apply(null, fechasJugadas);
   if (ultimaFecha <= 1) return posAnt;
   
-  // Simular tabla sin la última fecha
+  // Inicializar stats para todos los equipos de la tabla
   var equiposStats = {};
+  for (var eqLower in equiposDeTabla) {
+    var eqOriginal = equiposDeTabla[eqLower];
+    equiposStats[eqOriginal] = { pts: 0, dif: 0, gf: 0 };
+  }
   
+  // Función para buscar equipo en la tabla (case-insensitive)
+  function buscarEquipoEnTabla(nombre) {
+    var lower = nombre.toLowerCase();
+    return equiposDeTabla[lower] || null;
+  }
+  
+  // Simular tabla sin la última fecha
   partidosCategoria.forEach(function(p) {
     var fechaNum = parseInt(String(p.fecha || p.fechaNum || '').replace(/\D/g, '')) || 0;
     if (fechaNum >= ultimaFecha) return;
@@ -4727,6 +4751,11 @@ function calcularPosicionesAnteriores(view) {
       }
     }
     
+    // Verificar que ambos equipos pertenezcan a esta tabla/zona
+    var eqLReal = buscarEquipoEnTabla(eqL || '');
+    var eqVReal = buscarEquipoEnTabla(eqV || '');
+    if (!eqLReal || !eqVReal) return;
+    
     // Extraer goles de p.resultado si no existen
     var gL = parseInt(p.golesL);
     var gV = parseInt(p.golesV);
@@ -4740,27 +4769,24 @@ function calcularPosicionesAnteriores(view) {
     gL = gL || 0;
     gV = gV || 0;
     
-    if (!eqL || !eqV || eqL === 'LIBRE' || eqV === 'LIBRE') return;
+    if (eqLReal === 'LIBRE' || eqVReal === 'LIBRE') return;
     
-    if (!equiposStats[eqL]) equiposStats[eqL] = { pts: 0, dif: 0, gf: 0 };
-    if (!equiposStats[eqV]) equiposStats[eqV] = { pts: 0, dif: 0, gf: 0 };
-    
-    equiposStats[eqL].gf += gL;
-    equiposStats[eqL].dif += (gL - gV);
-    equiposStats[eqV].gf += gV;
-    equiposStats[eqV].dif += (gV - gL);
+    equiposStats[eqLReal].gf += gL;
+    equiposStats[eqLReal].dif += (gL - gV);
+    equiposStats[eqVReal].gf += gV;
+    equiposStats[eqVReal].dif += (gV - gL);
     
     if (gL > gV) {
-      equiposStats[eqL].pts += 3;
+      equiposStats[eqLReal].pts += 3;
     } else if (gL < gV) {
-      equiposStats[eqV].pts += 3;
+      equiposStats[eqVReal].pts += 3;
     } else {
-      equiposStats[eqL].pts += 1;
-      equiposStats[eqV].pts += 1;
+      equiposStats[eqLReal].pts += 1;
+      equiposStats[eqVReal].pts += 1;
     }
   });
   
-  // Ordenar y asignar posiciones
+  // Ordenar y asignar posiciones (solo equipos de esta tabla)
   var equiposOrdenados = Object.keys(equiposStats).sort(function(a, b) {
     var sA = equiposStats[a];
     var sB = equiposStats[b];
@@ -4932,6 +4958,27 @@ function getPosBadgeHtml(equipo) {
   }
   
   return '<span class="pos-badge ' + cls + '">' + pos + '°</span>' + deltaHtml;
+}
+
+// Generar HTML del badge de posición SIN flecha (para Fixture)
+function getPosBadgeHtmlSimple(equipo) {
+  var posData = getPosicionEquipo(equipo);
+  if (!posData) return '';
+  
+  var pos = posData.pos;
+  var total = posData.total;
+  var cls = '';
+  
+  // top 33% verde, medio 33% amarillo, bottom 33% rojo
+  if (pos <= Math.ceil(total / 3)) {
+    cls = 'top';
+  } else if (pos <= Math.ceil(total * 2 / 3)) {
+    cls = 'mid';
+  } else {
+    cls = 'bottom';
+  }
+  
+  return '<span class="pos-badge ' + cls + '">' + pos + '°</span>';
 }
 
 // Mostrar popup con últimos partidos
