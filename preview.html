@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 18:55 ARG — Visual Supabase + Backend Sheets -->
+<!-- CDP Fixture — index.html — 2026-04-29 19:10 ARG — Visual Supabase + Backend Sheets -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4357,32 +4357,29 @@ async function showPos(view, btn) {
 
 async function loadPosView(view) {
   try {
-    // Mapear vista a categoría Supabase
-    const catMap = {
-      'zona-a-libres': 'LIBRES_A',
-      'zona-b-libres': 'LIBRES_B',
-      'general-libres': null, // Combinar A y B
-      'general-senior': 'SENIOR'
-    };
-    const categoria = catMap[view];
-    
-    let data;
-    if (view === 'general-libres') {
+    const sheetName = POS_SHEETS[view];
+    if (!sheetName && view === 'general-libres') {
       // Combinar Zona A y B
-      const [dataA, dataB] = await Promise.all([
-        fetchAPI('getPosiciones', { categoria: 'LIBRES_A' }),
-        fetchAPI('getPosiciones', { categoria: 'LIBRES_B' })
+      const [rowsA, rowsB] = await Promise.all([
+        fetchAPI('getStandings', { tabla: 'Pos Libres ZONA A' }),
+        fetchAPI('getStandings', { tabla: 'Pos Libres ZONA B' })
       ]);
-      data = [...(dataA || []), ...(dataB || [])].sort((a, b) => b.pts - a.pts || b.dif - a.dif);
+      const combined = [...(rowsA || []), ...(rowsB || [])].sort((a, b) => 
+        (b.pts - a.pts) || (b.dif - a.dif) || (b.gf - a.gf)
+      );
+      state.posiciones[view] = combined.map((r, i) => ({
+        'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+        'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+        'Diferencia': r.dif, 'Img': r.img
+      }));
     } else {
-      data = await fetchAPI('getPosiciones', { categoria });
+      const rows = await fetchAPI('getStandings', { tabla: sheetName });
+      state.posiciones[view] = (rows || []).map(r => ({
+        'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+        'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+        'Diferencia': r.dif, 'Img': r.img
+      }));
     }
-    
-    state.posiciones[view] = (data || []).map((r, i) => ({
-      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
-      'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
-      'Diferencia': r.dif, 'Img': null
-    }));
     renderPos(view);
   } catch(e) {
     showError('posContainer', 'No se pudo cargar la tabla', () => loadPosView(view));
@@ -4834,26 +4831,28 @@ async function showScorers(view, btn) {
   }
 }
 
-async function loadScorersView(view) {
+async function loadScorersView(view, verTodos) {
   try {
-    // Mapear vista a categoría Supabase
-    const catMap = {
-      'libres-a': 'LIBRES_A',
-      'libres-b': 'LIBRES_B',
-      'senior': 'SENIOR'
-    };
-    const categoria = catMap[view];
-    const data = await fetchAPI('getGoleadores', { categoria });
+    var params = { vista: view };
+    if (verTodos) params.verTodos = 'true';
+    var result = await fetchAPI('getScorers', params);
+    // fetchAPI devuelve { scorers, hayMas, totalConUno }
+    var scorers = result.scorers || result || [];
     
     // Mapear al formato que espera renderScorers
-    state.goleadores[view] = (data || []).map(s => ({
-      'Jugador': s.jugador,
-      'Equipo':  s.equipo,
-      'Total':   s.goles
-    }));
-    renderScorers(view);
+    state.goleadores[view] = scorers.map(function(s) {
+      return {
+        'Jugador': s.jugador,
+        'Equipo':  s.equipo,
+        'Total':   s.total || s.goles || 0
+      };
+    });
+    // Guardar info de "ver más"
+    state.goleadoresHayMas = state.goleadoresHayMas || {};
+    state.goleadoresHayMas[view] = { hayMas: result.hayMas, totalConUno: result.totalConUno };
+    renderScorers(view, verTodos);
   } catch(e) {
-    showError('scorersContainer', 'No se pudo cargar goleadores', () => loadScorersView(view));
+    showError('scorersContainer', 'No se pudo cargar goleadores', function() { loadScorersView(view); });
   }
 }
 
@@ -4950,33 +4949,28 @@ async function showDisc(view, btn) {
 
 async function loadDiscView(view) {
   try {
+    const rows = await fetchAPI('getDisciplina', { vista: view });
+    // fetchAPI devuelve json.rows directamente
+
     if (view === 'rojas') {
-      const data = await fetchAPI('getRojas');
-      // Mapear campos del endpoint Supabase
-      state.disciplina[view] = (data || []).map(r => ({
+      // Mapear campos del endpoint
+      state.disciplina[view] = (rows || []).map(r => ({
         '_rowIndex':        r._rowIndex,
-        'Fecha':            r.Fecha,
-        'Jugador':          r.Jugador,
-        'Equipo':           r.Equipo,
-        'Partidos':         r.Partidos,
-        'Artículo':         r.Articulo,
-        'Habilitado FECHA': r['Habilitado FECHA'],
+        'Fecha':            r.fecha,
+        'Jugador':          r.jugador,
+        'Equipo':           r.equipo,
+        'Partidos':         r.partidos,
+        'Artículo':         r.articulo,
+        'Habilitado FECHA': r.habilitadoFecha,
         'Senior':           r.isSenior,
-        'Tipo':             'Roja'
+        'Tipo':             r.tipo
       }));
     } else {
-      // Amarillas: mapear vista a categoría Supabase
-      const catMap = {
-        'amarillas-a': 'LIBRES_A',
-        'amarillas-b': 'LIBRES_B',
-        'amarillas-senior': 'SENIOR'
-      };
-      const categoria = catMap[view];
-      const data = await fetchAPI('getAmarillas', { categoria });
-      state.disciplina[view] = (data || []).map(r => ({
+      // Amarillas: mapear al formato que espera renderDisc
+      state.disciplina[view] = (rows || []).map(r => ({
         'Jugador': r.jugador,
         'Equipo':  r.equipo,
-        'Total':   r.amarillas
+        'Total':   r.total
       }));
     }
     renderDisc(view);
