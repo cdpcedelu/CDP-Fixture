@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 21:32 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 21:38 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -565,6 +565,7 @@
     box-shadow: var(--shadow-sm);
     transition: all 0.2s;
     display: flex;
+    flex-direction: column;
   }
 
   .partido-row:hover {
@@ -575,6 +576,10 @@
   .partido-row.jugado { border-color: var(--green); }
   .partido-row.pendiente { border-color: #333; }
   .partido-row.senior { border-color: var(--gold); }
+
+  .partido-top {
+    display: flex;
+  }
 
   .partido-content {
     flex: 1;
@@ -631,10 +636,6 @@
     align-items: center;
     min-width: 80px;
     position: relative;
-    align-self: flex-start;
-    border-radius: 0 12px 12px 0;
-  }
-  .partido-row.expanded .partido-sidebar {
     border-radius: 0 12px 0 0;
   }
   [data-theme="dark"] .partido-sidebar {
@@ -4549,22 +4550,24 @@ function filterByEquipo(equipo) {
     const clickHandler = jugado ? `onclick="toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')"` : '';
     
     html += `<div class="partido-row ${rowClass}" ${clickHandler}>
-      <div class="partido-content">
-        <div class="partido-header">
-          <div class="partido-equipo-row">
-            ${escudoLocal}
-            <div class="partido-equipo-nombre">${escapeHTML(local)}${getPosBadgeHtmlSimple(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
-            <div class="partido-equipo-score">${jugado ? p.golesL : '-'}</div>
-          </div>
-          <div class="partido-equipo-row">
-            ${escudoVisit}
-            <div class="partido-equipo-nombre">${escapeHTML(visitante)}${getPosBadgeHtmlSimple(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
-            <div class="partido-equipo-score">${jugado ? p.golesV : '-'}</div>
+      <div class="partido-top">
+        <div class="partido-content">
+          <div class="partido-header">
+            <div class="partido-equipo-row">
+              ${escudoLocal}
+              <div class="partido-equipo-nombre">${escapeHTML(local)}${getPosBadgeHtmlSimple(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
+              <div class="partido-equipo-score">${jugado ? p.golesL : '-'}</div>
+            </div>
+            <div class="partido-equipo-row">
+              ${escudoVisit}
+              <div class="partido-equipo-nombre">${escapeHTML(visitante)}${getPosBadgeHtmlSimple(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
+              <div class="partido-equipo-score">${jugado ? p.golesV : '-'}</div>
+            </div>
           </div>
         </div>
-        ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}
+        ${sidebarHtml}
       </div>
-      ${sidebarHtml}
+      ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}
     </div>`;
   });
 
