@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 19:45 ARG — Visual Supabase + Backend Sheets -->
+<!-- CDP Fixture — index.html — 2026-04-29 20:00 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3807,7 +3807,7 @@ async function fetchAPI(action, params) {
   
   // Adaptar respuesta de Apps Script al formato esperado
   if (json.error) throw new Error(json.error);
-  if (!json.ok) throw new Error('Error en respuesta');
+  if (!json.ok && action !== 'getAll') throw new Error('Error en respuesta');
   
   // Mapear campos según la acción
   if (action === 'getFixture') return json.matches;
@@ -3823,6 +3823,164 @@ async function fetchAPI(action, params) {
   // Default: devolver todo el json
   return json;
 }
+
+// ══════════════════════════════════════════════════════════════
+// SISTEMA DE CACHE SWR (Stale-While-Revalidate)
+// ══════════════════════════════════════════════════════════════
+var CACHE_KEY = 'cdp_alldata';
+var CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+function getCachedData() {
+  try {
+    var cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+    var parsed = JSON.parse(cached);
+    return parsed;
+  } catch(e) { return null; }
+}
+
+function setCachedData(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data: data,
+      timestamp: Date.now()
+    }));
+  } catch(e) { /* localStorage lleno o no disponible */ }
+}
+
+function isCacheValid(cached) {
+  if (!cached || !cached.timestamp) return false;
+  return (Date.now() - cached.timestamp) < CACHE_TTL;
+}
+
+// Aplicar datos del cache o de la API al state
+function applyAllData(data) {
+  // Fixture
+  state.fixture = data.fixture || [];
+  state.rachasCalculadas = false;
+  state.prevPositions = {};
+  
+  // Posiciones
+  state.posiciones['zona-a-libres'] = (data.posiciones.zonaA || []).map(function(r) {
+    return { 'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+             'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+             'Diferencia': r.dif, 'Img': r.img };
+  });
+  state.posiciones['zona-b-libres'] = (data.posiciones.zonaB || []).map(function(r) {
+    return { 'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+             'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+             'Diferencia': r.dif, 'Img': r.img };
+  });
+  state.posiciones['general-senior'] = (data.posiciones.senior || []).map(function(r) {
+    return { 'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+             'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+             'Diferencia': r.dif, 'Img': r.img };
+  });
+  
+  // Goleadores
+  var golA = data.goleadores.libresA || { scorers: [] };
+  var golB = data.goleadores.libresB || { scorers: [] };
+  var golS = data.goleadores.senior || { scorers: [] };
+  state.goleadores['libres-a'] = (golA.scorers || []).map(function(s) {
+    return { 'Jugador': s.jugador, 'Equipo': s.equipo, 'Total': s.total };
+  });
+  state.goleadores['libres-b'] = (golB.scorers || []).map(function(s) {
+    return { 'Jugador': s.jugador, 'Equipo': s.equipo, 'Total': s.total };
+  });
+  state.goleadores['senior'] = (golS.scorers || []).map(function(s) {
+    return { 'Jugador': s.jugador, 'Equipo': s.equipo, 'Total': s.total };
+  });
+  state.goleadoresHayMas = {
+    'libres-a': { hayMas: golA.hayMas, totalConUno: golA.totalConUno },
+    'libres-b': { hayMas: golB.hayMas, totalConUno: golB.totalConUno },
+    'senior': { hayMas: golS.hayMas, totalConUno: golS.totalConUno }
+  };
+  
+  // Disciplina
+  state.disciplina['rojas'] = (data.disciplina.rojas || []).map(function(r) {
+    return { '_rowIndex': r._rowIndex, 'Fecha': r.fecha, 'Jugador': r.jugador,
+             'Equipo': r.equipo, 'Partidos': r.partidos, 'Artículo': r.articulo,
+             'Habilitado FECHA': r.habilitadoFecha, 'Senior': r.isSenior, 'Tipo': r.tipo };
+  });
+  state.disciplina['amarillas-a'] = (data.disciplina.amarillasA || []).map(function(r) {
+    return { 'Jugador': r.jugador, 'Equipo': r.equipo, 'Total': r.total };
+  });
+  state.disciplina['amarillas-b'] = (data.disciplina.amarillasB || []).map(function(r) {
+    return { 'Jugador': r.jugador, 'Equipo': r.equipo, 'Total': r.total };
+  });
+  state.disciplina['amarillas-senior'] = (data.disciplina.amarillasSenior || []).map(function(r) {
+    return { 'Jugador': r.jugador, 'Equipo': r.equipo, 'Total': r.total };
+  });
+  
+  // Sponsors
+  state.sponsors = data.sponsors || [];
+}
+
+// Cargar todos los datos con SWR
+async function loadAllDataSWR() {
+  var cached = getCachedData();
+  var renderedFromCache = false;
+  
+  // 1) Si hay cache, mostrar inmediatamente (aunque esté viejo)
+  if (cached && cached.data) {
+    console.log('📦 Mostrando datos desde cache');
+    applyAllData(cached.data);
+    renderFixture();
+    renderedFromCache = true;
+  }
+  
+  // 2) Si el cache es válido (< 5 min), no refrescar
+  if (isCacheValid(cached)) {
+    console.log('✅ Cache válido, no se refresca');
+    return;
+  }
+  
+  // 3) Buscar datos frescos en background
+  console.log('🔄 Cargando datos frescos...');
+  try {
+    var url = new URL(APPS_SCRIPT_URL);
+    url.searchParams.set('action', 'getAll');
+    url.searchParams.set('t', Date.now());
+    
+    var res = await fetch(url.toString(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    
+    if (json.ok && json.fixture) {
+      console.log('✅ Datos frescos recibidos');
+      setCachedData(json);
+      applyAllData(json);
+      renderFixture();
+    } else if (!renderedFromCache) {
+      // Fallback: si no hay cache y getAll falló, intentar endpoints individuales
+      console.log('⚠️ getAll no disponible, usando endpoints individuales');
+      await loadAllDataLegacy();
+    }
+  } catch(e) {
+    console.error('Error cargando datos:', e);
+    if (!renderedFromCache) {
+      // Si no pudimos mostrar nada, intentar legacy
+      await loadAllDataLegacy();
+    }
+  }
+}
+
+// Fallback: cargar con endpoints individuales (para compatibilidad)
+async function loadAllDataLegacy() {
+  try {
+    // Cargar fixture primero
+    var fixtureData = await fetchAPI('getFixture');
+    state.fixture = fixtureData;
+    state.rachasCalculadas = false;
+    renderFixture();
+    
+    // Precargar resto en paralelo
+    precargarPosiciones();
+  } catch(e) {
+    showError('fixtureContainer', 'No se pudo cargar el fixture', loadAllDataLegacy);
+  }
+}
+
 // ============================================================
 let state = {
   fixture: null,
@@ -6331,12 +6489,11 @@ window.addEventListener('DOMContentLoaded', () => {
   applyTheme(savedTheme);
   // Inicializar pill de navegación
   updateNavPill();
-  loadFixture();
-  // Precargar posiciones para los badges en el fixture
-  precargarPosiciones();
+  // Cargar TODOS los datos con SWR (1 llamada HTTP)
+  loadAllDataSWR();
 });
 
-// Precargar posiciones para que los badges funcionen en el fixture
+// Precargar posiciones (fallback si getAll no está disponible)
 async function precargarPosiciones() {
   try {
     const [rowsA, rowsB, rowsSenior] = await Promise.all([
