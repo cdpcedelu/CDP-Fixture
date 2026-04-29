@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 18:30 ARG — Visual Supabase + Backend Sheets -->
+<!-- CDP Fixture — index.html — 2026-04-29 18:45 ARG — Visual Supabase + Backend Sheets -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -18,9 +18,9 @@
 <!-- Open Graph — preview en WhatsApp -->
 <meta property="og:title" content="CDP Stats — Club de Profesionales">
 <meta property="og:description" content="Fixture, posiciones, goleadores, disciplina y más del torneo del Club de Profesionales de Concepción del Uruguay.">
-<meta property="og:image" content="https://cdpcedelu.github.io/CDP-Fixture/preview.jpg">
+<meta property="og:image" content="https://cdpcedelu.github.io/CDP-Stats/preview.jpg">
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="800">
+<meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cdpcedelu.github.io/CDP-Fixture/">
 <title>Stats CDP</title>
@@ -2932,56 +2932,78 @@
 
   <!-- ===================== FIXTURE ===================== -->
   <section class="section active" id="section-fixture">
-    <div class="section-header">
-      <div class="section-title">Fixture</div>
-      <div class="filter-tabs" id="fixtureFilters">
-        <button class="filter-tab active" onclick="filterFixture('todos', this)">Todos</button>
-        <button class="filter-tab" onclick="filterFixture('libres', this)">Libres</button>
-        <button class="filter-tab" onclick="filterFixture('senior', this)">Sénior</button>
-
+    <!-- Header v3 con gradiente -->
+    <div class="fix-header-v3">
+      <div class="fix-header-left">
+        <div class="fix-header-title">FIXTURE</div>
+        <div class="fix-fecha-pill" id="fixFechaPill">
+          <span class="fix-fecha-text" id="fixFechaText">Fecha 1 · 0/0</span>
+          <span class="fix-pendientes" id="fixPendientes">--</span>
+        </div>
+      </div>
+      <div class="fix-cats-v3" id="fixtureFilters">
+        <button class="fix-cat-v3 active" onclick="filterFixture('todos', this)">Todos</button>
+        <button class="fix-cat-v3" onclick="filterFixture('libres', this)">Libres</button>
+        <button class="fix-cat-v3" onclick="filterFixture('senior', this)">Sénior</button>
       </div>
     </div>
-        <div class="team-select-wrap">
-      <span class="team-select-icon">🛡️</span>
-      <select class="team-select" id="equipoSelect" onchange="filterByEquipo(this.value)">
-        <option value="">Todos los equipos</option>
-        <optgroup label="── LIBRES ──">
-          <option value="Abogados A">Abogados A</option>
-          <option value="Abogados AR">Abogados AR</option>
-          <option value="Abogados B">Abogados B</option>
-          <option value="Arquitectos">Arquitectos</option>
-          <option value="Contadores A">Contadores A</option>
-          <option value="Contadores Z">Contadores Z</option>
-          <option value="Docentes A">Docentes A</option>
-          <option value="Docentes B">Docentes B</option>
-          <option value="Docentes E">Docentes E</option>
-          <option value="Docentes W">Docentes W</option>
-          <option value="Ingenieros">Ingenieros</option>
-          <option value="Ingenieros S">Ingenieros S</option>
-          <option value="Maestros">Maestros</option>
-          <option value="Profesores">Profesores</option>
-          <option value="Psicólogos">Psicólogos</option>
-          <option value="Salud B">Salud B</option>
-          <option value="Salud F">Salud F</option>
-          <option value="Salud T">Salud T</option>
-          <option value="Tecnicos A">Tecnicos A</option>
-        </optgroup>
-        <optgroup label="── SENIOR ──">
-          <option value="Abogados A (S)">Abogados A (S)</option>
-          <option value="Arquitectos (S)">Arquitectos (S)</option>
-          <option value="Contadores A (S)">Contadores A (S)</option>
-          <option value="Contadores Z (S)">Contadores Z (S)</option>
-          <option value="Docentes A (S)">Docentes A (S)</option>
-          <option value="Docentes B (S)">Docentes B (S)</option>
-          <option value="Docentes F (S)">Docentes F (S)</option>
-          <option value="Docentes T (S)">Docentes T (S)</option>
-          <option value="Docentes X (S)">Docentes X (S)</option>
-          <option value="Licenciados (S)">Licenciados (S)</option>
-          <option value="Salud B (S)">Salud B (S)</option>
-          <option value="Salud F (S)">Salud F (S)</option>
-        </optgroup>
-      </select>
-      <span class="team-select-arrow">▾</span>
+    <!-- Selectores como cards -->
+    <div class="fix-selects-v3">
+      <label class="fix-select-card">
+        <div class="fix-select-icon">🛡️</div>
+        <div class="fix-select-info">
+          <div class="fix-select-label">Filtrar por equipo</div>
+          <select class="fix-select-dropdown" id="equipoSelect" onchange="filterByEquipo(this.value)">
+            <option value="">Todos</option>
+            <optgroup label="── LIBRES ──">
+              <option value="Abogados A">Abogados A</option>
+              <option value="Abogados AR">Abogados AR</option>
+              <option value="Abogados B">Abogados B</option>
+              <option value="Arquitectos">Arquitectos</option>
+              <option value="Contadores A">Contadores A</option>
+              <option value="Contadores Z">Contadores Z</option>
+              <option value="Docentes A">Docentes A</option>
+              <option value="Docentes B">Docentes B</option>
+              <option value="Docentes E">Docentes E</option>
+              <option value="Docentes W">Docentes W</option>
+              <option value="Ingenieros">Ingenieros</option>
+              <option value="Ingenieros S">Ingenieros S</option>
+              <option value="Maestros">Maestros</option>
+              <option value="Profesores">Profesores</option>
+              <option value="Psicólogos">Psicólogos</option>
+              <option value="Salud B">Salud B</option>
+              <option value="Salud F">Salud F</option>
+              <option value="Salud T">Salud T</option>
+              <option value="Tecnicos A">Tecnicos A</option>
+            </optgroup>
+            <optgroup label="── SENIOR ──">
+              <option value="Abogados A (S)">Abogados A (S)</option>
+              <option value="Arquitectos (S)">Arquitectos (S)</option>
+              <option value="Contadores A (S)">Contadores A (S)</option>
+              <option value="Contadores Z (S)">Contadores Z (S)</option>
+              <option value="Docentes A (S)">Docentes A (S)</option>
+              <option value="Docentes B (S)">Docentes B (S)</option>
+              <option value="Docentes F (S)">Docentes F (S)</option>
+              <option value="Docentes T (S)">Docentes T (S)</option>
+              <option value="Docentes X (S)">Docentes X (S)</option>
+              <option value="Licenciados (S)">Licenciados (S)</option>
+              <option value="Salud B (S)">Salud B (S)</option>
+              <option value="Salud F (S)">Salud F (S)</option>
+            </optgroup>
+          </select>
+        </div>
+        <span class="fix-select-arrow">▼</span>
+      </label>
+      <label class="fix-select-card fecha-pill">
+        <div class="fix-select-icon green">📅</div>
+        <div class="fix-select-info">
+          <div class="fix-select-label">Seleccionar fecha</div>
+          <select class="fix-select-dropdown" id="fechaSelect" onchange="selectFecha(this.value)">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <span class="fix-select-arrow">▼</span>
+      </label>
     </div>
     <div id="fixtureContainer">
       <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando fixture...</div></div>
@@ -2990,13 +3012,13 @@
 
   <!-- ===================== POSICIONES ===================== -->
   <section class="section" id="section-posiciones">
-    <div class="section-header">
-      <div class="section-title">Posiciones</div>
-    </div>
-    <div class="tab-row" id="posTab">
-      <button class="tab-pill active" onclick="showPos('zona-a-libres', this)">Zona A</button>
-      <button class="tab-pill" onclick="showPos('zona-b-libres', this)">Zona B</button>
-      <button class="tab-pill" onclick="showPos('general-senior', this)">Sénior</button>
+    <div class="pos-header-v2">
+      <div class="pos-title-v2">POSICIONES</div>
+      <div class="pos-segment-v2" id="posTab">
+        <button class="pos-seg-btn active" onclick="showPos('zona-a-libres', this)">Zona A</button>
+        <button class="pos-seg-btn" onclick="showPos('zona-b-libres', this)">Zona B</button>
+        <button class="pos-seg-btn" onclick="showPos('general-senior', this)">Sénior</button>
+      </div>
     </div>
     <div id="posContainer">
       <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando posiciones...</div></div>
@@ -3005,13 +3027,13 @@
 
   <!-- ===================== GOLEADORES ===================== -->
   <section class="section" id="section-goleadores">
-    <div class="section-header">
-      <div class="section-title">Goleadores</div>
-    </div>
-    <div class="tab-row">
-      <button class="tab-pill active" onclick="showScorers('libres-a', this)">Libres A</button>
-      <button class="tab-pill" onclick="showScorers('libres-b', this)">Libres B</button>
-      <button class="tab-pill" onclick="showScorers('senior', this)">Sénior</button>
+    <div class="pos-header-v2">
+      <div class="pos-title-v2">GOLEADORES</div>
+      <div class="pos-segment-v2" id="scorersTab">
+        <button class="pos-seg-btn active" onclick="showScorers('libres-a', this)">Libres A</button>
+        <button class="pos-seg-btn" onclick="showScorers('libres-b', this)">Libres B</button>
+        <button class="pos-seg-btn" onclick="showScorers('senior', this)">Sénior</button>
+      </div>
     </div>
     <div class="search-wrap" id="scorerSearchWrap" style="display:none">
       <span class="search-icon">🔍</span>
@@ -3025,83 +3047,55 @@
 
   <!-- ===================== DISCIPLINA ===================== -->
   <section class="section" id="section-disciplina">
-    <div class="section-header">
-      <div class="section-title">Disciplina</div>
-    </div>
-    <div class="tab-row">
-      <button class="tab-pill active" onclick="showDisc('rojas', this)">🟥 Rojas</button>
-      <button class="tab-pill" onclick="showDisc('amarillas-a', this)">🟨 Libres A</button>
-      <button class="tab-pill" onclick="showDisc('amarillas-b', this)">🟨 Libres B</button>
-      <button class="tab-pill" onclick="showDisc('amarillas-senior', this)">🟨 Sénior</button>
+    <div class="pos-header-v2">
+      <div class="pos-title-v2">DISCIPLINA</div>
+      <div class="pos-segment-v2" id="discTab">
+        <button class="pos-seg-btn active" onclick="showDisc('rojas', this)"><span class="card-icon red"></span>Rojas</button>
+        <button class="pos-seg-btn" onclick="showDisc('amarillas-a', this)"><span class="card-icon yellow"></span>Libres A</button>
+        <button class="pos-seg-btn" onclick="showDisc('amarillas-b', this)"><span class="card-icon yellow"></span>Libres B</button>
+        <button class="pos-seg-btn" onclick="showDisc('amarillas-senior', this)"><span class="card-icon yellow"></span>Sénior</button>
+      </div>
     </div>
     <div id="discContainer">
       <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando disciplina...</div></div>
     </div>
   </section>
 
-  <!-- ===================== SPONSORS ===================== -->
+  <!-- ===================== REGLAMENTOS ===================== -->
   <section class="section" id="section-reglamentos">
-    <div style="padding: 16px 0">
-      <div class="section-title" style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.05em;margin-bottom:20px">📋 Reglamentos y Estatuto</div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-
-        <a href="https://drive.google.com/file/d/1Qe6OEWZMJ6fwbaGzrTfLPibpUvAn-MxG/view?usp=sharing" target="_blank"
-          style="display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:box-shadow 0.2s,border-color 0.2s"
-          onmouseover="this.style.borderColor='#16a34a';this.style.boxShadow='0 4px 16px rgba(22,163,74,0.10)'"
-          onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
-          <div style="width:48px;height:48px;background:#dcfce7;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">📜</div>
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:1rem;color:#0f172a">Estatuto Vigente</div>
-            <div style="font-size:0.82rem;color:#64748b;margin-top:2px">Club de Profesionales · Documento oficial</div>
-          </div>
-          <div style="font-size:0.8rem;font-weight:600;color:#16a34a;background:#dcfce7;padding:6px 14px;border-radius:20px;flex-shrink:0">⬇ Descargar</div>
-        </a>
-
-        <a href="https://drive.google.com/file/d/1z6ktlAmLtRbKIzb1Gdo7lIFOsawMTHFe/view?usp=sharing" target="_blank"
-          style="display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:box-shadow 0.2s,border-color 0.2s"
-          onmouseover="this.style.borderColor='#16a34a';this.style.boxShadow='0 4px 16px rgba(22,163,74,0.10)'"
-          onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
-          <div style="width:48px;height:48px;background:#dcfce7;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">📖</div>
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:1rem;color:#0f172a">Reglamento Interno CDP 2026</div>
-            <div style="font-size:0.82rem;color:#64748b;margin-top:2px">Reglamento interno general · Apertura 2026</div>
-          </div>
-          <div style="font-size:0.8rem;font-weight:600;color:#16a34a;background:#dcfce7;padding:6px 14px;border-radius:20px;flex-shrink:0">⬇ Descargar</div>
-        </a>
-
-        <a href="https://drive.google.com/file/d/1uYZ5iRNOFbPvBLjN4kNbxevasZZy_2wI/view?usp=sharing" target="_blank"
-          style="display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:box-shadow 0.2s,border-color 0.2s"
-          onmouseover="this.style.borderColor='#16a34a';this.style.boxShadow='0 4px 16px rgba(22,163,74,0.10)'"
-          onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
-          <div style="width:48px;height:48px;background:#eff6ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">⚽</div>
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:1rem;color:#0f172a">Reglamento Sénior Apertura 2026</div>
-            <div style="font-size:0.82rem;color:#64748b;margin-top:2px">Categoría Sénior · Torneos Apertura 2026</div>
-          </div>
-          <div style="font-size:0.8rem;font-weight:600;color:#16a34a;background:#dcfce7;padding:6px 14px;border-radius:20px;flex-shrink:0">⬇ Descargar</div>
-        </a>
-
-        <a href="https://drive.google.com/file/d/14W0aMEDNZpzy66Pu-FiPds0zPSPA8Ldy/view?usp=sharing" target="_blank"
-          style="display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:box-shadow 0.2s,border-color 0.2s"
-          onmouseover="this.style.borderColor='#16a34a';this.style.boxShadow='0 4px 16px rgba(22,163,74,0.10)'"
-          onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
-          <div style="width:48px;height:48px;background:#fef3c7;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">📗</div>
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:1rem;color:#0f172a">Reglamento Libres Apertura 2026</div>
-            <div style="font-size:0.82rem;color:#64748b;margin-top:2px">Categoría Libres · Torneos Apertura 2026</div>
-          </div>
-          <div style="font-size:0.8rem;font-weight:600;color:#16a34a;background:#dcfce7;padding:6px 14px;border-radius:20px;flex-shrink:0">⬇ Descargar</div>
-        </a>
-
-      </div>
+    <div class="reglamentos-header-v1">
+      <div class="reglamentos-title-v1">REGLAMENTOS</div>
+    </div>
+    <div class="reglamentos-list">
+      <a href="https://drive.google.com/file/d/1Qe6OEWZMJ6fwbaGzrTfLPibpUvAn-MxG/view?usp=sharing" target="_blank" class="reglamento-item">
+        <div class="reglamento-icon">📜</div>
+        <div class="reglamento-name">Estatuto Vigente</div>
+        <div class="reglamento-arrow">→</div>
+      </a>
+      <a href="https://drive.google.com/file/d/1z6ktlAmLtRbKIzb1Gdo7lIFOsawMTHFe/view?usp=sharing" target="_blank" class="reglamento-item">
+        <div class="reglamento-icon">📋</div>
+        <div class="reglamento-name">Reglamento Interno CDP 2026</div>
+        <div class="reglamento-arrow">→</div>
+      </a>
+      <a href="https://drive.google.com/file/d/1uYZ5iRNOFbPvBLjN4kNbxevasZZy_2wI/view?usp=sharing" target="_blank" class="reglamento-item">
+        <div class="reglamento-icon">⚽</div>
+        <div class="reglamento-name">Reglamento Sénior Apertura 2026</div>
+        <div class="reglamento-arrow">→</div>
+      </a>
+      <a href="https://drive.google.com/file/d/14W0aMEDNZpzy66Pu-FiPds0zPSPA8Ldy/view?usp=sharing" target="_blank" class="reglamento-item">
+        <div class="reglamento-icon">🏃</div>
+        <div class="reglamento-name">Reglamento Libres Apertura 2026</div>
+        <div class="reglamento-arrow">→</div>
+      </a>
     </div>
   </section>
 
+  <!-- ===================== SPONSORS ===================== -->
   <section class="section" id="section-sponsors">
-    <div class="section-header">
-      <div class="section-title">Sponsors</div>
+    <div class="sponsors-header-v1">
+      <div class="sponsors-title-v1">SPONSORS</div>
     </div>
-    <div id="sponsorsContainer">
+    <div id="sponsorsContainer" class="sponsors-list">
       <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando sponsors...</div></div>
     </div>
   </section>
@@ -3109,8 +3103,9 @@
 
   <!-- ================== CLIMA ================== -->
   <section class="section" id="section-clima">
-    <div class="section-header">
-      <div class="section-title">🌧️ Clima — Concepción del Uruguay</div>
+    <div class="clima-header-v1">
+      <div class="clima-title-v1">CLIMA</div>
+      <div class="clima-subtitle-v1">Concepción del Uruguay, Entre Ríos</div>
     </div>
 
     <div id="climaContainer">
@@ -3124,12 +3119,15 @@
     <!-- LOGIN SCREEN -->
     <div id="adminLogin">
       <div class="admin-login-box">
-        <div style="text-align:center;margin-bottom:20px">
-          <div style="font-size:48px;margin-bottom:10px">🔐</div>
-          <div class="section-title" style="font-size:26px">Panel Administrador</div>
-          <div style="color:var(--text-dimmer);font-size:14px;margin-top:4px">Ingresá tu contraseña para acceder</div>
+        <div class="admin-login-header">
+          <div class="admin-login-icon">🔒</div>
+          <div>
+            <div class="admin-login-title">Panel Admin</div>
+            <div class="admin-login-subtitle">CDP Stats</div>
+          </div>
         </div>
-        <input type="password" id="adminPinInput" class="admin-input" placeholder="Contraseña de administrador"
+        <div style="font-size:13px;color:var(--text-dimmer);margin-bottom:6px">Contraseña</div>
+        <input type="password" id="adminPinInput" class="admin-input" placeholder="••••••••"
           onkeydown="if(event.key==='Enter') adminDoLogin()" autocomplete="off" maxlength="64">
         <div id="adminLoginError" style="color:var(--red);font-size:13px;text-align:center;margin:8px 0;display:none"></div>
         <button class="admin-btn primary full" onclick="adminDoLogin()" id="adminLoginBtn">
@@ -3140,22 +3138,207 @@
 
     <!-- ADMIN DASHBOARD (hidden until login) -->
     <div id="adminDashboard" style="display:none">
-      <div class="section-header">
-        <div>
-          <div class="section-title">Gestión de Partidos</div>
-          <div style="color:var(--text-dimmer);font-size:13px;margin-top:2px">
-            Bienvenido, <span id="adminUserName">Admin</span>
-            · <a href="javascript:void(0)" onclick="adminLogout()" style="color:var(--red);text-decoration:none;font-weight:600">Cerrar sesión</a>
+      <div class="admin-panel-header">
+        <div class="admin-panel-title">ADMINISTRACIÓN</div>
+        <div class="admin-panel-meta">
+          Bienvenido, <span id="adminUserName">Admin</span>
+          · <a href="javascript:void(0)" onclick="adminLogout()">Cerrar sesión</a>
+        </div>
+      </div>
+
+      <!-- Admin Section Tabs -->
+      <div class="admin-tabs-v2">
+        <button class="admin-tab-v2 active" onclick="showAdminSection('partidos', this)">⚽ Partidos</button>
+        <button class="admin-tab-v2" onclick="showAdminSection('sponsors', this)">⭐ Sponsors</button>
+        <button class="admin-tab-v2" onclick="showAdminSection('reglamentos', this)">📋 Reglamentos</button>
+      </div>
+
+      <!-- SECCIÓN PARTIDOS -->
+      <div id="adminSeccionPartidos" class="admin-content-box">
+        <div class="admin-content-header">
+          <div class="admin-content-title">Gestión de Partidos</div>
+          <button class="admin-btn primary small" onclick="openNuevoPartidoModal()">+ Nuevo</button>
+        </div>
+        <div class="tab-row" id="adminFechaTabs" style="margin-bottom:12px"></div>
+        <div id="adminMatchList">
+          <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN SPONSORS -->
+      <div id="adminSeccionSponsors" class="admin-content-box" style="display:none">
+        <div class="admin-content-header">
+          <div class="admin-content-title">Gestión de Sponsors</div>
+          <button class="admin-btn primary small" onclick="openSponsorModal()">+ Nuevo</button>
+        </div>
+        <div id="adminSponsorsList"></div>
+      </div>
+
+      <!-- SECCIÓN REGLAMENTOS -->
+      <div id="adminSeccionReglamentos" class="admin-content-box" style="display:none">
+        <div class="admin-content-header">
+          <div class="admin-content-title">Gestión de Reglamentos</div>
+          <button class="admin-btn primary small" onclick="openReglamentoModal()">+ Nuevo</button>
+        </div>
+        <div id="adminReglamentosList"></div>
+      </div>
+
+      <!-- Modal Nuevo Partido -->
+      <div id="nuevoPartidoModal" class="modal-overlay" style="display:none">
+        <div class="modal-content" style="max-width:450px">
+          <div class="modal-header">
+            <span class="modal-title">➕ Nuevo Partido</span>
+            <button class="modal-close" onclick="closeNuevoPartidoModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Fecha</label>
+                <select id="npFecha" class="admin-select">
+                  <option value="">Seleccionar...</option>
+                  <option value="1">F1</option><option value="2">F2</option><option value="3">F3</option>
+                  <option value="4">F4</option><option value="5">F5</option><option value="6">F6</option>
+                  <option value="7">F7</option><option value="8">F8</option><option value="9">F9</option>
+                  <option value="10">F10</option><option value="11">F11</option><option value="12">F12</option>
+                  <option value="13">F13</option><option value="14">F14</option><option value="15">F15</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Categoría</label>
+                <select id="npCategoria" class="admin-select" onchange="filtrarEquiposPorCategoria()">
+                  <option value="LIBRES_A">Libres A</option>
+                  <option value="LIBRES_B">Libres B</option>
+                  <option value="SENIOR">Sénior</option>
+                  <option value="INTERZONA">Interzona</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Equipo Local</label>
+              <select id="npEquipoL" class="admin-select"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Equipo Visitante</label>
+              <select id="npEquipoV" class="admin-select"></select>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Cancha</label>
+                <select id="npCancha" class="admin-select">
+                  <option value="1">Cancha 1</option>
+                  <option value="2">Cancha 2</option>
+                  <option value="3">Cancha 3</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Hora</label>
+                <input type="time" id="npHora" class="admin-select" value="20:00">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha del partido</label>
+              <input type="date" id="npFechaPartido" class="admin-select">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeNuevoPartidoModal()">Cancelar</button>
+            <button class="btn-primary" onclick="guardarNuevoPartido()">Guardar Partido</button>
           </div>
         </div>
       </div>
 
-      <!-- Fecha tabs -->
-      <div class="tab-row" id="adminFechaTabs" style="margin-bottom:12px"></div>
+      <!-- Modal Sponsor -->
+      <div id="sponsorModal" class="modal-overlay" style="display:none">
+        <div class="modal-content" style="max-width:500px">
+          <div class="modal-header">
+            <span class="modal-title" id="sponsorModalTitle">➕ Nuevo Sponsor</span>
+            <button class="modal-close" onclick="closeSponsorModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="spId" value="">
+            <div class="form-group">
+              <label class="form-label">Nombre</label>
+              <input type="text" id="spNombre" class="admin-select" placeholder="Nombre del sponsor">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción</label>
+              <textarea id="spDescripcion" class="admin-select" rows="3" placeholder="Descripción del sponsor..." style="resize:vertical"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Dirección</label>
+                <input type="text" id="spDireccion" class="admin-select" placeholder="Ciudad, Provincia">
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Teléfono</label>
+                <input type="text" id="spTelefono" class="admin-select" placeholder="3442-123456">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL del Logo (opcional)</label>
+              <input type="text" id="spLogo" class="admin-select" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Link web (opcional)</label>
+              <input type="text" id="spLink" class="admin-select" placeholder="https://...">
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Orden</label>
+                <input type="number" id="spOrden" class="admin-select" value="1" min="1">
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Activo</label>
+                <select id="spActivo" class="admin-select">
+                  <option value="1">Sí</option>
+                  <option value="0">No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeSponsorModal()">Cancelar</button>
+            <button class="btn-primary" onclick="guardarSponsor()">Guardar</button>
+          </div>
+        </div>
+      </div>
 
-      <!-- Match list -->
-      <div id="adminMatchList">
-        <div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>
+      <!-- Modal Reglamento -->
+      <div id="reglamentoModal" class="modal-overlay" style="display:none">
+        <div class="modal-content" style="max-width:450px">
+          <div class="modal-header">
+            <span class="modal-title" id="reglamentoModalTitle">➕ Nuevo Reglamento</span>
+            <button class="modal-close" onclick="closeReglamentoModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="rgId" value="">
+            <div class="form-group">
+              <label class="form-label">Título</label>
+              <input type="text" id="rgTitulo" class="admin-select" placeholder="Título del reglamento">
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL del PDF o documento</label>
+              <input type="text" id="rgUrl" class="admin-select" placeholder="https://...">
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Orden</label>
+                <input type="number" id="rgOrden" class="admin-select" value="1" min="1">
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Activo</label>
+                <select id="rgActivo" class="admin-select">
+                  <option value="1">Sí</option>
+                  <option value="0">No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeReglamentoModal()">Cancelar</button>
+            <button class="btn-primary" onclick="guardarReglamento()">Guardar</button>
+          </div>
+        </div>
       </div>
 
       <!-- Match Editor Modal -->
@@ -3303,7 +3486,6 @@
 
 </main>
 
-
 <button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <!-- Theme Switcher -->
@@ -3326,54 +3508,6 @@
   </div>
 </div>
 
-
-<script>
-// ============================================================
-// NAV PILL & HAMBURGER - De versión Supabase
-// ============================================================
-function updateNavPill() {
-  var activeBtn = document.querySelector('.nav-btn.active');
-  var pill = document.getElementById('navPill');
-  if (activeBtn && pill) {
-    pill.style.left = activeBtn.offsetLeft + 'px';
-    pill.style.width = activeBtn.offsetWidth + 'px';
-  }
-}
-
-function toggleNavDropdown() {
-  var dropdown = document.getElementById('navDropdown');
-  var isOpen = dropdown.classList.contains('show');
-  if (isOpen) {
-    dropdown.classList.remove('show');
-  } else {
-    dropdown.classList.add('show');
-  }
-}
-
-function showSectionFromDropdown(id) {
-  document.getElementById('navDropdown').classList.remove('show');
-  showSection(id);
-  document.querySelectorAll('.nav-dropdown-item').forEach(function(item) {
-    item.classList.remove('active');
-  });
-  if (event && event.target) {
-    var btn = event.target.closest('.nav-dropdown-item');
-    if (btn) btn.classList.add('active');
-  }
-}
-
-// Cerrar dropdown al hacer clic afuera
-document.addEventListener('click', function(e) {
-  var dropdown = document.getElementById('navDropdown');
-  var hamburger = document.getElementById('headerHamburger');
-  if (dropdown && hamburger && !dropdown.contains(e.target) && !hamburger.contains(e.target)) {
-    dropdown.classList.remove('show');
-  }
-});
-
-// Actualizar pill en resize
-window.addEventListener('resize', updateNavPill);
-</script>
 <script>
 // ============================================================
 // THEME MANAGEMENT
@@ -3557,6 +3691,32 @@ function getEscudo(nombre, size) {
 // ═══════════════════════════════════════════════
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxELCSZ_1um1fExggTpzybMmNQBQWOV3KwOPVjwPcUsIiPl1n8baRSNOwFSIMcdhEAe/exec';
 
+// Función helper para llamadas a Supabase
+async function supabaseGet(action, params = {}) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url.searchParams.set(k, v);
+  });
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Error desconocido');
+  return data.data;
+}
+
+async function supabasePost(action, body) {
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Error desconocido');
+  return data.data;
+}
+
 // ── Sanitización HTML (previene XSS) ─────────────────────────
 function escapeHTML(str) {
   if (str === null || str === undefined) return '';
@@ -3568,26 +3728,106 @@ function escapeHTML(str) {
     .replace(/'/g, '&#39;');
 }
 
-// ── Helper: fetch desde Apps Script ─────────────────────────
+// Formatea canchaHora como badge con íconos
+function formatCanchaHora(ch) {
+  if (!ch) return '';
+  var str = String(ch);
+  var parts = [];
+  
+  // Extraer hora (formato HH:MM o HH:MM:SS)
+  var horaMatch = str.match(/(\d{1,2}:\d{2})(:\d{2})?/);
+  if (horaMatch) {
+    parts.push('🕐 ' + horaMatch[1]);
+  }
+  
+  // Extraer cancha (Cancha X, C1, C2, o solo número después de guión)
+  var canchaMatch = str.match(/cancha\s*(\d+)/i) || str.match(/-\s*(\d+)\s*$/);
+  if (canchaMatch) {
+    parts.push('🏟️ Cancha ' + canchaMatch[1]);
+  }
+  
+  // Si no parseamos nada, devolver el string original escapado
+  if (parts.length === 0) {
+    return escapeHTML(str);
+  }
+  
+  return parts.join(' · ');
+}
+
+// ── Menú hamburguesa (dropdown mobile) ─────────────────────────────
+function toggleNavDropdown() {
+  var dropdown = document.getElementById('navDropdown');
+  var hamburger = document.getElementById('headerHamburger');
+  var isOpen = dropdown.classList.contains('show');
+  
+  if (isOpen) {
+    dropdown.classList.remove('show');
+  } else {
+    dropdown.classList.add('show');
+  }
+}
+
+function showSectionFromDropdown(id) {
+  // Cerrar dropdown
+  document.getElementById('navDropdown').classList.remove('show');
+  // Mostrar sección
+  showSection(id);
+  // Marcar item activo en dropdown
+  document.querySelectorAll('.nav-dropdown-item').forEach(function(item) {
+    item.classList.remove('active');
+  });
+  if (event && event.target) {
+    var btn = event.target.closest('.nav-dropdown-item');
+    if (btn) btn.classList.add('active');
+  }
+}
+
+// Cerrar dropdown al hacer clic afuera
+document.addEventListener('click', function(e) {
+  var dropdown = document.getElementById('navDropdown');
+  var hamburger = document.getElementById('headerHamburger');
+  if (dropdown && hamburger && !dropdown.contains(e.target) && !hamburger.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
+// ── Helper: fetch desde Apps Script (adaptado de Supabase) ─────────────────────────
 async function fetchAPI(action, params) {
   const url = new URL(APPS_SCRIPT_URL);
   url.searchParams.set('action', action);
-  url.searchParams.set('t', Date.now());
+  url.searchParams.set('t', Date.now()); // Cache busting
   if (params) {
     for (const [k, val] of Object.entries(params)) {
-      url.searchParams.set(k, val);
+      if (val !== undefined && val !== null) url.searchParams.set(k, val);
     }
   }
   const res = await fetch(url.toString(), { cache: 'no-store' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
+  
+  // Adaptar respuesta de Apps Script al formato esperado
   if (json.error) throw new Error(json.error);
+  if (!json.ok) throw new Error('Error en respuesta');
+  
+  // Mapear campos según la acción
+  if (action === 'getFixture') return json.matches;
+  if (action === 'getStandings') return json.rows;
+  if (action === 'getScorers') return { scorers: json.scorers, hayMas: json.hayMas, totalConUno: json.totalConUno };
+  if (action === 'getDisciplina') return json.rows;
+  if (action === 'getSponsors') return json.sponsors;
+  if (action === 'getReglamentos') return json.reglamentos;
+  if (action === 'getMatchDetail') return json;
+  if (action === 'getRoster') return json.players || json.data || [];
+  if (action === 'getEquipos') return json.equipos || json.data || [];
+  
+  // Default: devolver todo el json
   return json;
 }
 // ============================================================
 let state = {
   fixture: null,
   posiciones: {},
+  prevPositions: {}, // Posiciones de la fecha anterior para mostrar cambios
   goleadores: {},
   disciplina: {},
   sponsors: null,
@@ -3599,16 +3839,50 @@ let state = {
   currentCategoria: 'libres' // 'libres' | 'senior' - sincroniza entre secciones
 };
 
+// Obtener posición anterior de un equipo (calcula dinámicamente)
+function getPreviousPosition(equipo, view) {
+  // Calcular posiciones anteriores si no están cacheadas para esta vista
+  if (!state.prevPositions[view]) {
+    state.prevPositions[view] = calcularPosicionesAnteriores(view);
+  }
+  // Buscar con normalización (sin acentos, mayúsculas)
+  var equipoNorm = normalizeTeamName(equipo);
+  var prevPos = state.prevPositions[view];
+  for (var key in prevPos) {
+    if (normalizeTeamName(key) === equipoNorm) {
+      return prevPos[key];
+    }
+  }
+  return null;
+}
+
+// Normalizar nombre de equipo para comparación
+function normalizeTeamName(name) {
+  if (!name) return '';
+  return String(name).toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
+
 // ============================================================
 // NAVIGATION
 // ============================================================
+function updateNavPill() {
+  const activeBtn = document.querySelector('.nav-btn.active');
+  const pill = document.getElementById('navPill');
+  if (activeBtn && pill) {
+    pill.style.left = activeBtn.offsetLeft + 'px';
+    pill.style.width = activeBtn.offsetWidth + 'px';
+  }
+}
+
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
   document.getElementById('nav-' + id).classList.add('active');
   
-  // Actualizar pill de navegación
+  // Actualizar pill
   updateNavPill();
 
   // Sincronizar categoría al cambiar de sección
@@ -3644,8 +3918,8 @@ function syncFixtureToCategoria() {
   if (state.currentFixtureFilter !== filter && state.currentFixtureFilter !== 'todos') {
     state.currentFixtureFilter = filter;
     // Actualizar botón activo
-    document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
-    const btn = document.querySelector(`#fixtureFilters .filter-tab[onclick*="'${filter}'"]`);
+    document.querySelectorAll('#fixtureFilters .fix-cat-v3').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`#fixtureFilters .fix-cat-v3[onclick*="'${filter}'"]`);
     if (btn) btn.classList.add('active');
     if (state.fixture) renderFixture();
   } else if (state.currentFixtureFilter === 'todos') {
@@ -3658,8 +3932,8 @@ function syncPosicionesToCategoria() {
   if (state.currentPos !== targetView) {
     state.currentPos = targetView;
     // Actualizar botón activo
-    document.querySelectorAll('#posTab .tab-pill').forEach(b => b.classList.remove('active'));
-    const btn = document.querySelector(`#posTab .tab-pill[onclick*="'${targetView}'"]`);
+    document.querySelectorAll('#posTab .pos-seg-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`#posTab .pos-seg-btn[onclick*="'${targetView}'"]`);
     if (btn) btn.classList.add('active');
     if (state.posiciones[targetView]) {
       renderPos(targetView);
@@ -3708,9 +3982,10 @@ function syncDisciplinaToCategoria() {
 // ============================================================
 async function loadFixture() {
   try {
-    const json = await fetchAPI('getFixture');
-    if (!json.ok) throw new Error(json.error || 'Error');
-    state.fixture = json.matches;
+    const data = await fetchAPI('getFixture');
+    state.fixture = data;
+    state.prevPositions = {}; // Resetear cache de posiciones anteriores
+    state.rachasCalculadas = false; // Recalcular rachas
     renderFixture();
   } catch(e) {
     showError('fixtureContainer', 'No se pudo cargar el fixture', loadFixture);
@@ -3726,7 +4001,7 @@ async function toggleDetails(pid, rowIndex, partidoEnc) {
   const btn = document.querySelector(`[onclick*="toggleDetails('${pid}"]`);
 
   if (!isOpen && !el.dataset.loaded) {
-    // Lazy-load from Apps Script
+    // Lazy-load from Supabase
     el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-dimmer);font-size:12px">Cargando...</div>';
     el.classList.add('open');
     if (btn) btn.textContent = '▲ Ocultar';
@@ -3756,7 +4031,7 @@ function buildDetailsHTML(json) {
 
   function buildSide(goles, amarillas, rojas) {
     let items = [];
-    (goles||[]).forEach(g => items.push(`<div class="details-incident">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' x'+parseInt(g.goles):''}</div>`));
+    (goles||[]).forEach(g => items.push(`<div class="details-incident">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' ('+parseInt(g.goles)+')':''}</div>`));
     (amarillas||[]).forEach(n => items.push(`<div class="details-incident">🟨 ${escapeHTML(n)}</div>`));
     (rojas||[]).forEach(n => items.push(`<div class="details-incident">🟥 ${escapeHTML(n)}</div>`));
     return items.length ? items.join('') : '<div class="details-empty">Sin incidencias</div>';
@@ -3766,19 +4041,19 @@ function buildDetailsHTML(json) {
   const htmlV = buildSide(json.goleadoresV, json.amonestadosV, json.rojasV);
 
   return `<div class="details-grid">
-    <div>
+    <div class="details-team-box">
       <div class="details-team-label">${local}</div>
       ${htmlL}
     </div>
-    <div style="text-align:right">
-      <div class="details-team-label" style="text-align:right">${visit}</div>
+    <div class="details-team-box">
+      <div class="details-team-label">${visit}</div>
       ${htmlV}
     </div>
   </div>`;
 }
 
 function filterFixture(filter, btn) {
-  document.querySelectorAll('#fixtureFilters .filter-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#fixtureFilters .fix-cat-v3').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentFixtureFilter = filter;
   // Sincronizar categoría global
@@ -3857,7 +4132,7 @@ function filterByEquipo(equipo) {
       return !vis.includes('libre');
     });
     if (!sinLibre.length) return true; // todos son libre
-    return sinLibre.every(p => p.jugado === 'Jugado');
+    return sinLibre.every(p => p.jugado === true || p.jugado === 'Jugado');
   }
 
   // Primera fecha incompleta (o la última si todas completas)
@@ -3876,10 +4151,36 @@ function filterByEquipo(equipo) {
   const completa  = fechaCompleta(selItems);
   // No contar LIBRE para el badge de estado
   const sinLibre  = selItems.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
-  const jugados   = sinLibre.filter(p => p.jugado === 'Jugado').length;
+  const jugados   = sinLibre.filter(p => p.jugado === true || p.jugado === 'Jugado').length;
   const pendientes = sinLibre.length - jugados;
   const statusCls = completa ? 'completa' : '';
   const statusTxt = completa ? '✓ Completa' : `${pendientes} pendiente${pendientes !== 1 ? 's' : ''}`;
+
+  // ── Actualizar header pill v3 ──
+  const fixFechaText = document.getElementById('fixFechaText');
+  const fixPendientes = document.getElementById('fixPendientes');
+  const fechaSelect = document.getElementById('fechaSelect');
+  
+  if (fixFechaText) {
+    fixFechaText.textContent = `Fecha ${selKey} · ${jugados}/${sinLibre.length}`;
+  }
+  if (fixPendientes) {
+    fixPendientes.textContent = statusTxt;
+    fixPendientes.classList.toggle('completa', completa);
+  }
+  
+  // ── Poblar select de fechas ──
+  if (fechaSelect) {
+    const opts = fechaKeys.map(k => {
+      const todos = groups[k];
+      const sinLib = todos.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
+      const jug = sinLib.filter(p => p.jugado === true || p.jugado === 'Jugado').length;
+      const tot = sinLib.length;
+      const lbl = `Fecha ${k} (${jug}/${tot})`;
+      return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
+    }).join('');
+    fechaSelect.innerHTML = opts;
+  }
 
   // ── Si hay filtro de equipo: mostrar todos los partidos sin selector de fecha ──
   const itemsToRender = state.currentEquipo ? items : selItems;
@@ -3887,31 +4188,13 @@ function filterByEquipo(equipo) {
   let html = '';
   if (state.currentEquipo) {
     const totalEquipo = items.length;
-    const jugadosEquipo = items.filter(p => p.jugado === 'Jugado').length;
-    html = `
-  <div class="fecha-selector-wrap">
-    <span class="fecha-selector-label">🛡️ ${state.currentEquipo}</span>
-    <span class="fecha-selector-status">${jugadosEquipo}/${totalEquipo} jugados</span>
-  </div>`;
-  } else {
-    // ── Selector de fecha ──
-    const opts = fechaKeys.map(k => {
-      const todos    = groups[k];
-      const sinLib   = todos.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
-      const jug      = sinLib.filter(p => p.jugado === 'Jugado').length;
-      const tot      = sinLib.length;
-      const lbl      = `Fecha ${k}  (${jug}/${tot} jugados)`;
-      return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
-    }).join('');
-
-    html = `
-  <div class="fecha-selector-wrap">
-    <span class="fecha-selector-label">📅 Fecha ${selKey}</span>
-    <span class="fecha-selector-status ${statusCls}">${statusTxt}</span>
-    <select class="fecha-selector-select" onchange="selectFecha(this.value)">
-      ${opts}
-    </select>
-  </div>`;
+    const jugadosEquipo = items.filter(p => p.jugado === true || p.jugado === 'Jugado').length;
+    // Actualizar el header para mostrar info del equipo
+    if (fixFechaText) fixFechaText.textContent = `${state.currentEquipo} · ${jugadosEquipo}/${totalEquipo}`;
+    if (fixPendientes) {
+      fixPendientes.textContent = 'Ver todos';
+      fixPendientes.classList.remove('completa');
+    }
   }
 
   // ── Partidos a renderizar ──
@@ -3925,7 +4208,7 @@ function filterByEquipo(equipo) {
         lastFecha = fNum;
       }
     }
-    const jugado = p.jugado === 'Jugado';
+    const jugado = p.jugado === true || p.jugado === 'Jugado';
     const nrCase = p.jugado === 'NR';
     const rowClass = p.isSenior ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
     let local = '', visitante = '', result = '';
@@ -3988,22 +4271,40 @@ function filterByEquipo(equipo) {
       detHtmlV = incV.length ? incV.join('') : '<div class="details-empty" style="text-align:right">Sin incidencias</div>';
     }
 
+    // Extraer hora y cancha para el sidebar
+    let horaStr = '', canchaStr = '';
+    if (p.canchaHora) {
+      const ch = String(p.canchaHora);
+      const horaMatch = ch.match(/(\d{1,2}:\d{2})/);
+      const canchaMatch = ch.match(/cancha\s*(\d+)/i) || ch.match(/-\s*(\d+)\s*$/);
+      if (horaMatch) horaStr = horaMatch[1] + ' hs';
+      if (canchaMatch) canchaStr = 'Cancha ' + canchaMatch[1];
+    }
+    const sidebarHtml = (horaStr || canchaStr) ? `
+      <div class="partido-sidebar">
+        ${horaStr ? `<div class="partido-sidebar-hora">${horaStr}</div>` : ''}
+        ${canchaStr ? `<div class="partido-sidebar-cancha">${canchaStr}</div>` : ''}
+      </div>` : '';
+
     html += `<div class="partido-row ${rowClass}">
-      <div class="equipo-fixture">
-        ${escudoLocal}
-        <div class="equipo-name">${escapeHTML(local)}</div>
-      </div>
-      <div class="resultado-box">
-        ${result}
-        ${p.canchaHora ? `<div class="partido-meta">${escapeHTML(p.canchaHora)}</div>` : ''}
+      <div class="partido-content">
+        <div class="partido-header">
+          <div class="partido-equipo-row">
+            ${escudoLocal}
+            <div class="partido-equipo-nombre">${escapeHTML(local)}${getPosBadgeHtml(local)}<button class="racha-btn" data-equipo="${escapeHTML(local)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(local)}</button></div>
+            <div class="partido-equipo-score">${jugado ? p.golesL : '-'}</div>
+          </div>
+          <div class="partido-equipo-row">
+            ${escudoVisit}
+            <div class="partido-equipo-nombre">${escapeHTML(visitante)}${getPosBadgeHtml(visitante)}<button class="racha-btn" data-equipo="${escapeHTML(visitante)}" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">${getRachaDotsHtml(visitante)}</button></div>
+            <div class="partido-equipo-score">${jugado ? p.golesV : '-'}</div>
+          </div>
+        </div>
         ${jugado ? `<div class="fixture-ver-btn" onclick="event.stopPropagation();toggleDetails('${pid}',${p.rowIndex||0},'${encodeURIComponent(p.partido||'')}')">▼ Ver detalles</div>` : ''}
+        ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}
       </div>
-      <div class="equipo-fixture right">
-        <div class="equipo-name right">${escapeHTML(visitante)}</div>
-        ${escudoVisit}
-      </div>
-    </div>
-    ${jugado ? `<div class="fixture-details" id="${pid}"></div>` : ''}`;
+      ${sidebarHtml}
+    </div>`;
   });
 
   container.innerHTML = html;
@@ -4029,7 +4330,7 @@ async function loadPosiciones() {
 }
 
 async function showPos(view, btn) {
-  document.querySelectorAll('#posTab .tab-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#posTab .pos-seg-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentPos = view;
   // Sincronizar categoría global
@@ -4046,13 +4347,31 @@ async function showPos(view, btn) {
 
 async function loadPosView(view) {
   try {
-    const sheetName = POS_SHEETS[view];
-    const json = await fetchAPI('getStandings', { tabla: sheetName });
-    if (!json.ok) throw new Error(json.error || 'Error');
-    state.posiciones[view] = json.rows.map(r => ({
-      'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+    // Mapear vista a categoría Supabase
+    const catMap = {
+      'zona-a-libres': 'LIBRES_A',
+      'zona-b-libres': 'LIBRES_B',
+      'general-libres': null, // Combinar A y B
+      'general-senior': 'SENIOR'
+    };
+    const categoria = catMap[view];
+    
+    let data;
+    if (view === 'general-libres') {
+      // Combinar Zona A y B
+      const [dataA, dataB] = await Promise.all([
+        fetchAPI('getPosiciones', { categoria: 'LIBRES_A' }),
+        fetchAPI('getPosiciones', { categoria: 'LIBRES_B' })
+      ]);
+      data = [...(dataA || []), ...(dataB || [])].sort((a, b) => b.pts - a.pts || b.dif - a.dif);
+    } else {
+      data = await fetchAPI('getPosiciones', { categoria });
+    }
+    
+    state.posiciones[view] = (data || []).map((r, i) => ({
+      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
       'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
-      'Diferencia': r.dif, 'Img': r.img
+      'Diferencia': r.dif, 'Img': null
     }));
     renderPos(view);
   } catch(e) {
@@ -4061,86 +4380,419 @@ async function loadPosView(view) {
 }
 
 function renderPos(view) {
-  const data = state.posiciones[view];
+  var data = state.posiciones[view];
   if (!data || !data.length) {
     document.getElementById('posContainer').innerHTML = '<div class="empty">Sin datos disponibles</div>';
     return;
   }
 
-  const isGeneral = view.includes('general');
-  const isSenior = view.includes('senior');
-  const totalRows = data.length;
+  var isGeneral = view.includes('general');
+  var isSenior = view.includes('senior');
+  
+  // Calcular rachas
+  calcularRachasEquipos();
 
-  let html = `<div class="card">
-    <table class="standings-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Equipo</th>
-          <th>PJ</th>
-          <th>Pts</th>
-          <th>PG</th>
-          <th>PE</th>
-          <th>PP</th>
-          <th>GF</th>
-          <th>GC</th>
-          <th>Dif</th>
-        </tr>
-      </thead>
-      <tbody>`;
+  var html = '<div class="card">' +
+    '<table class="standings-table">' +
+      '<thead>' +
+        '<tr>' +
+          '<th>#</th>' +
+          '<th>Equipo</th>' +
+          '<th>PJ</th>' +
+          '<th>Pts</th>' +
+          '<th>PG</th>' +
+          '<th>PE</th>' +
+          '<th>PP</th>' +
+          '<th class="hide-mobile">GF</th>' +
+          '<th class="hide-mobile">GC</th>' +
+          '<th>Dif</th>' +
+        '</tr>' +
+      '</thead>' +
+      '<tbody>';
 
-  data.forEach((row, i) => {
-    const pos = row['Posicion'] || row['Pos'] || row['Pos '] || (i + 1);
-    const equipo = row['Equipo'] || row['Equipo '] || row['Equipos'] || '-';
-    const pj = row['PJ'] ?? '-';
-    const pts = row['Puntos'] ?? '-';
-    const pg = row['PG'] ?? '-';
-    const pe = row['PE'] ?? '-';
-    const pp = row['PP'] ?? '-';
-    const gf = row['GF'] ?? '-';
-    const gc = row['GC'] ?? '-';
-    const dif = (row['Diferencia'] || row['Dif'] || row['DIF']);
-    const difNum = parseInt(dif) || 0;
+  data.forEach(function(row, i) {
+    var pos = row['Posicion'] || row['Pos'] || row['Pos '] || (i + 1);
+    var equipo = row['Equipo'] || row['Equipo '] || row['Equipos'] || '-';
+    var pj = row['PJ'] != null ? row['PJ'] : '-';
+    var pts = row['Puntos'] != null ? row['Puntos'] : '-';
+    var pg = row['PG'] != null ? row['PG'] : '-';
+    var pe = row['PE'] != null ? row['PE'] : '-';
+    var pp = row['PP'] != null ? row['PP'] : '-';
+    var gf = row['GF'] != null ? row['GF'] : '-';
+    var gc = row['GC'] != null ? row['GC'] : '-';
+    var dif = row['Diferencia'] || row['Dif'] || row['DIF'];
+    var difNum = parseInt(dif) || 0;
 
-    let posClass = '';
+    var posClass = '';
     if (isSenior || isGeneral) {
-      // Senior: oro 1-4, plata 5-8, bronce 9-12
-      if (i < 4)       posClass = 'oro';
-      else if (i < 8)  posClass = 'plata';
-      else             posClass = 'bronce';
+      if (i < 4) posClass = 'oro';
+      else if (i < 8) posClass = 'plata';
+      else posClass = 'bronce';
     } else if (view === 'zona-a-libres') {
-      // Zona A: top 4 verde, 5-9 amarillo
       if (i < 4) posClass = 'top';
       else if (i < 9) posClass = 'mid';
     } else if (view === 'zona-b-libres') {
-      // Zona B: top 4 verde, 5-10 amarillo
       if (i < 4) posClass = 'top';
       else if (i < 10) posClass = 'mid';
     }
-    const difClass = dif > 0 ? 'diff-pos' : (dif < 0 ? 'diff-neg' : '');
-    const difBadgeClass = difNum > 0 ? 'pos' : (difNum < 0 ? 'neg' : 'zero');
-    const difBadgeText = difNum > 0 ? '+' + difNum : String(difNum);
-    html += `<tr>
-      <td><div class="pos-num ${posClass}">${pos}</div></td>
-      <td>
-        <div class="team-cell">
-          ${getEscudo(equipo, 28)}
-          <div class="team-name-cell">${equipo}<span class="dif-badge ${difBadgeClass}">${difBadgeText}</span></div>
-        </div>
-      </td>
-      <td class="stat-cell">${pj}</td>
-      <td><div class="pts">${pts}</div></td>
-      <td class="stat-cell">${pg}</td>
-      <td class="stat-cell">${pe}</td>
-      <td class="stat-cell">${pp}</td>
-      <td class="stat-cell">${gf}</td>
-      <td class="stat-cell">${gc}</td>
-      <td class="${difClass}">${dif !== undefined && dif !== null ? (dif > 0 ? '+' + dif : dif) : '-'}</td>
-    </tr>`;
+    
+    var difClass = dif > 0 ? 'diff-pos' : (dif < 0 ? 'diff-neg' : '');
+    
+    // Badge de diferencia de gol
+    var difBadgeClass = difNum > 0 ? 'pos' : (difNum < 0 ? 'neg' : 'zero');
+    var difBadgeText = difNum > 0 ? '+' + difNum : String(difNum);
+    
+    // Racha de últimos 3 partidos - usar data attribute para evitar problemas con comillas
+    var rachaHtml = getRachaDotsHtml(equipo);
+    if (rachaHtml) {
+      rachaHtml = '<button class="racha-btn" data-equipo="' + escapeHTML(equipo) + '" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">' + rachaHtml + '</button>';
+    }
+    
+    // Calcular cambio de posición (si hay datos previos)
+    var deltaHtml = '';
+    var prevPos = getPreviousPosition(equipo, view);
+    if (prevPos !== null && prevPos !== undefined) {
+      var delta = prevPos - pos; // positivo = subió, negativo = bajó
+      if (delta > 0) {
+        deltaHtml = '<span class="pos-delta up">▲' + delta + '</span>';
+      } else if (delta < 0) {
+        deltaHtml = '<span class="pos-delta down">▼' + Math.abs(delta) + '</span>';
+      } else {
+        deltaHtml = '<span class="pos-delta same">—</span>';
+      }
+    }
+    
+    html += '<tr>' +
+      '<td><div class="pos-num ' + posClass + '">' + pos + '</div>' + deltaHtml + '</td>' +
+      '<td>' +
+        '<div class="team-cell">' +
+          getEscudo(equipo, 28) +
+          '<div class="team-name-cell">' +
+            '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
+            '<span class="team-stats-row"><span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' + rachaHtml + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td class="stat-cell">' + pj + '</td>' +
+      '<td><div class="pts">' + pts + '</div></td>' +
+      '<td class="stat-cell">' + pg + '</td>' +
+      '<td class="stat-cell">' + pe + '</td>' +
+      '<td class="stat-cell">' + pp + '</td>' +
+      '<td class="stat-cell hide-mobile">' + gf + '</td>' +
+      '<td class="stat-cell hide-mobile">' + gc + '</td>' +
+      '<td class="' + difClass + '">' + (dif !== undefined && dif !== null ? (dif > 0 ? '+' + dif : dif) : '-') + '</td>' +
+    '</tr>';
   });
 
-  html += `</tbody></table></div>`;
+  html += '</tbody></table></div>';
   document.getElementById('posContainer').innerHTML = html;
+}
+
+// Calcular posiciones sin la última fecha jugada
+function calcularPosicionesAnteriores(view) {
+  var posAnt = {};
+  if (!state.fixture || !state.fixture.length) return posAnt;
+  
+  // Determinar si es senior o libres
+  var esSenior = view.includes('senior');
+  
+  // Filtrar partidos por categoría
+  var partidosCategoria = state.fixture.filter(function(p) {
+    if (esSenior) return p.isSenior === true;
+    return p.isSenior !== true;
+  });
+  
+  // Encontrar última fecha jugada
+  var fechasJugadas = partidosCategoria
+    .filter(function(p) { return p.jugado === true || p.jugado === 'Jugado'; })
+    .map(function(p) { return parseInt(String(p.fecha || p.fechaNum || '').replace(/\D/g, '')) || 0; });
+  
+  if (!fechasJugadas.length) return posAnt;
+  var ultimaFecha = Math.max.apply(null, fechasJugadas);
+  if (ultimaFecha <= 1) return posAnt;
+  
+  // Simular tabla sin la última fecha
+  var equiposStats = {};
+  
+  partidosCategoria.forEach(function(p) {
+    var fechaNum = parseInt(String(p.fecha || p.fechaNum || '').replace(/\D/g, '')) || 0;
+    if (fechaNum >= ultimaFecha) return;
+    if (!(p.jugado === true || p.jugado === 'Jugado')) return;
+    
+    var eqL = p.equipoL;
+    var eqV = p.equipoV;
+    var gL = parseInt(p.golesL) || 0;
+    var gV = parseInt(p.golesV) || 0;
+    
+    if (!eqL || !eqV || eqL === 'LIBRE' || eqV === 'LIBRE') return;
+    
+    if (!equiposStats[eqL]) equiposStats[eqL] = { pts: 0, dif: 0, gf: 0 };
+    if (!equiposStats[eqV]) equiposStats[eqV] = { pts: 0, dif: 0, gf: 0 };
+    
+    equiposStats[eqL].gf += gL;
+    equiposStats[eqL].dif += (gL - gV);
+    equiposStats[eqV].gf += gV;
+    equiposStats[eqV].dif += (gV - gL);
+    
+    if (gL > gV) {
+      equiposStats[eqL].pts += 3;
+    } else if (gL < gV) {
+      equiposStats[eqV].pts += 3;
+    } else {
+      equiposStats[eqL].pts += 1;
+      equiposStats[eqV].pts += 1;
+    }
+  });
+  
+  // Ordenar y asignar posiciones
+  var equiposOrdenados = Object.keys(equiposStats).sort(function(a, b) {
+    var sA = equiposStats[a];
+    var sB = equiposStats[b];
+    if (sB.pts !== sA.pts) return sB.pts - sA.pts;
+    if (sB.dif !== sA.dif) return sB.dif - sA.dif;
+    return sB.gf - sA.gf;
+  });
+  
+  equiposOrdenados.forEach(function(eq, i) {
+    posAnt[eq] = i + 1;
+  });
+  
+  return posAnt;
+}
+
+// ═══ RACHA DE ÚLTIMOS PARTIDOS (para Fixture) ═══
+
+// Calcular racha de resultados por equipo
+function calcularRachasEquipos() {
+  if (state.rachasCalculadas) return;
+  state.partidosPorEquipo = {};
+  
+  if (!state.fixture || !state.fixture.length) return;
+  
+  state.fixture.forEach(function(p) {
+    if (!(p.jugado === true || p.jugado === 'Jugado')) return;
+    var fechaNum = parseInt(String(p.fecha || p.fechaNum || '').replace(/\D/g, '')) || 0;
+    var eqL = p.equipoL;
+    var eqV = p.equipoV;
+    var gL = parseInt(p.golesL) || 0;
+    var gV = parseInt(p.golesV) || 0;
+    
+    if (!eqL || !eqV || eqL === 'LIBRE' || eqV === 'LIBRE') return;
+    
+    // Resultado para local
+    if (!state.partidosPorEquipo[eqL]) state.partidosPorEquipo[eqL] = [];
+    state.partidosPorEquipo[eqL].push({
+      fecha: fechaNum,
+      resultado: gL > gV ? 'W' : (gL < gV ? 'L' : 'D'),
+      rival: eqV,
+      goles: gL + '-' + gV,
+      golesEquipo: gL,
+      golesRival: gV,
+      local: true
+    });
+    
+    // Resultado para visitante
+    if (!state.partidosPorEquipo[eqV]) state.partidosPorEquipo[eqV] = [];
+    state.partidosPorEquipo[eqV].push({
+      fecha: fechaNum,
+      resultado: gV > gL ? 'W' : (gV < gL ? 'L' : 'D'),
+      rival: eqL,
+      goles: gV + '-' + gL,
+      golesEquipo: gV,
+      golesRival: gL,
+      local: false
+    });
+  });
+  
+  // Ordenar por fecha descendente
+  Object.keys(state.partidosPorEquipo).forEach(function(eq) {
+    state.partidosPorEquipo[eq].sort(function(a, b) { return b.fecha - a.fecha; });
+  });
+  
+  state.rachasCalculadas = true;
+}
+
+// Generar HTML de los dots de racha
+function getRachaDotsHtml(equipo) {
+  calcularRachasEquipos();
+  
+  // Buscar case-insensitive
+  var partidos = null;
+  if (state.partidosPorEquipo) {
+    if (state.partidosPorEquipo[equipo]) {
+      partidos = state.partidosPorEquipo[equipo];
+    } else {
+      var equipoLower = equipo.toLowerCase();
+      for (var key in state.partidosPorEquipo) {
+        if (key.toLowerCase() === equipoLower) {
+          partidos = state.partidosPorEquipo[key];
+          break;
+        }
+      }
+    }
+  }
+  
+  if (!partidos || !partidos.length) return '';
+  
+  var dots = partidos.slice(0, 3).map(function(p) {
+    var cls = p.resultado === 'W' ? 'win' : (p.resultado === 'D' ? 'draw' : 'loss');
+    return '<span class="racha-dot ' + cls + '"></span>';
+  }).join('');
+  
+  return '<span class="racha-dots">' + dots + '</span>';
+}
+
+// Obtener posición del equipo en la tabla
+function getPosicionEquipo(equipo) {
+  // Buscar en todas las tablas de posiciones cargadas
+  var vistas = ['zona-a-libres', 'zona-b-libres', 'general-senior'];
+  for (var i = 0; i < vistas.length; i++) {
+    var vista = vistas[i];
+    var data = state.posiciones[vista];
+    if (data && data.length) {
+      for (var j = 0; j < data.length; j++) {
+        var row = data[j];
+        var nombreEquipo = row['Equipo'] || row['Equipo '] || row['Equipos'] || '';
+        if (nombreEquipo.toLowerCase() === equipo.toLowerCase()) {
+          return { pos: j + 1, total: data.length, vista: vista };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Generar HTML del badge de posición con flecha de cambio
+function getPosBadgeHtml(equipo) {
+  var posData = getPosicionEquipo(equipo);
+  if (!posData) return '';
+  
+  var pos = posData.pos;
+  var total = posData.total;
+  var vista = posData.vista;
+  var cls = '';
+  
+  // top 33% verde, medio 33% amarillo, bottom 33% rojo
+  if (pos <= Math.ceil(total / 3)) {
+    cls = 'top';
+  } else if (pos <= Math.ceil(total * 2 / 3)) {
+    cls = 'mid';
+  } else {
+    cls = 'bottom';
+  }
+  
+  // Calcular cambio de posición
+  var deltaHtml = '';
+  var prevPos = getPreviousPosition(equipo, vista);
+  if (prevPos !== null && prevPos !== undefined) {
+    var delta = prevPos - pos; // positivo = subió, negativo = bajó
+    if (delta > 0) {
+      deltaHtml = '<span class="pos-delta up">▲' + delta + '</span>';
+    } else if (delta < 0) {
+      deltaHtml = '<span class="pos-delta down">▼' + Math.abs(delta) + '</span>';
+    } else {
+      deltaHtml = '<span class="pos-delta same">—</span>';
+    }
+  }
+  
+  return '<span class="pos-badge ' + cls + '">' + pos + '°</span>' + deltaHtml;
+}
+
+// Mostrar popup con últimos partidos
+var ultimosPopup = null;
+function showUltimosPartidos(equipo, btn) {
+  // Cerrar popup anterior
+  if (ultimosPopup) {
+    ultimosPopup.remove();
+    ultimosPopup = null;
+  }
+  
+  calcularRachasEquipos();
+  
+  // Buscar case-insensitive
+  var partidos = null;
+  var equipoKey = equipo;
+  if (state.partidosPorEquipo) {
+    // Primero buscar exacto
+    if (state.partidosPorEquipo[equipo]) {
+      partidos = state.partidosPorEquipo[equipo];
+    } else {
+      // Buscar case-insensitive
+      var equipoLower = equipo.toLowerCase();
+      for (var key in state.partidosPorEquipo) {
+        if (key.toLowerCase() === equipoLower) {
+          partidos = state.partidosPorEquipo[key];
+          equipoKey = key;
+          break;
+        }
+      }
+    }
+  }
+  
+  if (!partidos || !partidos.length) return;
+  
+  var ultimos = partidos.slice(0, 3);
+  
+  var html = '<div class="ultimos-popup-title">Últimos partidos de ' + escapeHTML(equipoKey) + '</div>';
+  ultimos.forEach(function(p) {
+    var resClass = p.resultado === 'W' ? 'win' : (p.resultado === 'D' ? 'draw' : 'loss');
+    html += '<div class="ultimos-item">' +
+      '<span class="ultimos-fecha">F' + p.fecha + '</span>' +
+      '<span class="ultimos-rival">vs ' + escapeHTML(p.rival) + '</span>' +
+      '<span class="ultimos-res ' + resClass + '">' + p.goles + '</span>' +
+    '</div>';
+  });
+  
+  // Crear popup
+  var popup = document.createElement('div');
+  popup.className = 'ultimos-popup';
+  popup.innerHTML = html;
+  document.body.appendChild(popup);
+  
+  // Posicionar cerca del botón - usar position fixed para mejor control
+  var rect = btn.getBoundingClientRect();
+  var popupRect = popup.getBoundingClientRect();
+  
+  // Calcular posición inicial (debajo del botón)
+  var left = rect.left;
+  var top = rect.bottom + 5;
+  
+  // Ajustar si se sale por la derecha
+  if (left + popupRect.width > window.innerWidth - 10) {
+    left = window.innerWidth - popupRect.width - 10;
+  }
+  // Ajustar si se sale por la izquierda
+  if (left < 10) {
+    left = 10;
+  }
+  
+  // Ajustar si se sale por abajo - mostrar arriba del botón
+  if (top + popupRect.height > window.innerHeight - 10) {
+    top = rect.top - popupRect.height - 5;
+  }
+  // Si aún se sale por arriba, centrar verticalmente
+  if (top < 10) {
+    top = Math.max(10, (window.innerHeight - popupRect.height) / 2);
+  }
+  
+  popup.style.position = 'fixed';
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  
+  ultimosPopup = popup;
+  
+  // Cerrar al hacer clic fuera
+  setTimeout(function() {
+    document.addEventListener('click', closeUltimosPopup);
+  }, 10);
+}
+
+function closeUltimosPopup() {
+  if (ultimosPopup) {
+    ultimosPopup.remove();
+    ultimosPopup = null;
+  }
+  document.removeEventListener('click', closeUltimosPopup);
 }
 
 // ============================================================
@@ -4157,7 +4809,7 @@ async function loadGoleadores() {
 }
 
 async function showScorers(view, btn) {
-  document.querySelectorAll('#section-goleadores .tab-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#scorersTab .pos-seg-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentScorers = view;
   // Sincronizar categoría global
@@ -4172,26 +4824,26 @@ async function showScorers(view, btn) {
   }
 }
 
-async function loadScorersView(view, verTodos) {
+async function loadScorersView(view) {
   try {
-    var params = { vista: view };
-    if (verTodos) params.verTodos = 'true';
-    var json = await fetchAPI('getScorers', params);
-    if (!json.ok) throw new Error(json.error || 'Error');
+    // Mapear vista a categoría Supabase
+    const catMap = {
+      'libres-a': 'LIBRES_A',
+      'libres-b': 'LIBRES_B',
+      'senior': 'SENIOR'
+    };
+    const categoria = catMap[view];
+    const data = await fetchAPI('getGoleadores', { categoria });
+    
     // Mapear al formato que espera renderScorers
-    state.goleadores[view] = json.scorers.map(function(s) {
-      return {
-        'Jugador': s.jugador,
-        'Equipo':  s.equipo,
-        'Total':   s.total
-      };
-    });
-    // Guardar info de "ver más"
-    state.goleadoresHayMas = state.goleadoresHayMas || {};
-    state.goleadoresHayMas[view] = { hayMas: json.hayMas, totalConUno: json.totalConUno };
-    renderScorers(view, verTodos);
+    state.goleadores[view] = (data || []).map(s => ({
+      'Jugador': s.jugador,
+      'Equipo':  s.equipo,
+      'Total':   s.goles
+    }));
+    renderScorers(view);
   } catch(e) {
-    showError('scorersContainer', 'No se pudo cargar goleadores', function() { loadScorersView(view); });
+    showError('scorersContainer', 'No se pudo cargar goleadores', () => loadScorersView(view));
   }
 }
 
@@ -4204,51 +4856,53 @@ function filterScorers(query) {
   });
 }
 
-function renderScorers(view, verTodos) {
+function renderScorers(view, showAll) {
   var data = state.goleadores[view];
   if (!data || !data.length) {
     document.getElementById('scorersContainer').innerHTML = '<div class="empty">Sin datos disponibles</div>';
     return;
   }
 
+  // Separar: 2+ goles vs 1 gol
+  var conDosOMas = data.filter(function(p) { return (p['Total'] || 0) >= 2; });
+  var conUno = data.filter(function(p) { return (p['Total'] || 0) === 1; });
+  
+  // Si showAll, mostrar todos; sino solo los de 2+
+  var toShow = showAll ? data : conDosOMas;
+
   var html = '<div class="card">';
-  data.forEach(function(p, i) {
+  toShow.forEach(function(p, i) {
     var rank = i + 1;
     var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
     var goals = p['Total'] || 0;
     html += '<div class="scorer-row">' +
-      '<div class="scorer-rank ' + rankClass + '">' + rank + '</div>' +
-      '<div class="scorer-info">' +
-        '<div class="scorer-name">' + (p['Jugador'] || '-') + '</div>' +
-        '<div class="scorer-team" style="display:flex;align-items:center;gap:5px">' +
-          getEscudo(p['Equipo'] || '', 18) +
-          '<span>' + (p['Equipo'] || '-') + '</span>' +
+      '<div class="scorer-content">' +
+        '<div class="scorer-rank ' + rankClass + '">' + rank + '</div>' +
+        '<div class="scorer-info">' +
+          '<div class="scorer-name">' + (p['Jugador'] || '-') + '</div>' +
+          '<div class="scorer-team" style="display:flex;align-items:center;gap:5px">' +
+            getEscudo(p['Equipo'] || '', 18) +
+            '<span>' + (p['Equipo'] || '-') + '</span>' +
+          '</div>' +
         '</div>' +
       '</div>' +
-      '<div>' +
+      '<div class="scorer-sidebar">' +
         '<div class="scorer-goals">' + goals + '</div>' +
         '<div class="goals-label">goles</div>' +
       '</div>' +
     '</div>';
   });
-  html += '</div>';
   
-  // Botón "Ver más" si hay jugadores con 1 gol
-  var hayMasInfo = state.goleadoresHayMas && state.goleadoresHayMas[view];
-  if (hayMasInfo && hayMasInfo.hayMas && !verTodos) {
-    html += '<div style="text-align:center;margin-top:16px">' +
-      '<button class="btn-primary" onclick="loadScorersView(\'' + view + '\', true)" style="font-size:13px;padding:10px 20px">' +
-        'Ver ' + hayMasInfo.totalConUno + ' jugadores con 1 gol' +
-      '</button>' +
-    '</div>';
-  } else if (verTodos && hayMasInfo && hayMasInfo.totalConUno > 0) {
-    html += '<div style="text-align:center;margin-top:16px">' +
-      '<button class="btn-secondary" onclick="loadScorersView(\'' + view + '\', false)" style="font-size:13px;padding:10px 20px">' +
-        'Ocultar jugadores con 1 gol' +
-      '</button>' +
-    '</div>';
+  // Botón Ver más / Ocultar
+  if (conUno.length > 0) {
+    if (!showAll) {
+      html += '<div class="ver-mas-btn" onclick="renderScorers(\'' + view + '\', true)">Ver ' + conUno.length + ' jugadores con 1 gol</div>';
+    } else {
+      html += '<div class="ver-mas-btn" onclick="renderScorers(\'' + view + '\', false)">Ocultar jugadores con 1 gol</div>';
+    }
   }
   
+  html += '</div>';
   document.getElementById('scorersContainer').innerHTML = html;
   document.getElementById('scorerSearchWrap').style.display = '';
   document.getElementById('scorerSearch').value = '';
@@ -4269,7 +4923,7 @@ async function loadDisciplina() {
 }
 
 async function showDisc(view, btn) {
-  document.querySelectorAll('#section-disciplina .tab-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#discTab .pos-seg-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   state.currentDisc = view;
   // Sincronizar categoría global (solo para amarillas, rojas son mixtas)
@@ -4286,28 +4940,33 @@ async function showDisc(view, btn) {
 
 async function loadDiscView(view) {
   try {
-    const json = await fetchAPI('getDisciplina', { vista: view });
-    if (!json.ok) throw new Error(json.error || 'Error');
-
     if (view === 'rojas') {
-      // Mapear campos del endpoint
-      state.disciplina[view] = json.rows.map(r => ({
+      const data = await fetchAPI('getRojas');
+      // Mapear campos del endpoint Supabase
+      state.disciplina[view] = (data || []).map(r => ({
         '_rowIndex':        r._rowIndex,
-        'Fecha':            r.fecha,
-        'Jugador':          r.jugador,
-        'Equipo':           r.equipo,
-        'Partidos':         r.partidos,
-        'Artículo':         r.articulo,
-        'Habilitado FECHA': r.habilitadoFecha,
+        'Fecha':            r.Fecha,
+        'Jugador':          r.Jugador,
+        'Equipo':           r.Equipo,
+        'Partidos':         r.Partidos,
+        'Artículo':         r.Articulo,
+        'Habilitado FECHA': r['Habilitado FECHA'],
         'Senior':           r.isSenior,
-        'Tipo':             r.tipo
+        'Tipo':             'Roja'
       }));
     } else {
-      // Amarillas: mapear al formato que espera renderDisc
-      state.disciplina[view] = json.rows.map(r => ({
+      // Amarillas: mapear vista a categoría Supabase
+      const catMap = {
+        'amarillas-a': 'LIBRES_A',
+        'amarillas-b': 'LIBRES_B',
+        'amarillas-senior': 'SENIOR'
+      };
+      const categoria = catMap[view];
+      const data = await fetchAPI('getAmarillas', { categoria });
+      state.disciplina[view] = (data || []).map(r => ({
         'Jugador': r.jugador,
         'Equipo':  r.equipo,
-        'Total':   r.total
+        'Total':   r.amarillas
       }));
     }
     renderDisc(view);
@@ -4342,7 +5001,7 @@ function renderDisc(view) {
       const fechaNums = Object.keys(groups).map(Number).sort((a,b) => a-b);
       for (const fn of fechaNums) {
         const sinLibre = groups[fn].filter(p => !String(p.partido||'').toLowerCase().includes('libre'));
-        const completa = sinLibre.length > 0 && sinLibre.every(p => p.jugado === 'Jugado');
+        const completa = sinLibre.length > 0 && sinLibre.every(p => p.jugado === true || p.jugado === 'Jugado');
         if (!completa) { proximaFecha = fn; break; }
       }
     }
@@ -4471,20 +5130,22 @@ function renderDisc(view) {
       const rowClick = isAdmin ? `onclick="openRojaModal(decodeURIComponent('${rojaData}'))" style="cursor:pointer;${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}"` : `style="${sinSancion ? 'border-left:3px solid #ef4444;padding-left:8px' : ''}"`;
 
       return `<div class="disc-row" ${rowClick}>
-        <div class="disc-info" style="flex:1">
-          <div class="disc-name">${r['Jugador'] || '-'}</div>
-          <div class="disc-team" style="display:flex;align-items:center;gap:5px">
-            ${getEscudo(r['Equipo'] || '', 16)}
-            <span>${r['Equipo'] || '-'}${articulo ? ' · Art. ' + articulo : ''}</span>
+        <div class="disc-content">
+          <div class="disc-info">
+            <div class="disc-name">${r['Jugador'] || '-'}</div>
+            <div class="disc-team" style="display:flex;align-items:center;gap:5px">
+              ${getEscudo(r['Equipo'] || '', 16)}
+              <span>${r['Equipo'] || '-'}${articulo ? ' · Art. ' + articulo : ''}</span>
+            </div>
+            ${sinSancion ? '<div style="font-size:10px;color:#ef4444;margin-top:3px;font-weight:600">⚠ Sin sanción cargada</div>' : ''}
           </div>
-          ${sinSancion ? '<div style="font-size:10px;color:#ef4444;margin-top:3px;font-weight:600">⚠ Sin sanción cargada</div>' : ''}
+          ${isAdmin ? '<div style="color:var(--green);font-size:16px;flex-shrink:0">✏️</div>' : ''}
         </div>
-        <div class="suspension-info">
-          <div class="suspension-num" style="font-size:${esNumero ? '2rem' : '1rem'};line-height:1.2">${partidosDisplay}</div>
+        <div class="disc-sidebar">
+          <div class="suspension-num">${partidosDisplay}</div>
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
           ${fechaHabStr ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
         </div>
-        ${isAdmin ? '<div style="color:var(--green);font-size:16px;margin-left:6px;flex-shrink:0">✏️</div>' : ''}
       </div>`;
     }
 
@@ -4523,18 +5184,22 @@ function renderDisc(view) {
 
     sorted.forEach(r => {
       const total = r['Total'] || 0;
-      const cards = Array.from({length: Math.min(total, 10)}, () =>
+      const cards = Array.from({length: Math.min(total, 5)}, () =>
         `<span class="card-icon yellow-card">A</span>`).join('');
       html += `<div class="disc-row">
-        <div class="disc-info">
-          <div class="disc-name">${r['Jugador'] || '-'}</div>
-          <div class="disc-team" style="display:flex;align-items:center;gap:5px">
-            ${getEscudo(r['Equipo'] || '', 16)}
-            <span>${r['Equipo'] || '-'}</span>
+        <div class="disc-content">
+          <div class="disc-info">
+            <div class="disc-name">${r['Jugador'] || '-'}</div>
+            <div class="disc-team" style="display:flex;align-items:center;gap:5px">
+              ${getEscudo(r['Equipo'] || '', 16)}
+              <span>${r['Equipo'] || '-'}</span>
+            </div>
           </div>
         </div>
-        <div class="disc-cards">${cards}</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#d97706;width:28px;text-align:right;font-weight:700">${total}</div>
+        <div class="disc-sidebar">
+          <div class="suspension-num">${total}</div>
+          <div class="suspension-label">tarjetas</div>
+        </div>
       </div>`;
     });
 
@@ -4559,14 +5224,15 @@ function toggleCumplidas() {
 // ============================================================
 async function loadSponsors() {
   try {
-    const json = await fetchAPI('getSponsors');
-    if (!json.ok) throw new Error(json.error || 'Error');
+    const data = await fetchAPI('getSponsors');
     // Mapear al formato que espera renderSponsors
-    state.sponsors = json.sponsors.map(s => ({
+    state.sponsors = (data || []).map(s => ({
       'Sponsor':      s.nombre,
-      'Informacion':  s.info,
-      'Direccion':    s.dir,
-      'Telefono':     s.tel
+      'Informacion':  s.descripcion,
+      'Direccion':    s.direccion,
+      'Telefono':     s.telefono,
+      'Logo':         s.logo_url,
+      'Link':         s.link_url
     }));
     renderSponsors();
   } catch(e) {
@@ -4608,14 +5274,14 @@ function renderSponsors() {
 
   sponsors.forEach(s => {
     html += `<div class="sponsor-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="width:42px;height:42px;background:var(--green-xlight);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⭐</div>
-        <div class="sponsor-name" style="margin:0">${escapeHTML(s.nombre)}</div>
-      </div>
-      ${s.desc ? `<div class="sponsor-desc">${escapeHTML(s.desc)}</div>` : ''}
-      <div class="sponsor-contact">
-        ${s.dir ? `<span>📍 ${escapeHTML(s.dir)}</span>` : ''}
-        ${s.tel ? `<span>📱 ${s.tel}</span>` : ''}
+      <div class="sponsor-icon">⭐</div>
+      <div class="sponsor-info">
+        <div class="sponsor-name">${escapeHTML(s.nombre)}</div>
+        ${s.desc ? `<div class="sponsor-desc">${escapeHTML(s.desc)}</div>` : ''}
+        <div class="sponsor-meta">
+          ${s.dir ? `<span>📍 ${escapeHTML(s.dir)}</span>` : ''}
+          ${s.tel ? `<span>📞 ${s.tel}</span>` : ''}
+        </div>
       </div>
     </div>`;
   });
@@ -4684,18 +5350,18 @@ async function adminDoLogin() {
   errDiv.style.display = 'none';
 
   try {
-    // Contraseña enviada via POST (no queda en URL ni logs)
-    const res = await fetch(APPS_SCRIPT_URL, {
+    // Login via POST a Apps Script
+    const res = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin', {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'login', password })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: password })
     });
     const json = await res.json();
     if (json.ok && json.token) {
       adminState.loggedIn = true;
       adminState.userName = json.nombre || 'Admin';
       adminState.token = json.token;
-      sessionStorage.setItem('cdp_token', json.token); // persiste durante la sesión del tab
+      sessionStorage.setItem('cdp_token', json.token);
       adminOnLoginSuccess();
     } else {
       errDiv.textContent = json.error || 'PIN incorrecto';
@@ -4732,19 +5398,432 @@ function adminLogout() {
   if (state.disciplina['rojas']) renderDisc('rojas');
 }
 
+// ═══ NUEVO PARTIDO ═══
+var npEquiposCache = { libres: [], senior: [] };
+
+async function openNuevoPartidoModal() {
+  document.getElementById('nuevoPartidoModal').style.display = 'flex';
+  
+  // Cargar equipos
+  try {
+    var equipos = await fetchAPI('getEquipos');
+    npEquiposCache.libres = [];
+    npEquiposCache.senior = [];
+    
+    (equipos || []).forEach(function(e) {
+      var nombre = e.nombre || e;
+      var cat = (e.categoria || '').toUpperCase();
+      if (cat === 'SENIOR' || nombre.includes('(S)')) {
+        npEquiposCache.senior.push(nombre);
+      } else {
+        npEquiposCache.libres.push(nombre);
+      }
+    });
+    
+    npEquiposCache.libres.sort();
+    npEquiposCache.senior.sort();
+    
+    filtrarEquiposPorCategoria();
+  } catch(e) {
+    console.error('Error cargando equipos:', e);
+  }
+  
+  // Fecha por defecto: hoy
+  var hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('npFechaPartido').value = hoy;
+}
+
+function filtrarEquiposPorCategoria() {
+  var cat = document.getElementById('npCategoria').value;
+  var optionsL = '<option value="">Seleccionar...</option>';
+  var optionsV = '<option value="">Seleccionar...</option>';
+  
+  if (cat === 'SENIOR') {
+    // Solo Senior
+    npEquiposCache.senior.forEach(function(nombre) {
+      optionsL += '<option value="' + escapeHTML(nombre) + '">' + escapeHTML(nombre) + '</option>';
+      optionsV += '<option value="' + escapeHTML(nombre) + '">' + escapeHTML(nombre) + '</option>';
+    });
+  } else if (cat === 'INTERZONA') {
+    // Todos los Libres mezclados
+    var todos = npEquiposCache.libres.slice().sort();
+    optionsL += '<optgroup label="Libres">';
+    todos.forEach(function(nombre) {
+      optionsL += '<option value="' + escapeHTML(nombre) + '">' + escapeHTML(nombre) + '</option>';
+    });
+    optionsL += '</optgroup>';
+    optionsV += '<optgroup label="Libres">';
+    todos.forEach(function(nombre) {
+      optionsV += '<option value="' + escapeHTML(nombre) + '">' + escapeHTML(nombre) + '</option>';
+    });
+    optionsV += '</optgroup>';
+  } else {
+    // Libres A o B - mostrar todos los libres con separación
+    optionsL += '<optgroup label="Libres">';
+    npEquiposCache.libres.forEach(function(nombre) {
+      optionsL += '<option value="' + escapeHTML(nombre) + '">' + escapeHTML(nombre) + '</option>';
+    });
+    optionsL += '</optgroup>';
+    optionsV += '<optgroup label="Libres">';
+    npEquiposCache.libres.forEach(function(nombre) {
+      optionsV += '<option value="' + escapeHTML(nombre) + '">' + escapeHTML(nombre) + '</option>';
+    });
+    optionsV += '</optgroup>';
+  }
+  
+  document.getElementById('npEquipoL').innerHTML = optionsL;
+  document.getElementById('npEquipoV').innerHTML = optionsV;
+}
+
+function closeNuevoPartidoModal() {
+  document.getElementById('nuevoPartidoModal').style.display = 'none';
+}
+
+async function guardarNuevoPartido() {
+  var fecha = document.getElementById('npFecha').value;
+  var equipoL = document.getElementById('npEquipoL').value;
+  var equipoV = document.getElementById('npEquipoV').value;
+  var cancha = document.getElementById('npCancha').value;
+  var hora = document.getElementById('npHora').value;
+  var fechaPartido = document.getElementById('npFechaPartido').value;
+  var categoria = document.getElementById('npCategoria').value;
+  
+  if (!fecha || !equipoL || !equipoV) {
+    alert('Completá fecha, equipo local y visitante');
+    return;
+  }
+  
+  if (equipoL === equipoV) {
+    alert('Los equipos deben ser diferentes');
+    return;
+  }
+  
+  try {
+    var res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_createPartido',
+        token: adminState.token,
+        fecha_num: parseInt(fecha),
+        equipo_local: equipoL,
+        equipo_visitante: equipoV,
+        cancha: 'Cancha ' + cancha,
+        hora: hora,
+        fecha_partido: fechaPartido,
+        categoria: categoria,
+        es_senior: categoria === 'SENIOR'
+      })
+    });
+    var json = await res.json();
+    
+    if (json.ok) {
+      closeNuevoPartidoModal();
+      state.fixture = null;
+      await adminLoadMatches();
+      alert('Partido creado correctamente');
+    } else {
+      alert('Error: ' + (json.error || 'No se pudo crear'));
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// ═══ ADMIN SECTIONS ═══
+function showAdminSection(section, btn) {
+  // Ocultar todas las secciones
+  document.getElementById('adminSeccionPartidos').style.display = 'none';
+  document.getElementById('adminSeccionSponsors').style.display = 'none';
+  document.getElementById('adminSeccionReglamentos').style.display = 'none';
+  
+  // Desactivar todos los tabs
+  btn.parentElement.querySelectorAll('.admin-tab-v2').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  
+  // Mostrar sección seleccionada
+  if (section === 'partidos') {
+    document.getElementById('adminSeccionPartidos').style.display = '';
+  } else if (section === 'sponsors') {
+    document.getElementById('adminSeccionSponsors').style.display = '';
+    loadAdminSponsors();
+  } else if (section === 'reglamentos') {
+    document.getElementById('adminSeccionReglamentos').style.display = '';
+    loadAdminReglamentos();
+  }
+}
+
+// ═══ SPONSORS ADMIN ═══
+var adminSponsors = [];
+
+async function loadAdminSponsors() {
+  var container = document.getElementById('adminSponsorsList');
+  container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando sponsors...</div></div>';
+  
+  try {
+    // Usar el endpoint admin que trae todos (incluso inactivos)
+    var res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_getSponsors',
+        token: adminState.token
+      })
+    });
+    var json = await res.json();
+    adminSponsors = json.ok ? (json.sponsors || json.data || []) : [];
+    renderAdminSponsors();
+  } catch(e) {
+    container.innerHTML = '<div class="error-box">Error: ' + escapeHTML(e.message) + '</div>';
+  }
+}
+
+function renderAdminSponsors() {
+  var container = document.getElementById('adminSponsorsList');
+  if (!adminSponsors.length) {
+    container.innerHTML = '<div class="empty">No hay sponsors</div>';
+    return;
+  }
+  
+  var html = '<div class="card">';
+  adminSponsors.forEach(function(sp, idx) {
+    var spId = sp.id || sp.ID || idx;
+    var imgUrl = sp.logo_url || sp.imagen || sp.logo || '';
+    var nombre = sp.nombre || sp.Sponsor || 'Sin nombre';
+    html += '<div class="admin-match-row" style="cursor:pointer" onclick="editSponsor(' + spId + ')">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex:1">' +
+        (imgUrl ? '<img src="' + escapeHTML(imgUrl) + '" style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#fff">' : '<div style="width:40px;height:40px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center">⭐</div>') +
+        '<div>' +
+          '<strong>' + escapeHTML(nombre) + '</strong>' +
+          '<div style="font-size:11px;color:var(--text-dimmer)">Orden: ' + (sp.orden || 1) + ' · ' + (sp.activo !== false ? '✓ Activo' : '✗ Inactivo') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="match-edit-icon">✏️</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function openSponsorModal(id) {
+  document.getElementById('sponsorModal').style.display = 'flex';
+  document.getElementById('spId').value = '';
+  document.getElementById('spNombre').value = '';
+  document.getElementById('spDescripcion').value = '';
+  document.getElementById('spDireccion').value = '';
+  document.getElementById('spTelefono').value = '';
+  document.getElementById('spLogo').value = '';
+  document.getElementById('spLink').value = '';
+  document.getElementById('spOrden').value = '1';
+  document.getElementById('spActivo').value = '1';
+  document.getElementById('sponsorModalTitle').textContent = '➕ Nuevo Sponsor';
+}
+
+function editSponsor(id) {
+  var sp = adminSponsors.find(function(s) { 
+    return (s.id || s.ID) == id; 
+  });
+  if (!sp) {
+    console.log('Sponsor no encontrado:', id, adminSponsors);
+    return;
+  }
+  
+  document.getElementById('sponsorModal').style.display = 'flex';
+  document.getElementById('spId').value = sp.id || sp.ID || '';
+  document.getElementById('spNombre').value = sp.nombre || '';
+  document.getElementById('spDescripcion').value = sp.descripcion || sp.informacion || '';
+  document.getElementById('spDireccion').value = sp.direccion || '';
+  document.getElementById('spTelefono').value = sp.telefono || '';
+  document.getElementById('spLogo').value = sp.logo_url || '';
+  document.getElementById('spLink').value = sp.link_url || '';
+  document.getElementById('spOrden').value = sp.orden || 1;
+  document.getElementById('spActivo').value = sp.activo !== false ? '1' : '0';
+  document.getElementById('sponsorModalTitle').textContent = '✏️ Editar Sponsor';
+}
+
+function closeSponsorModal() {
+  document.getElementById('sponsorModal').style.display = 'none';
+}
+
+async function guardarSponsor() {
+  var id = document.getElementById('spId').value;
+  var nombre = document.getElementById('spNombre').value.trim();
+  var descripcion = document.getElementById('spDescripcion').value.trim();
+  var direccion = document.getElementById('spDireccion').value.trim();
+  var telefono = document.getElementById('spTelefono').value.trim();
+  var logo_url = document.getElementById('spLogo').value.trim();
+  var link_url = document.getElementById('spLink').value.trim();
+  var orden = parseInt(document.getElementById('spOrden').value) || 1;
+  var activo = document.getElementById('spActivo').value === '1';
+  
+  if (!nombre) {
+    alert('Ingresá un nombre');
+    return;
+  }
+  
+  try {
+    var action = id ? 'admin_updateSponsor' : 'admin_createSponsor';
+    var res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: action,
+        token: adminState.token,
+        id: id ? parseInt(id) : undefined,
+        nombre: nombre,
+        descripcion: descripcion,
+        direccion: direccion,
+        telefono: telefono,
+        logo_url: logo_url,
+        link_url: link_url,
+        orden: orden,
+        activo: activo
+      })
+    });
+    var json = await res.json();
+    
+    if (json.ok) {
+      closeSponsorModal();
+      loadAdminSponsors();
+    } else {
+      alert('Error: ' + (json.error || 'No se pudo guardar'));
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// ═══ REGLAMENTOS ADMIN ═══
+var adminReglamentos = [];
+
+async function loadAdminReglamentos() {
+  var container = document.getElementById('adminReglamentosList');
+  container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando reglamentos...</div></div>';
+  
+  try {
+    var res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'admin_getReglamentos',
+        token: adminState.token
+      })
+    });
+    var json = await res.json();
+    adminReglamentos = json.ok ? (json.reglamentos || json.data || []) : [];
+    renderAdminReglamentos();
+  } catch(e) {
+    container.innerHTML = '<div class="error-box">Error: ' + escapeHTML(e.message) + '</div>';
+  }
+}
+
+function renderAdminReglamentos() {
+  var container = document.getElementById('adminReglamentosList');
+  if (!adminReglamentos.length) {
+    container.innerHTML = '<div class="empty">No hay reglamentos</div>';
+    return;
+  }
+  
+  var html = '<div class="card">';
+  adminReglamentos.forEach(function(rg, idx) {
+    var rgId = rg.id || rg.ID || idx;
+    html += '<div class="admin-match-row" style="cursor:pointer" onclick="editReglamento(' + rgId + ')">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex:1">' +
+        '<div style="width:40px;height:40px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px">📄</div>' +
+        '<div>' +
+          '<strong>' + escapeHTML(rg.titulo || rg.nombre || 'Sin título') + '</strong>' +
+          '<div style="font-size:11px;color:var(--text-dimmer)">Orden: ' + (rg.orden || 1) + ' · ' + (rg.activo ? '✓ Activo' : '✗ Inactivo') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="match-edit-icon">✏️</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function openReglamentoModal(id) {
+  document.getElementById('reglamentoModal').style.display = 'flex';
+  document.getElementById('rgId').value = '';
+  document.getElementById('rgTitulo').value = '';
+  document.getElementById('rgUrl').value = '';
+  document.getElementById('rgOrden').value = '1';
+  document.getElementById('rgActivo').value = '1';
+  document.getElementById('reglamentoModalTitle').textContent = '➕ Nuevo Reglamento';
+}
+
+function editReglamento(id) {
+  var rg = adminReglamentos.find(function(r) { 
+    return (r.id || r.ID) == id; 
+  });
+  if (!rg) {
+    console.log('Reglamento no encontrado:', id, adminReglamentos);
+    return;
+  }
+  
+  document.getElementById('reglamentoModal').style.display = 'flex';
+  document.getElementById('rgId').value = rg.id || rg.ID || '';
+  document.getElementById('rgTitulo').value = rg.titulo || rg.nombre || '';
+  document.getElementById('rgUrl').value = rg.url || rg.link || '';
+  document.getElementById('rgOrden').value = rg.orden || 1;
+  document.getElementById('rgActivo').value = rg.activo ? '1' : '0';
+  document.getElementById('reglamentoModalTitle').textContent = '✏️ Editar Reglamento';
+}
+
+function closeReglamentoModal() {
+  document.getElementById('reglamentoModal').style.display = 'none';
+}
+
+async function guardarReglamento() {
+  var id = document.getElementById('rgId').value;
+  var titulo = document.getElementById('rgTitulo').value.trim();
+  var url = document.getElementById('rgUrl').value.trim();
+  var orden = parseInt(document.getElementById('rgOrden').value) || 1;
+  var activo = document.getElementById('rgActivo').value === '1';
+  
+  if (!titulo) {
+    alert('Ingresá un título');
+    return;
+  }
+  
+  try {
+    var action = id ? 'admin_updateReglamento' : 'admin_createReglamento';
+    var res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: action,
+        token: adminState.token,
+        id: id ? parseInt(id) : undefined,
+        titulo: titulo,
+        url: url,
+        orden: orden,
+        activo: activo
+      })
+    });
+    var json = await res.json();
+    
+    if (json.ok) {
+      closeReglamentoModal();
+      loadAdminReglamentos();
+    } else {
+      alert('Error: ' + (json.error || 'No se pudo guardar'));
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
 async function adminLoadMatches() {
   const container = document.getElementById('adminMatchList');
   container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>';
 
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=getMatches&token=' + encodeURIComponent(adminState.token));
-    const json = await res.json();
-    if (json.auth === false) { adminLogout(); alert('Sesión expirada. Ingresá nuevamente.'); return; }
-    if (json.ok) {
-      adminState.matches = json.matches;
-    } else {
-      throw new Error(json.error || 'Error al cargar');
+    // Usar el fixture ya cargado o cargarlo
+    if (!state.fixture) {
+      state.fixture = await fetchAPI('getFixture');
     }
+    adminState.matches = state.fixture;
 
     adminRenderFechaTabs();
     adminRenderMatchList();
@@ -4820,26 +5899,39 @@ function adminRenderMatchList() {
 }
 
 function adminMatchRowHtml(m) {
-  const isPlayed = m.jugado === 'Jugado';
-  const isNR = m.jugado === 'NR';
-  const statusClass = isPlayed ? 'played' : (isNR ? 'nr' : 'pending');
-  const resultDisplay = isPlayed ? m.resultado : (isNR ? 'NR' : 'vs');
-  const statusBadge = isPlayed
+  // Soportar tanto formato Sheets (jugado='Jugado') como Supabase (jugado=true)
+  var isPlayed = m.jugado === true || m.jugado === 'Jugado';
+  var isNR = m.jugado === 'NR' || m.walkover;
+  var statusClass = isPlayed ? 'played' : (isNR ? 'nr' : 'pending');
+  
+  // Armar resultado desde golesL/golesV o desde resultado string
+  var resultDisplay = 'vs';
+  if (isPlayed) {
+    if (m.golesL !== undefined && m.golesL !== null) {
+      resultDisplay = m.golesL + ' - ' + m.golesV;
+    } else if (m.resultado) {
+      resultDisplay = m.resultado;
+    }
+  } else if (isNR) {
+    resultDisplay = 'NR';
+  }
+  
+  var statusBadge = isPlayed
     ? '<span class="badge" style="font-size:9px">✓ Jugado</span>'
     : (isNR ? '<span class="badge yellow" style="font-size:9px">NR</span>' : '<span class="badge gray" style="font-size:9px">Pendiente</span>');
 
-  return `<div class="admin-match-row ${statusClass}" onclick="adminOpenMatch(${m.rowIndex})">
-    <div class="match-teams">
-      <strong>${m.equipoL || '?'} vs ${m.equipoV || '?'}</strong>
-      <div style="font-size:11px;color:var(--text-dimmer);margin-top:2px">${m.fecha} ${statusBadge}</div>
-    </div>
-    <div class="match-result">${resultDisplay}</div>
-    <div class="match-edit-icon">✏️</div>
-  </div>`;
+  return '<div class="admin-match-row ' + statusClass + '" onclick="adminOpenMatch(' + m.rowIndex + ')">' +
+    '<div class="match-teams">' +
+      '<strong>' + (m.equipoL || '?') + ' vs ' + (m.equipoV || '?') + '</strong>' +
+      '<div style="font-size:11px;color:var(--text-dimmer);margin-top:2px">' + m.fecha + ' ' + statusBadge + '</div>' +
+    '</div>' +
+    '<div class="match-result">' + resultDisplay + '</div>' +
+    '<div class="match-edit-icon">✏️</div>' +
+  '</div>';
 }
 
 async function adminOpenMatch(rowIndex) {
-  const match = adminState.matches.find(m => m.rowIndex === rowIndex);
+  var match = adminState.matches.find(function(m) { return m.rowIndex === rowIndex; });
   if (!match) return;
 
   adminState.currentMatch = match;
@@ -4855,11 +5947,16 @@ async function adminOpenMatch(rowIndex) {
   document.getElementById('editorEqL').textContent = match.equipoL;
   document.getElementById('editorEqV').textContent = match.equipoV;
 
-  // Set resultado
-  const jugado = match.jugado || '';
-
-  const resL = match.resLocal === 'NR' ? 0 : (parseInt(match.resLocal) || 0);
-  const resV = match.resVisitante === 'NR' ? 0 : (parseInt(match.resVisitante) || 0);
+  // Set resultado - soportar tanto golesL/golesV como resLocal/resVisitante
+  var resL = 0;
+  var resV = 0;
+  if (match.golesL !== undefined && match.golesL !== null) {
+    resL = parseInt(match.golesL) || 0;
+    resV = parseInt(match.golesV) || 0;
+  } else {
+    resL = match.resLocal === 'NR' ? 0 : (parseInt(match.resLocal) || 0);
+    resV = match.resVisitante === 'NR' ? 0 : (parseInt(match.resVisitante) || 0);
+  }
   document.getElementById('editorGolesL').value = resL;
   document.getElementById('editorGolesV').value = resV;
   actualizarJugadoBadge();
@@ -4874,29 +5971,38 @@ async function adminOpenMatch(rowIndex) {
 
   // Init editor data from existing match data
   adminState.editorData = {
-    goleadoresL: (match.goleadoresL || []).map(g => ({ jugador: g.jugador, goles: g.goles })),
-    goleadoresV: (match.goleadoresV || []).map(g => ({ jugador: g.jugador, goles: g.goles })),
-    amonestadosL: [...(match.amonestadosL || [])],
-    amonestadosV: [...(match.amonestadosV || [])],
-    rojasL: [...(match.rojasL || [])],
-    rojasV: [...(match.rojasV || [])]
+    goleadoresL: (match.goleadoresL || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; }),
+    goleadoresV: (match.goleadoresV || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; }),
+    amonestadosL: (match.amonestadosL || []).slice(),
+    amonestadosV: (match.amonestadosV || []).slice(),
+    rojasL: (match.rojasL || []).slice(),
+    rojasV: (match.rojasV || []).slice()
   };
 
-  // Load goleadores from Apps Script
+  // Load incidencias desde el backend
   try {
-      const partidoEnc = encodeURIComponent(match.partido || '');
-      const url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.ok) {
-        adminState.editorData.goleadoresL = (json.goleadoresL || []).map(g => ({ jugador: g.jugador, goles: g.goles }));
-        adminState.editorData.goleadoresV = (json.goleadoresV || []).map(g => ({ jugador: g.jugador, goles: g.goles }));
-        adminState.editorData.amonestadosL = json.amonestadosL || [];
-        adminState.editorData.amonestadosV = json.amonestadosV || [];
-        adminState.editorData.rojasL = json.rojasL || [];
-        adminState.editorData.rojasV = json.rojasV || [];
-      }
-    } catch(e) { /* fallback to local data */ }
+    var partidoEnc = encodeURIComponent(match.partido || '');
+    var url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
+    var res = await fetch(url);
+    var json = await res.json();
+    if (json.ok && json.data) {
+      var d = json.data;
+      adminState.editorData.goleadoresL = (d.goleadoresL || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; });
+      adminState.editorData.goleadoresV = (d.goleadoresV || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; });
+      adminState.editorData.amonestadosL = d.amonestadosL || [];
+      adminState.editorData.amonestadosV = d.amonestadosV || [];
+      adminState.editorData.rojasL = d.rojasL || [];
+      adminState.editorData.rojasV = d.rojasV || [];
+    } else if (json.ok) {
+      // Formato alternativo (Sheets)
+      adminState.editorData.goleadoresL = (json.goleadoresL || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; });
+      adminState.editorData.goleadoresV = (json.goleadoresV || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; });
+      adminState.editorData.amonestadosL = json.amonestadosL || [];
+      adminState.editorData.amonestadosV = json.amonestadosV || [];
+      adminState.editorData.rojasL = json.rojasL || [];
+      adminState.editorData.rojasV = json.rojasV || [];
+    }
+  } catch(e) { /* fallback to local data */ }
 
   // Render current tags
   renderPlayerTags();
@@ -4929,7 +6035,7 @@ async function loadRosterForTeam(team, side) {
     const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team) + '&token=' + encodeURIComponent(adminState.token));
     const json = await res.json();
     if (json.auth === false) { adminLogout(); alert('Sesión expirada.'); return; }
-    players = json.players || [];
+    players = json.data || json.players || [];
 
     adminState.rostersCache[team] = players;
     populateSelects(side, players);
@@ -5180,8 +6286,53 @@ window.addEventListener('DOMContentLoaded', () => {
   // Re-aplicar tema guardado al cargar
   const savedTheme = localStorage.getItem('cdp_theme') || 'auto';
   applyTheme(savedTheme);
+  // Inicializar pill de navegación
+  updateNavPill();
   loadFixture();
+  // Precargar posiciones para los badges en el fixture
+  precargarPosiciones();
 });
+
+// Precargar posiciones para que los badges funcionen en el fixture
+async function precargarPosiciones() {
+  try {
+    const [dataA, dataB, dataSenior] = await Promise.all([
+      fetchAPI('getPosiciones', { categoria: 'LIBRES_A' }),
+      fetchAPI('getPosiciones', { categoria: 'LIBRES_B' }),
+      fetchAPI('getPosiciones', { categoria: 'SENIOR' })
+    ]);
+    
+    // Guardar Zona A
+    state.posiciones['zona-a-libres'] = (dataA || []).map((r, i) => ({
+      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+      'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+      'Diferencia': r.dif, 'Img': null
+    }));
+    
+    // Guardar Zona B
+    state.posiciones['zona-b-libres'] = (dataB || []).map((r, i) => ({
+      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+      'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+      'Diferencia': r.dif, 'Img': null
+    }));
+    
+    // Guardar Senior
+    state.posiciones['general-senior'] = (dataSenior || []).map((r, i) => ({
+      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+      'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
+      'Diferencia': r.dif, 'Img': null
+    }));
+    
+    // Re-renderizar fixture si ya está cargado para mostrar los badges
+    if (state.fixture && state.fixture.length) {
+      renderFixture();
+    }
+  } catch(e) {
+    console.log('Error precargando posiciones:', e);
+  }
+}
+
+window.addEventListener('resize', updateNavPill);
 </script>
 
 <!-- ═══ MODAL: Completar Sanción Tarjeta Roja ═══ -->
@@ -5346,7 +6497,7 @@ async function onRojaEquipoChange(team) {
     } else {
       const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster&team=' + encodeURIComponent(team) + '&token=' + encodeURIComponent(adminState.token));
       const json = await res.json();
-      const players = json.players || [];
+      const players = json.data || json.players || [];
       adminState.rostersCache[team] = players;
       populateRojaJugadorSelect(players);
     }
@@ -5487,7 +6638,7 @@ async function saveRoja() {
       if (json.ok) {
         state.disciplina = {};
         closeRojaModal();
-        showDisc('rojas', document.querySelector('#section-disciplina .tab-pill.active'));
+        showDisc('rojas', document.querySelector('#discTab .pos-seg-btn.active'));
       } else {
         errDiv.textContent = json.error || 'Error al agregar';
         errDiv.style.display = 'block';
@@ -5664,7 +6815,7 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
 
   function renderClima(daily, hourly) {
     const container = document.getElementById('climaContainer');
-    const dates     = daily.time;           // ["2026-02-27", ...]
+    const dates     = daily.time;
     const codes     = daily.weathercode;
     const tmax      = daily.temperature_2m_max;
     const tmin      = daily.temperature_2m_min;
@@ -5672,69 +6823,12 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
     const prob      = daily.precipitation_probability_max;
     const viento    = daily.windspeed_10m_max;
 
-    // ── Procesar datos horarios para rangos de lluvia ──
-    function getRainRanges(dateStr) {
-      if (!hourly || !hourly.time || !hourly.precipitation) return null;
-      const start = dateStr + 'T00:00';
-      const rainHours = [];
-      for (let h = 0; h < 24; h++) {
-        const hStr = dateStr + 'T' + String(h).padStart(2, '0') + ':00';
-        const idx = hourly.time.indexOf(hStr);
-        if (idx >= 0 && hourly.precipitation[idx] > 0.1) {
-          rainHours.push(h);
-        }
-      }
-      if (!rainHours.length) {
-        // Fallback: buscar horas con probabilidad alta (>= 50%)
-        if (hourly.precipitation_probability) {
-          for (let h = 0; h < 24; h++) {
-            const hStr = dateStr + 'T' + String(h).padStart(2, '0') + ':00';
-            const idx = hourly.time.indexOf(hStr);
-            if (idx >= 0 && hourly.precipitation_probability[idx] >= 50) {
-              rainHours.push(h);
-            }
-          }
-        }
-        if (!rainHours.length) return null;
-      }
-      // Agrupar rangos continuos
-      const ranges = [];
-      let rangeStart = rainHours[0];
-      let rangeEnd = rainHours[0];
-      for (let i = 1; i < rainHours.length; i++) {
-        if (rainHours[i] === rangeEnd + 1) {
-          rangeEnd = rainHours[i];
-        } else {
-          ranges.push([rangeStart, rangeEnd]);
-          rangeStart = rainHours[i];
-          rangeEnd = rainHours[i];
-        }
-      }
-      ranges.push([rangeStart, rangeEnd]);
-      return ranges;
-    }
-
-    function formatRainRanges(ranges) {
-      if (!ranges || !ranges.length) return '';
-      // Si llueve todo el día (más de 12hs), decir "todo el día"
-      const totalHours = ranges.reduce((sum, r) => sum + (r[1] - r[0] + 1), 0);
-      if (totalHours >= 16) return '🌧️ Lluvia todo el día';
-      // Mostrar los rangos principales (máx 2)
-      const parts = ranges.slice(0, 2).map(r => {
-        const from = String(r[0]).padStart(2, '0') + ':00';
-        const to = String(r[1] + 1).padStart(2, '0') + ':00';
-        if (r[0] === r[1]) return from + 'hs';
-        return from + ' a ' + to + 'hs';
-      });
-      return '🌧️ ' + parts.join(' y ');
-    }
-
     let html = '';
 
-    // ── Alertas para días de partido (Jue/Vie/Sáb) ──
+    // ── Alertas para días de partido (Vie/Sáb) ──
     const alerts = [];
     dates.forEach((d, i) => {
-      const dow = new Date(d + 'T12:00:00').getDay(); // 4=Jue 5=Vie 6=Sáb
+      const dow = new Date(d + 'T12:00:00').getDay();
       if ([5,6].includes(dow)) {
         const wmo = getWmo(codes[i]);
         if (codes[i] >= 95) {
@@ -5748,119 +6842,124 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
     if (alerts.length > 0) {
       alerts.forEach(a => {
         const [,mes,dia] = a.fecha.split('-');
-        html += `
-        <div class="clima-alerta ${a.type==='storm'?'alerta-storm':''}">
-          <div class="clima-alerta-icon">${a.type==='storm'?'⚡':'🌧️'}</div>
-          <div class="clima-alerta-text">
-            <strong>${a.type==='storm'?'⚠️ Alerta tormenta':'🌧️ Lluvia probable'} — ${a.dia} ${dia}/${mes}</strong>
-            ${a.desc} · ${a.prob}% prob. · ${a.mm.toFixed(1)} mm esperados
-          </div>
-        </div>`;
+        html += '<div class="clima-alerta ' + (a.type==='storm'?'alerta-storm':'') + '">' +
+          '<div class="clima-alerta-icon">' + (a.type==='storm'?'⚡':'🌧️') + '</div>' +
+          '<div class="clima-alerta-text">' +
+            '<strong>' + (a.type==='storm'?'⚠️ Alerta tormenta':'🌧️ Lluvia probable') + ' — ' + a.dia + ' ' + dia + '/' + mes + '</strong>' +
+            a.desc + ' · ' + a.prob + '% prob. · ' + a.mm.toFixed(1) + ' mm esperados' +
+          '</div>' +
+        '</div>';
       });
     }
 
-    // ── Días de partido destacados ──
-    html += `<div class="clima-section-title">⚽ Días de partido — Viernes y Sábados</div>`;
-    html += '<div class="clima-grid">';
+    // ── OPCIÓN 1: Días de partido con sidebar ──
+    html += '<div class="clima-section-title">⚽ Sábado — día de partido</div>';
+    html += '<div class="clima-partido-grid">';
 
-    dates.forEach((d, i) => {
-      const dt  = new Date(d + 'T12:00:00');
-      const dow = dt.getDay();
+    dates.forEach(function(d, i) {
+      var dt  = new Date(d + 'T12:00:00');
+      var dow = dt.getDay();
       if (![5,6].includes(dow)) return;
 
-      const [,mes,dia] = d.split('-');
-      const wmo    = getWmo(codes[i]);
-      const hl     = cardHighlight(prob[i], mm[i], codes[i]);
-      const badge  = badgeText(prob[i], mm[i], codes[i], true);
-      const fillW  = Math.min(100, prob[i]);
-      const rainRanges = getRainRanges(d);
-      const rainText   = formatRainRanges(rainRanges);
+      var parts = d.split('-');
+      var mes = parts[1];
+      var dia = parts[2];
+      var wmo    = getWmo(codes[i]);
+      var hl     = cardHighlight(prob[i], mm[i], codes[i]);
+      var esJugable = prob[i] < 50 && mm[i] < 5 && codes[i] < 95;
+      var descCorta = wmo.desc.length > 15 ? wmo.desc.substring(0, 15) + '...' : wmo.desc;
 
-      html += `
-      <div class="clima-card ${hl}">
-        ${badge ? `<div class="clima-badge ${badge.cls}">${badge.text}</div>` : ''}
-        <div class="clima-dia">${DIAS[dow]}</div>
-        <div class="clima-fecha-num">${dia}/${mes}</div>
-        <div class="clima-icon">${wmo.icon}</div>
-        <div class="clima-temp">${Math.round(tmax[i])}° <span>/ ${Math.round(tmin[i])}°</span></div>
-        <div class="clima-stats">
-          <div class="clima-stat">
-            <span>🌧️ Prob.</span>
-            <span class="clima-stat-val ${rainClass(prob[i])}">${prob[i]}%</span>
-          </div>
-          <div class="clima-lluvia-bar">
-            <div class="clima-lluvia-fill" style="width:${fillW}%"></div>
-          </div>
-          <div class="clima-stat">
-            <span>💧 mm</span>
-            <span class="clima-stat-val ${prob[i]>=40?'rain-high':''}">${mm[i].toFixed(1)} mm</span>
-          </div>
-          <div class="clima-stat">
-            <span>💨 Viento</span>
-            <span class="clima-stat-val">${Math.round(viento[i])} km/h</span>
-          </div>
-        </div>
-        ${rainText ? `<div class="clima-rain-hours">${rainText}</div>` : ''}
-        <div class="clima-desc">${wmo.desc}</div>
-      </div>`;
+      html += '<div class="clima-card-sidebar ' + hl + '">' +
+        '<div class="clima-card-content">' +
+          '<div class="clima-card-header">' +
+            '<div>' +
+              '<div class="clima-day-name">' + DIAS_FULL[dow] + '</div>' +
+              '<div class="clima-date">' + dia + '/' + mes + '</div>' +
+            '</div>' +
+            '<span class="clima-badge-jugable' + (esJugable ? '' : ' no-jugable') + '">' + (esJugable ? '✓ Jugable' : '⚠ Alerta') + '</span>' +
+          '</div>' +
+          '<div class="clima-weather-row">' +
+            '<div class="clima-icon-big">' + wmo.icon + '</div>' +
+            '<div class="clima-temps">' +
+              '<span class="clima-temp-max">' + Math.round(tmax[i]) + '°</span>' +
+              '<span class="clima-temp-min">Min ' + Math.round(tmin[i]) + '°</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="clima-detail-row">' +
+            '<span>💧 ' + mm[i].toFixed(1) + ' mm</span>' +
+            '<span>💨 ' + Math.round(viento[i]) + ' km/h</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="clima-card-sidebar-panel">' +
+          '<div class="clima-prob-num">' + prob[i] + '%</div>' +
+          '<div class="clima-prob-label">Lluvia</div>' +
+          '<div class="clima-sidebar-condition">' + descCorta + '</div>' +
+        '</div>' +
+      '</div>';
     });
     html += '</div>';
 
-    // ── Todos los días ──
-    html += `<div class="clima-section-title" style="margin-top:8px">📅 Pronóstico completo — 10 días</div>`;
-    html += '<div class="clima-grid">';
+    // ── OPCIÓN 3: Pronóstico extendido compacto ──
+    html += '<div class="clima-section-title">📅 Pronóstico completo — 10 días</div>';
+    html += '<div class="clima-extended-list">';
 
-    dates.forEach((d, i) => {
-      const dt  = new Date(d + 'T12:00:00');
-      const dow = dt.getDay();
-      const [,mes,dia] = d.split('-');
-      const wmo    = getWmo(codes[i]);
-      const hl     = cardHighlight(prob[i], mm[i], codes[i]);
-      const badge  = badgeText(prob[i], mm[i], codes[i], [5,6].includes(dow));
-      const fillW  = Math.min(100, prob[i]);
-      const isToday = (i === 0);
-      const rainRanges10 = getRainRanges(d);
-      const rainText10   = formatRainRanges(rainRanges10);
+    dates.forEach(function(d, i) {
+      var dt  = new Date(d + 'T12:00:00');
+      var dow = dt.getDay();
+      var parts = d.split('-');
+      var mes = parts[1];
+      var dia = parts[2];
+      var wmo    = getWmo(codes[i]);
+      var hl     = cardHighlight(prob[i], mm[i], codes[i]);
+      var isToday = (i === 0);
+      var esPartido = [5,6].includes(dow);
+      var esJugable = esPartido && prob[i] < 50 && mm[i] < 5 && codes[i] < 95;
 
-      html += `
-      <div class="clima-card ${hl}">
-        ${isToday ? '<div class="clima-badge">HOY</div>' : (badge ? `<div class="clima-badge ${badge.cls}">${badge.text}</div>` : '')}
-        <div class="clima-dia">${DIAS[dow]}</div>
-        <div class="clima-fecha-num">${dia}/${mes}</div>
-        <div class="clima-icon">${wmo.icon}</div>
-        <div class="clima-temp">${Math.round(tmax[i])}° <span>/ ${Math.round(tmin[i])}°</span></div>
-        <div class="clima-stats">
-          <div class="clima-stat">
-            <span>🌧️ Prob.</span>
-            <span class="clima-stat-val ${rainClass(prob[i])}">${prob[i]}%</span>
-          </div>
-          <div class="clima-lluvia-bar">
-            <div class="clima-lluvia-fill" style="width:${fillW}%"></div>
-          </div>
-          <div class="clima-stat">
-            <span>💧 mm</span>
-            <span class="clima-stat-val ${prob[i]>=40?'rain-high':''}">${mm[i].toFixed(1)} mm</span>
-          </div>
-          <div class="clima-stat">
-            <span>💨 Viento</span>
-            <span class="clima-stat-val">${Math.round(viento[i])} km/h</span>
-          </div>
-        </div>
-        ${rainText10 ? `<div class="clima-rain-hours">${rainText10}</div>` : ''}
-        <div class="clima-desc">${wmo.desc}</div>
-      </div>`;
+      var badgeCls = '';
+      var badgeText = '';
+      if (isToday) {
+        badgeCls = 'hoy';
+        badgeText = 'HOY';
+      } else if (esPartido) {
+        if (codes[i] >= 95) {
+          badgeCls = 'storm';
+          badgeText = '⚠ Tormenta';
+        } else if (prob[i] >= 50 || mm[i] >= 5) {
+          badgeCls = 'rain';
+          badgeText = '🌧 Lluvia';
+        } else {
+          badgeText = '✓ Jugable';
+        }
+      }
+
+      var borderCls = hl;
+      if (!esPartido && !isToday) borderCls = 'no-jugable';
+
+      html += '<div class="clima-card-compact ' + borderCls + '">' +
+        '<div class="clima-cc-date">' +
+          '<div class="clima-cc-day">' + DIAS[dow] + '</div>' +
+          '<div class="clima-cc-num">' + dia + '/' + mes + '</div>' +
+          (badgeText ? '<div class="clima-cc-badge ' + badgeCls + '">' + badgeText + '</div>' : '') +
+        '</div>' +
+        '<div class="clima-cc-icon">' + wmo.icon + '</div>' +
+        '<div class="clima-cc-temps">' +
+          '<div class="clima-cc-temp-main">' + Math.round(tmax[i]) + '°</div>' +
+          '<div class="clima-cc-temp-min">Min ' + Math.round(tmin[i]) + '°</div>' +
+          '<div class="clima-cc-condition">' + wmo.desc + '</div>' +
+        '</div>' +
+        '<div class="clima-cc-stats">' +
+          '<span>💧 ' + mm[i].toFixed(1) + ' mm</span>' +
+          '<span>💨 ' + Math.round(viento[i]) + ' km/h</span>' +
+        '</div>' +
+        '<div class="clima-cc-prob-pill">' + prob[i] + '%</div>' +
+      '</div>';
     });
 
     html += '</div>';
-    html += `<div class="clima-updated">Fuente: Open-Meteo.com · Se actualiza cada vez que abrís esta sección</div>`;
+    html += '<div class="clima-updated">Fuente: Open-Meteo.com · Se actualiza cada vez que abrís esta sección</div>';
 
     container.innerHTML = html;
   }
-
-// Init nav pill on load
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(updateNavPill, 100);
-});
 
 </script>
 
