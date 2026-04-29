@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 20:35 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 20:45 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3046,9 +3046,9 @@
     <div class="pos-header-v2">
       <div class="pos-title-v2">POSICIONES</div>
       <div class="pos-segment-v2" id="posTab">
-        <button class="pos-seg-btn active" onclick="showPos('zona-a-libres', this)">Zona A</button>
-        <button class="pos-seg-btn" onclick="showPos('zona-b-libres', this)">Zona B</button>
-        <button class="pos-seg-btn" onclick="showPos('general-senior', this)">Sénior</button>
+        <button class="pos-seg-btn active" onclick="showPos('zona-a-libres', this)">Libres A</button>
+        <button class="pos-seg-btn" onclick="showPos('zona-b-libres', this)">Libres B</button>
+        <button class="pos-seg-btn" onclick="showPos('general-senior', this)">Senior</button>
       </div>
     </div>
     <div id="posContainer">
@@ -4091,13 +4091,35 @@ function showSection(id) {
   // Lazy load
   if (id === 'fixture' && !state.fixture) loadFixture();
   if (id === 'clima') loadClima();
-  if (id === 'posiciones' && !state.posiciones['zona-a-libres']) loadPosiciones();
-  if (id === 'goleadores' && !state.goleadores['libres-a']) loadGoleadores();
+  if (id === 'posiciones') {
+    if (state.posiciones['zona-a-libres']) {
+      renderPos('zona-a-libres');
+    } else {
+      loadPosiciones();
+    }
+  }
+  if (id === 'goleadores') {
+    if (state.goleadores['libres-a']) {
+      renderScorers('libres-a');
+    } else {
+      loadGoleadores();
+    }
+  }
   if (id === 'disciplina') {
     if (!state.fixture) loadFixture(); // needed for próxima fecha
-    if (!state.disciplina['rojas']) loadDisciplina();
+    if (state.disciplina['rojas']) {
+      renderDisc('rojas');
+    } else {
+      loadDisciplina();
+    }
   }
-  if (id === 'sponsors' && !state.sponsors) loadSponsors();
+  if (id === 'sponsors') {
+    if (state.sponsors && state.sponsors.length) {
+      renderSponsors();
+    } else {
+      loadSponsors();
+    }
+  }
   if (id === 'admin') initAdmin();
 }
 
