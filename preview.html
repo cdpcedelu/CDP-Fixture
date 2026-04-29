@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 19:25 ARG — Visual Supabase + Backend Sheets -->
+<!-- CDP Fixture — index.html — 2026-04-29 19:45 ARG — Visual Supabase + Backend Sheets -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4700,7 +4700,7 @@ function getPosicionEquipo(equipo) {
         var row = data[j];
         var nombreEquipo = row['Equipo'] || row['Equipo '] || row['Equipos'] || '';
         if (nombreEquipo.toLowerCase() === equipo.toLowerCase()) {
-          return { pos: j + 1, total: data.length, vista: vista };
+          return { pos: row['Pos'] || (j + 1), total: data.length, vista: vista };
         }
       }
     }
@@ -5393,11 +5393,11 @@ async function adminDoLogin() {
   errDiv.style.display = 'none';
 
   try {
-    // Login via POST a Apps Script
-    const res = await fetch(APPS_SCRIPT_URL + '?action=loginAdmin', {
+    // Contraseña enviada via POST (no queda en URL ni logs)
+    const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: password })
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'login', password })
     });
     const json = await res.json();
     if (json.ok && json.token) {
@@ -6339,31 +6339,31 @@ window.addEventListener('DOMContentLoaded', () => {
 // Precargar posiciones para que los badges funcionen en el fixture
 async function precargarPosiciones() {
   try {
-    const [dataA, dataB, dataSenior] = await Promise.all([
-      fetchAPI('getPosiciones', { categoria: 'LIBRES_A' }),
-      fetchAPI('getPosiciones', { categoria: 'LIBRES_B' }),
-      fetchAPI('getPosiciones', { categoria: 'SENIOR' })
+    const [rowsA, rowsB, rowsSenior] = await Promise.all([
+      fetchAPI('getStandings', { tabla: 'Pos Libres ZONA A' }),
+      fetchAPI('getStandings', { tabla: 'Pos Libres ZONA B' }),
+      fetchAPI('getStandings', { tabla: 'Tabla de Pos SENIOR' })
     ]);
     
     // Guardar Zona A
-    state.posiciones['zona-a-libres'] = (dataA || []).map((r, i) => ({
-      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+    state.posiciones['zona-a-libres'] = (rowsA || []).map(r => ({
+      'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
       'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
-      'Diferencia': r.dif, 'Img': null
+      'Diferencia': r.dif, 'Img': r.img
     }));
     
     // Guardar Zona B
-    state.posiciones['zona-b-libres'] = (dataB || []).map((r, i) => ({
-      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+    state.posiciones['zona-b-libres'] = (rowsB || []).map(r => ({
+      'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
       'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
-      'Diferencia': r.dif, 'Img': null
+      'Diferencia': r.dif, 'Img': r.img
     }));
     
     // Guardar Senior
-    state.posiciones['general-senior'] = (dataSenior || []).map((r, i) => ({
-      'Pos': i + 1, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
+    state.posiciones['general-senior'] = (rowsSenior || []).map(r => ({
+      'Pos': r.pos, 'Equipo': r.equipo, 'PJ': r.pj, 'Puntos': r.pts,
       'PG': r.pg, 'PE': r.pe, 'PP': r.pp, 'GF': r.gf, 'GC': r.gc,
-      'Diferencia': r.dif, 'Img': null
+      'Diferencia': r.dif, 'Img': r.img
     }));
     
     // Re-renderizar fixture si ya está cargado para mostrar los badges
