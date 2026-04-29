@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 21:25 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 21:32 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -629,12 +629,14 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-width: 90px;
+    min-width: 80px;
     position: relative;
-    align-self: stretch;
+    align-self: flex-start;
     border-radius: 0 12px 12px 0;
   }
-  /* Temas para sidebar */
+  .partido-row.expanded .partido-sidebar {
+    border-radius: 0 12px 0 0;
+  }
   [data-theme="dark"] .partido-sidebar {
     background: linear-gradient(135deg, #334155 0%, #475569 100%);
   }
@@ -644,31 +646,24 @@
   [data-theme="blue"] .partido-sidebar {
     background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   }
-  /* Jugado siempre verde (mayor especificidad que temas) */
-  .partido-row.jugado .partido-sidebar,
-  [data-theme="dark"] .partido-row.jugado .partido-sidebar,
-  [data-theme="green"] .partido-row.jugado .partido-sidebar,
-  [data-theme="blue"] .partido-row.jugado .partido-sidebar {
-    background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
-  }
   .partido-sidebar .jugado-badge {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    background: #fff;
+    top: 4px;
+    right: 4px;
+    background: rgba(255,255,255,0.95);
     color: #166534;
     font-size: 7px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 3px;
     letter-spacing: 0.3px;
     text-transform: uppercase;
     line-height: 1;
   }
   .partido-sidebar .sidebar-arrow {
-    margin-top: 8px;
+    margin-top: 6px;
     font-size: 12px;
-    opacity: 0.9;
+    opacity: 0.8;
     transition: transform 0.2s;
   }
   .partido-row.expanded .sidebar-arrow {
@@ -676,10 +671,9 @@
   }
   .partido-sidebar-hora {
     font-family: Impact, 'Arial Black', sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 400;
     letter-spacing: 0.5px;
-    line-height: 1.1;
   }
   .partido-sidebar-cancha {
     font-size: 11px;
@@ -687,7 +681,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0.9;
-    margin-top: 3px;
+    margin-top: 2px;
   }
   
   /* Card clickeable cuando tiene detalles */
