@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 19:10 ARG — Visual Supabase + Backend Sheets -->
+<!-- CDP Fixture — index.html — 2026-04-29 19:20 ARG — Visual Supabase + Backend Sheets -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4579,10 +4579,30 @@ function calcularRachasEquipos() {
   state.fixture.forEach(function(p) {
     if (!(p.jugado === true || p.jugado === 'Jugado')) return;
     var fechaNum = parseInt(String(p.fecha || p.fechaNum || '').replace(/\D/g, '')) || 0;
+    
+    // Extraer equipos del campo p.partido (formato "Cat. Local vs Visitante")
     var eqL = p.equipoL;
     var eqV = p.equipoV;
-    var gL = parseInt(p.golesL) || 0;
-    var gV = parseInt(p.golesV) || 0;
+    if (!eqL && p.partido) {
+      var match = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+      if (match) {
+        eqL = match[1].trim();
+        eqV = match[2].trim();
+      }
+    }
+    
+    // Extraer goles de p.resultado si no existen
+    var gL = parseInt(p.golesL);
+    var gV = parseInt(p.golesV);
+    if ((isNaN(gL) || isNaN(gV)) && p.resultado) {
+      var resMatch = String(p.resultado).match(/\[?\s*(\d+)\s*[-–]\s*(\d+)\s*\]?/);
+      if (resMatch) {
+        gL = parseInt(resMatch[1]);
+        gV = parseInt(resMatch[2]);
+      }
+    }
+    gL = gL || 0;
+    gV = gV || 0;
     
     if (!eqL || !eqV || eqL === 'LIBRE' || eqV === 'LIBRE') return;
     
