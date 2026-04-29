@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 18:45 ARG — Visual Supabase + Backend Sheets -->
+<!-- CDP Fixture — index.html — 2026-04-29 18:55 ARG — Visual Supabase + Backend Sheets -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -2862,7 +2862,7 @@
 <header class="header">
   <div class="header-inner">
     <div class="logo-mark">
-      <img src="escudos/image GPT.png" alt="CDP" style="width:100%;height:100%;object-fit:contain;"/>
+      <img src="escudos/logo_0.png" alt="CDP" style="width:100%;height:100%;object-fit:contain;padding:3px;"/>
     </div>
     <div class="header-info">
       <div class="header-title">Club de Profesionales</div>
@@ -4212,6 +4212,16 @@ function filterByEquipo(equipo) {
     const nrCase = p.jugado === 'NR';
     const rowClass = p.isSenior ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
     let local = '', visitante = '', result = '';
+    
+    // Extraer golesL y golesV desde p.resultado si no existen
+    // Formato esperado: "[2-1]" o "2-1" o "2 - 1"
+    if (jugado && p.resultado && (p.golesL === undefined || p.golesL === null)) {
+      const resMatch = String(p.resultado).match(/\[?\s*(\d+)\s*[-–]\s*(\d+)\s*\]?/);
+      if (resMatch) {
+        p.golesL = parseInt(resMatch[1]);
+        p.golesV = parseInt(resMatch[2]);
+      }
+    }
 
     if (p.partido) {
       const match = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
