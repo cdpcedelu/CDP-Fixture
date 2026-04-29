@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 20:52 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 20:58 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -631,23 +631,29 @@
     align-items: center;
     min-width: 80px;
     position: relative;
+    align-self: flex-start;
+    min-height: 70px;
+    border-radius: 0 12px 12px 0;
   }
   .partido-sidebar.jugado {
-    min-width: 100px;
+    min-width: 90px;
   }
   .partido-sidebar .jugado-stamp {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(-15deg);
+    transform: translate(-50%, -50%) rotate(-12deg);
     font-family: Impact, 'Arial Black', sans-serif;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
-    color: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.5);
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     pointer-events: none;
     white-space: nowrap;
+    border: 2px solid rgba(255,255,255,0.4);
+    padding: 2px 8px;
+    border-radius: 4px;
   }
   [data-theme="dark"] .partido-sidebar {
     background: linear-gradient(135deg, #334155 0%, #475569 100%);
