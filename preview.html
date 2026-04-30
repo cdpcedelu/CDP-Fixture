@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 21:50 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 21:55 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -5225,6 +5225,8 @@ async function showScorers(view, btn) {
 }
 
 async function loadScorersView(view, verTodos) {
+  document.getElementById('scorersContainer').innerHTML =
+    '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div>';
   try {
     var params = { vista: view };
     if (verTodos) params.verTodos = 'true';
@@ -5265,24 +5267,13 @@ function renderScorers(view, showAll) {
     return;
   }
 
-  // Separar: 2+ goles vs 1 gol
-  var conDosOMas = [];
-  var conUno = [];
-  data.forEach(function(p, idx) {
-    p._realRank = idx + 1; // Guardar posición real
-    if ((p['Total'] || 0) >= 2) {
-      conDosOMas.push(p);
-    } else if ((p['Total'] || 0) === 1) {
-      conUno.push(p);
-    }
-  });
-  
-  // Si showAll, mostrar todos; sino solo los de 2+
-  var toShow = showAll ? data : conDosOMas;
+  var hayMasInfo = (state.goleadoresHayMas && state.goleadoresHayMas[view]) || {};
+  var hayMas = hayMasInfo.hayMas;
+  var totalConUno = hayMasInfo.totalConUno || 0;
 
   var html = '<div class="card">';
-  toShow.forEach(function(p) {
-    var rank = p._realRank;
+  data.forEach(function(p, i) {
+    var rank = i + 1;
     var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
     var goals = p['Total'] || 0;
     html += '<div class="scorer-row">' +
@@ -5304,12 +5295,10 @@ function renderScorers(view, showAll) {
   });
   
   // Botón Ver más / Ocultar
-  if (conUno.length > 0) {
-    if (!showAll) {
-      html += '<div class="ver-mas-btn" onclick="renderScorers(\'' + view + '\', true)">Ver ' + conUno.length + ' jugadores con 1 gol ▼</div>';
-    } else {
-      html += '<div class="ver-mas-btn" onclick="renderScorers(\'' + view + '\', false)">Ocultar jugadores con 1 gol ▲</div>';
-    }
+  if (hayMas && totalConUno > 0 && !showAll) {
+    html += '<div class="ver-mas-btn" onclick="loadScorersView(\'' + view + '\', true)">Ver ' + totalConUno + ' jugadores con 1 gol ▼</div>';
+  } else if (showAll && totalConUno > 0) {
+    html += '<div class="ver-mas-btn" onclick="loadScorersView(\'' + view + '\', false)">Ocultar jugadores con 1 gol ▲</div>';
   }
   
   html += '</div>';
