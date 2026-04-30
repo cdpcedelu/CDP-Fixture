@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 21:55 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 22:10 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1477,6 +1477,34 @@
   }
   .ver-mas-btn:hover {
     background: var(--bg4);
+  }
+
+  /* Botón WhatsApp compartir */
+  .whatsapp-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #25D366;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .whatsapp-share-btn:hover {
+    background: #1da851;
+    transform: scale(1.02);
+  }
+  .whatsapp-share-btn:active {
+    transform: scale(0.98);
+  }
+  .whatsapp-share-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
   }
 
   /* Section subtitle */
@@ -3020,6 +3048,9 @@
           <span class="fix-fecha-text" id="fixFechaText">Fecha 1 · 0/0</span>
           <span class="fix-pendientes" id="fixPendientes">--</span>
         </div>
+        <button class="whatsapp-share-btn" onclick="compartirFixture()" title="Compartir en WhatsApp">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
       </div>
       <div class="fix-cats-v3" id="fixtureFilters">
         <button class="fix-cat-v3 active" onclick="filterFixture('todos', this)">Todos</button>
@@ -3093,7 +3124,11 @@
   <!-- ===================== POSICIONES ===================== -->
   <section class="section" id="section-posiciones">
     <div class="pos-header-v2">
-      <div class="pos-title-v2">POSICIONES</div>
+      <div class="pos-title-v2">POSICIONES
+        <button class="whatsapp-share-btn" onclick="compartirTabla()" title="Compartir en WhatsApp" style="margin-left:12px;vertical-align:middle;">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
+      </div>
       <div class="pos-segment-v2" id="posTab">
         <button class="pos-seg-btn active" onclick="showPos('zona-a-libres', this)">Libres A</button>
         <button class="pos-seg-btn" onclick="showPos('zona-b-libres', this)">Libres B</button>
@@ -3108,7 +3143,11 @@
   <!-- ===================== GOLEADORES ===================== -->
   <section class="section" id="section-goleadores">
     <div class="pos-header-v2">
-      <div class="pos-title-v2">GOLEADORES</div>
+      <div class="pos-title-v2">GOLEADORES
+        <button class="whatsapp-share-btn" onclick="compartirGoleadores()" title="Compartir en WhatsApp" style="margin-left:12px;vertical-align:middle;">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
+      </div>
       <div class="pos-segment-v2" id="scorersTab">
         <button class="pos-seg-btn active" onclick="showScorers('libres-a', this)">Libres A</button>
         <button class="pos-seg-btn" onclick="showScorers('libres-b', this)">Libres B</button>
@@ -3128,7 +3167,11 @@
   <!-- ===================== DISCIPLINA ===================== -->
   <section class="section" id="section-disciplina">
     <div class="pos-header-v2">
-      <div class="pos-title-v2">DISCIPLINA</div>
+      <div class="pos-title-v2">DISCIPLINA
+        <button class="whatsapp-share-btn" onclick="compartirDisciplina()" title="Compartir en WhatsApp" style="margin-left:12px;vertical-align:middle;">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
+      </div>
       <div class="pos-segment-v2" id="discTab">
         <button class="pos-seg-btn active" onclick="showDisc('rojas', this)"><span class="card-icon red"></span>Rojas</button>
         <button class="pos-seg-btn" onclick="showDisc('amarillas-a', this)"><span class="card-icon yellow"></span>Libres A</button>
@@ -6723,6 +6766,182 @@ async function precargarPosiciones() {
   } catch(e) {
     console.log('Error precargando posiciones:', e);
   }
+}
+
+// ============================================================
+// COMPARTIR EN WHATSAPP
+// ============================================================
+
+function abrirWhatsApp(texto) {
+  var encoded = encodeURIComponent(texto);
+  // Intentar Web Share API primero (mejor en mobile)
+  if (navigator.share) {
+    navigator.share({ text: texto }).catch(function() {
+      window.open('https://wa.me/?text=' + encoded, '_blank');
+    });
+  } else {
+    window.open('https://wa.me/?text=' + encoded, '_blank');
+  }
+}
+
+function getNombreCategoria(view) {
+  var map = {
+    'zona-a-libres': 'Libres A',
+    'zona-b-libres': 'Libres B',
+    'general-senior': 'Senior',
+    'libres-a': 'Libres A',
+    'libres-b': 'Libres B',
+    'senior': 'Senior',
+    'rojas': 'Rojas',
+    'amarillas-a': 'Amarillas Libres A',
+    'amarillas-b': 'Amarillas Libres B',
+    'amarillas-senior': 'Amarillas Senior'
+  };
+  return map[view] || view;
+}
+
+function compartirFixture() {
+  var fecha = state.currentFecha || 1;
+  var partidos = state.fixture || [];
+  
+  // Filtrar por categoría activa
+  var filtroActivo = state.currentFixtureFilter || 'todos';
+  if (filtroActivo !== 'todos') {
+    partidos = partidos.filter(function(p) {
+      var cat = (p.partido || '').toLowerCase();
+      if (filtroActivo === 'libres') return cat.indexOf('(s)') === -1;
+      if (filtroActivo === 'senior') return cat.indexOf('(s)') !== -1;
+      return true;
+    });
+  }
+  
+  var jugados = partidos.filter(function(p) { return p.jugado === true || p.jugado === 'Jugado'; });
+  var pendientes = partidos.filter(function(p) { return p.jugado !== true && p.jugado !== 'Jugado'; });
+  
+  var txt = '⚽ *CDP - FECHA ' + fecha + '*\n';
+  if (filtroActivo !== 'todos') txt += '_' + (filtroActivo === 'libres' ? 'Libres' : 'Senior') + '_\n';
+  txt += '\n';
+  
+  // Resultados jugados
+  if (jugados.length > 0) {
+    jugados.forEach(function(p) {
+      var equipos = parsearPartido(p.partido);
+      var goles = parsearResultado(p.resultado);
+      if (equipos && goles) {
+        txt += equipos.local + ' *' + goles.local + '* - *' + goles.visitante + '* ' + equipos.visitante + '\n';
+      }
+    });
+  }
+  
+  // Pendientes
+  if (pendientes.length > 0) {
+    if (jugados.length > 0) txt += '\n_Pendientes:_\n';
+    pendientes.forEach(function(p) {
+      var equipos = parsearPartido(p.partido);
+      if (equipos) {
+        var hora = p.hora || '';
+        var cancha = p.cancha || '';
+        var info = [];
+        if (hora) info.push('🕐 ' + hora);
+        if (cancha) info.push(cancha);
+        txt += equipos.local + ' vs ' + equipos.visitante;
+        if (info.length) txt += ' (' + info.join(' · ') + ')';
+        txt += '\n';
+      }
+    });
+  }
+  
+  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  abrirWhatsApp(txt);
+}
+
+function parsearPartido(partido) {
+  if (!partido) return null;
+  var match = partido.match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+  if (match) return { local: match[1].trim(), visitante: match[2].trim() };
+  return null;
+}
+
+function parsearResultado(resultado) {
+  if (!resultado) return null;
+  var match = resultado.match(/\[?\s*(\d+)\s*[-–]\s*(\d+)\s*\]?/);
+  if (match) return { local: parseInt(match[1]), visitante: parseInt(match[2]) };
+  return null;
+}
+
+function compartirTabla() {
+  var view = state.currentPos || 'zona-a-libres';
+  var data = state.posiciones[view] || [];
+  var nombre = getNombreCategoria(view);
+  
+  var txt = '🏆 *TABLA ' + nombre.toUpperCase() + '*\n\n';
+  
+  data.slice(0, 10).forEach(function(row, i) {
+    var pos = i + 1;
+    var emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + '.';
+    var equipo = row['Equipo'] || row.equipo || '-';
+    var pts = row['Pts'] || row.pts || 0;
+    txt += emoji + ' ' + equipo + ' — ' + pts + ' pts\n';
+  });
+  
+  if (data.length > 10) {
+    txt += '_... y ' + (data.length - 10) + ' más_\n';
+  }
+  
+  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  abrirWhatsApp(txt);
+}
+
+function compartirGoleadores() {
+  var view = state.currentScorers || 'libres-a';
+  var data = state.goleadores[view] || [];
+  var nombre = getNombreCategoria(view);
+  
+  var txt = '⚽ *GOLEADORES ' + nombre.toUpperCase() + '*\n\n';
+  
+  data.slice(0, 10).forEach(function(row, i) {
+    var pos = i + 1;
+    var emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + '.';
+    var jugador = row['Jugador'] || '-';
+    var equipo = row['Equipo'] || '-';
+    var goles = row['Total'] || 0;
+    txt += emoji + ' ' + jugador + ' (' + equipo + ') — ' + goles + '\n';
+  });
+  
+  if (data.length > 10) {
+    txt += '_... y ' + (data.length - 10) + ' más_\n';
+  }
+  
+  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  abrirWhatsApp(txt);
+}
+
+function compartirDisciplina() {
+  var view = state.currentDisc || 'rojas';
+  var data = state.disciplina[view] || [];
+  var nombre = getNombreCategoria(view);
+  
+  var esRojas = view === 'rojas';
+  var emoji = esRojas ? '🟥' : '🟨';
+  
+  var txt = emoji + ' *' + nombre.toUpperCase() + '*\n\n';
+  
+  data.slice(0, 10).forEach(function(row, i) {
+    var pos = i + 1;
+    var jugador = row['Jugador'] || row.jugador || '-';
+    var equipo = row['Equipo'] || row.equipo || '-';
+    var cantidad = row['Cant'] || row['Amarillas'] || row.cant || 1;
+    txt += pos + '. ' + jugador + ' (' + equipo + ')';
+    if (!esRojas) txt += ' — ' + cantidad;
+    txt += '\n';
+  });
+  
+  if (data.length > 10) {
+    txt += '_... y ' + (data.length - 10) + ' más_\n';
+  }
+  
+  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  abrirWhatsApp(txt);
 }
 
 window.addEventListener('resize', updateNavPill);
