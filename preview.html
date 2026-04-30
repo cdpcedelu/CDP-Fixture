@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-30 14:30 ARG — logo_1.png -->
+<!-- CDP Fixture — index.html — 2026-04-30 16:00 ARG — tabla: dif al lado del nombre, racha debajo -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1424,7 +1424,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
+    gap: 4px;
   }
   .team-name-text {
     white-space: nowrap;
@@ -1432,6 +1432,17 @@
   }
   [data-theme="dark"] .team-name-text {
     color: #f8fafc;
+  }
+  .team-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .team-racha-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   .team-stats-row {
     display: flex;
@@ -1457,7 +1468,6 @@
     font-weight: 700;
     padding: 2px 5px;
     border-radius: 4px;
-    margin-left: 6px;
     display: inline-block;
   }
   .dif-badge.pos { background: #dcfce7; color: #16a34a; }
@@ -4827,8 +4837,11 @@ function renderPos(view) {
           getEscudo(equipo, 28) +
           deltaHtml +
           '<div class="team-name-cell">' +
-            '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
-            '<span class="team-stats-row"><span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' + rachaHtml + '</span>' +
+            '<span class="team-name-row">' +
+              '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
+              '<span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' +
+            '</span>' +
+            (rachaHtml ? '<span class="team-racha-row">' + rachaHtml + '</span>' : '') +
           '</div>' +
         '</div>' +
       '</td>' +
