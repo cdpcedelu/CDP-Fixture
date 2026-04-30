@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 22:25 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-30 10:00 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6774,13 +6774,7 @@ async function precargarPosiciones() {
 
 function abrirWhatsApp(texto) {
   var encoded = encodeURIComponent(texto);
-  if (navigator.share) {
-    navigator.share({ text: texto }).catch(function() {
-      window.open('https://wa.me/?text=' + encoded, '_blank');
-    });
-  } else {
-    window.open('https://wa.me/?text=' + encoded, '_blank');
-  }
+  window.open('https://wa.me/?text=' + encoded, '_blank');
 }
 
 function getNombreCategoria(view) {
@@ -6832,6 +6826,30 @@ function compartirFixture() {
   var catTxt = filtroActivo !== 'todos' ? (filtroActivo === 'libres' ? ' - Libres' : ' - Senior') : '';
   var txt = '*CDP - FECHA ' + selKey + catTxt + '*\n\n';
   
+  // Helper para extraer info de canchaHora
+  function extraerInfo(p) {
+    var info = '';
+    if (p.canchaHora) {
+      var ch = String(p.canchaHora);
+      // Extraer día (Vie, Sab, etc)
+      var diaMatch = ch.match(/(vie|sab|dom|lun|mar|mie|jue)/i);
+      var dia = diaMatch ? diaMatch[1].charAt(0).toUpperCase() + diaMatch[1].slice(1).toLowerCase() : '';
+      // Extraer hora
+      var horaMatch = ch.match(/(\d{1,2}:\d{2})/);
+      var hora = horaMatch ? horaMatch[1] : '';
+      // Extraer cancha
+      var canchaMatch = ch.match(/cancha\s*(\d+)/i) || ch.match(/-\s*(\d+)\s*$/);
+      var cancha = canchaMatch ? 'C' + canchaMatch[1] : '';
+      
+      var partes = [];
+      if (dia) partes.push(dia);
+      if (hora) partes.push(hora);
+      if (cancha) partes.push(cancha);
+      if (partes.length) info = partes.join(' ');
+    }
+    return info;
+  }
+  
   // Resultados jugados
   if (jugados.length > 0) {
     jugados.forEach(function(p) {
@@ -6839,6 +6857,8 @@ function compartirFixture() {
       var goles = parsearResultado(p.resultado);
       if (equipos && goles) {
         txt += equipos.local + ' *' + goles.local + '-' + goles.visitante + '* ' + equipos.visitante + '\n';
+        var info = extraerInfo(p);
+        if (info) txt += '  _' + info + '_\n';
       }
     });
   }
@@ -6849,11 +6869,9 @@ function compartirFixture() {
     pendientes.forEach(function(p) {
       var equipos = parsearPartido(p.partido);
       if (equipos) {
-        var hora = p.hora || '';
-        var cancha = p.cancha || '';
-        txt += equipos.local + ' vs ' + equipos.visitante;
-        if (hora || cancha) txt += ' (' + [hora, cancha].filter(Boolean).join(' - ') + ')';
-        txt += '\n';
+        txt += equipos.local + ' vs ' + equipos.visitante + '\n';
+        var info = extraerInfo(p);
+        if (info) txt += '  _' + info + '_\n';
       }
     });
   }
@@ -6887,10 +6905,13 @@ function compartirTabla() {
     var pos = i + 1;
     var equipo = row['Equipo'] || row.equipo || '-';
     var pts = row['Pts'] || row.pts || 0;
+    var dif = row['Diferencia'] || row.dif || 0;
+    var difStr = dif > 0 ? '+' + dif : String(dif);
+    
     if (pos <= 3) {
-      txt += '*' + pos + '. ' + equipo + ' - ' + pts + ' pts*\n';
+      txt += '*' + pos + '. ' + equipo + ' | ' + pts + ' pts (' + difStr + ')*\n';
     } else {
-      txt += pos + '. ' + equipo + ' - ' + pts + ' pts\n';
+      txt += pos + '. ' + equipo + ' | ' + pts + ' pts (' + difStr + ')\n';
     }
   });
   
