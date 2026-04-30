@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-30 16:00 ARG — tabla: dif al lado del nombre, racha debajo -->
+<!-- CDP Fixture — index.html — 2026-04-30 16:30 ARG — popup welcome v32 + tabla dif/racha -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3007,6 +3007,135 @@
   .ultimos-res.win { background: rgba(22,163,74,0.15); color: #16a34a; }
   .ultimos-res.draw { background: rgba(217,119,6,0.15); color: #d97706; }
   .ultimos-res.loss { background: rgba(220,38,38,0.15); color: #dc2626; }
+
+  /* ═══ WELCOME MODAL ═══ */
+  .welcome-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .welcome-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .welcome-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px 24px 24px;
+    text-align: center;
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+  .welcome-overlay.show .welcome-card {
+    transform: translateY(0) scale(1);
+  }
+  .welcome-logo {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 14px;
+    border-radius: 16px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .welcome-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .welcome-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    margin: 0 0 4px;
+  }
+  .welcome-subtitle {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    margin: 0 0 18px;
+    font-weight: 500;
+  }
+  .welcome-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 22px;
+    text-align: left;
+  }
+  .welcome-list li {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    padding: 8px 0 8px 28px;
+    position: relative;
+    line-height: 1.4;
+    border-bottom: 1px solid var(--border2);
+  }
+  .welcome-list li:last-child {
+    border-bottom: none;
+  }
+  .welcome-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    color: var(--green);
+    font-weight: 800;
+    font-size: 14px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .welcome-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .welcome-btn:hover {
+    background: var(--green-light);
+    transform: translateY(-1px);
+  }
+  .welcome-btn:active {
+    transform: translateY(0);
+  }
+  @media (max-width: 480px) {
+    .welcome-card { padding: 24px 18px 20px; }
+    .welcome-logo { width: 80px; height: 80px; }
+    .welcome-title { font-size: 24px; }
+    .welcome-list li { font-size: 13px; }
+  }
 </style>
 </head>
 <body>
@@ -6783,6 +6912,8 @@ window.addEventListener('DOMContentLoaded', () => {
   updateNavPill();
   // Cargar TODOS los datos con SWR (1 llamada HTTP)
   loadAllDataSWR();
+  // Mostrar popup de bienvenida si es primera visita de esta versión
+  showWelcomeIfFirstTime();
 });
 
 // Precargar posiciones (fallback si getAll no está disponible)
@@ -7723,6 +7854,61 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
     container.innerHTML = html;
   }
 
+</script>
+
+<!-- WELCOME MODAL — primera visita o cambio de versión -->
+<div id="welcomeModal" class="welcome-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+  <div class="welcome-card" onclick="event.stopPropagation()">
+    <div class="welcome-logo">
+      <img src="escudos/logo_1.png" alt="CDP">
+    </div>
+    <h2 id="welcomeTitle" class="welcome-title">Nueva versión 2026</h2>
+    <p class="welcome-subtitle">Seguimos trabajando para vos</p>
+    <ul class="welcome-list">
+      <li>Carga 5x más rápida</li>
+      <li>Estética 100% nueva</li>
+      <li>Tabla con diferencia de gol, racha y suba/baja de posiciones</li>
+      <li>Goleadores con buscador</li>
+      <li>Compartir cualquier sección por WhatsApp</li>
+      <li>Modo claro / oscuro / verde / azul</li>
+    </ul>
+    <button class="welcome-btn" onclick="closeWelcome()">Entendido</button>
+  </div>
+</div>
+
+<script>
+  // ═══ WELCOME MODAL ═══
+  // Cambiar la key cuando se quiera mostrar de nuevo a todos los usuarios
+  var WELCOME_KEY = 'cdp_welcome_v32_seen';
+
+  function showWelcomeIfFirstTime() {
+    try {
+      if (localStorage.getItem(WELCOME_KEY)) return;
+    } catch(e) {}
+    setTimeout(function() {
+      var modal = document.getElementById('welcomeModal');
+      if (modal) modal.classList.add('show');
+    }, 600);
+  }
+
+  function closeWelcome() {
+    var modal = document.getElementById('welcomeModal');
+    if (modal) modal.classList.remove('show');
+    try { localStorage.setItem(WELCOME_KEY, '1'); } catch(e) {}
+  }
+
+  // Cerrar con click en overlay
+  document.getElementById('welcomeModal').addEventListener('click', function(e) {
+    if (e.target === this) closeWelcome();
+  });
+
+  // Cerrar con ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var modal = document.getElementById('welcomeModal');
+      if (modal && modal.classList.contains('show')) closeWelcome();
+    }
+  });
 </script>
 
 </body>
