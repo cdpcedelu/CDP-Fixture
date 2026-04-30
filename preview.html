@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-29 22:10 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-29 22:25 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6774,7 +6774,6 @@ async function precargarPosiciones() {
 
 function abrirWhatsApp(texto) {
   var encoded = encodeURIComponent(texto);
-  // Intentar Web Share API primero (mejor en mobile)
   if (navigator.share) {
     navigator.share({ text: texto }).catch(function() {
       window.open('https://wa.me/?text=' + encoded, '_blank');
@@ -6792,7 +6791,7 @@ function getNombreCategoria(view) {
     'libres-a': 'Libres A',
     'libres-b': 'Libres B',
     'senior': 'Senior',
-    'rojas': 'Rojas',
+    'rojas': 'Tarjetas Rojas',
     'amarillas-a': 'Amarillas Libres A',
     'amarillas-b': 'Amarillas Libres B',
     'amarillas-senior': 'Amarillas Senior'
@@ -6801,26 +6800,37 @@ function getNombreCategoria(view) {
 }
 
 function compartirFixture() {
-  var fecha = state.currentFecha || 1;
-  var partidos = state.fixture || [];
+  var items = state.fixture || [];
   
   // Filtrar por categoría activa
   var filtroActivo = state.currentFixtureFilter || 'todos';
-  if (filtroActivo !== 'todos') {
-    partidos = partidos.filter(function(p) {
-      var cat = (p.partido || '').toLowerCase();
-      if (filtroActivo === 'libres') return cat.indexOf('(s)') === -1;
-      if (filtroActivo === 'senior') return cat.indexOf('(s)') !== -1;
-      return true;
-    });
-  }
+  if (filtroActivo === 'libres') items = items.filter(function(p) { return !p.isSenior; });
+  if (filtroActivo === 'senior') items = items.filter(function(p) { return p.isSenior; });
+  
+  // Agrupar por fecha
+  var groups = {};
+  items.forEach(function(p) {
+    var rawFecha = p.fecha != null ? String(p.fecha) : '0';
+    var numMatch = rawFecha.match(/(\d+)/);
+    var key = numMatch ? numMatch[1] : rawFecha;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(p);
+  });
+  
+  // Usar fecha seleccionada
+  var selKey = state.fechaSeleccionada || Object.keys(groups)[0] || '1';
+  var partidos = groups[selKey] || [];
+  
+  // Filtrar sin LIBRE
+  partidos = partidos.filter(function(p) {
+    return !String(p.partido || '').toLowerCase().includes('libre');
+  });
   
   var jugados = partidos.filter(function(p) { return p.jugado === true || p.jugado === 'Jugado'; });
   var pendientes = partidos.filter(function(p) { return p.jugado !== true && p.jugado !== 'Jugado'; });
   
-  var txt = '⚽ *CDP - FECHA ' + fecha + '*\n';
-  if (filtroActivo !== 'todos') txt += '_' + (filtroActivo === 'libres' ? 'Libres' : 'Senior') + '_\n';
-  txt += '\n';
+  var catTxt = filtroActivo !== 'todos' ? (filtroActivo === 'libres' ? ' - Libres' : ' - Senior') : '';
+  var txt = '*CDP - FECHA ' + selKey + catTxt + '*\n\n';
   
   // Resultados jugados
   if (jugados.length > 0) {
@@ -6828,30 +6838,27 @@ function compartirFixture() {
       var equipos = parsearPartido(p.partido);
       var goles = parsearResultado(p.resultado);
       if (equipos && goles) {
-        txt += equipos.local + ' *' + goles.local + '* - *' + goles.visitante + '* ' + equipos.visitante + '\n';
+        txt += equipos.local + ' *' + goles.local + '-' + goles.visitante + '* ' + equipos.visitante + '\n';
       }
     });
   }
   
   // Pendientes
   if (pendientes.length > 0) {
-    if (jugados.length > 0) txt += '\n_Pendientes:_\n';
+    if (jugados.length > 0) txt += '\n_Pendientes_\n';
     pendientes.forEach(function(p) {
       var equipos = parsearPartido(p.partido);
       if (equipos) {
         var hora = p.hora || '';
         var cancha = p.cancha || '';
-        var info = [];
-        if (hora) info.push('🕐 ' + hora);
-        if (cancha) info.push(cancha);
         txt += equipos.local + ' vs ' + equipos.visitante;
-        if (info.length) txt += ' (' + info.join(' · ') + ')';
+        if (hora || cancha) txt += ' (' + [hora, cancha].filter(Boolean).join(' - ') + ')';
         txt += '\n';
       }
     });
   }
   
-  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
@@ -6874,21 +6881,20 @@ function compartirTabla() {
   var data = state.posiciones[view] || [];
   var nombre = getNombreCategoria(view);
   
-  var txt = '🏆 *TABLA ' + nombre.toUpperCase() + '*\n\n';
+  var txt = '*TABLA ' + nombre.toUpperCase() + '*\n\n';
   
-  data.slice(0, 10).forEach(function(row, i) {
+  data.forEach(function(row, i) {
     var pos = i + 1;
-    var emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + '.';
     var equipo = row['Equipo'] || row.equipo || '-';
     var pts = row['Pts'] || row.pts || 0;
-    txt += emoji + ' ' + equipo + ' — ' + pts + ' pts\n';
+    if (pos <= 3) {
+      txt += '*' + pos + '. ' + equipo + ' - ' + pts + ' pts*\n';
+    } else {
+      txt += pos + '. ' + equipo + ' - ' + pts + ' pts\n';
+    }
   });
   
-  if (data.length > 10) {
-    txt += '_... y ' + (data.length - 10) + ' más_\n';
-  }
-  
-  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
@@ -6897,22 +6903,21 @@ function compartirGoleadores() {
   var data = state.goleadores[view] || [];
   var nombre = getNombreCategoria(view);
   
-  var txt = '⚽ *GOLEADORES ' + nombre.toUpperCase() + '*\n\n';
+  var txt = '*GOLEADORES ' + nombre.toUpperCase() + '*\n\n';
   
-  data.slice(0, 10).forEach(function(row, i) {
+  data.forEach(function(row, i) {
     var pos = i + 1;
-    var emoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + '.';
     var jugador = row['Jugador'] || '-';
     var equipo = row['Equipo'] || '-';
     var goles = row['Total'] || 0;
-    txt += emoji + ' ' + jugador + ' (' + equipo + ') — ' + goles + '\n';
+    if (pos <= 3) {
+      txt += '*' + pos + '. ' + jugador + ' (' + equipo + ') - ' + goles + '*\n';
+    } else {
+      txt += pos + '. ' + jugador + ' (' + equipo + ') - ' + goles + '\n';
+    }
   });
   
-  if (data.length > 10) {
-    txt += '_... y ' + (data.length - 10) + ' más_\n';
-  }
-  
-  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
@@ -6920,27 +6925,95 @@ function compartirDisciplina() {
   var view = state.currentDisc || 'rojas';
   var data = state.disciplina[view] || [];
   var nombre = getNombreCategoria(view);
-  
   var esRojas = view === 'rojas';
-  var emoji = esRojas ? '🟥' : '🟨';
   
-  var txt = emoji + ' *' + nombre.toUpperCase() + '*\n\n';
+  var txt = '*' + nombre.toUpperCase() + '*\n\n';
   
-  data.slice(0, 10).forEach(function(row, i) {
-    var pos = i + 1;
-    var jugador = row['Jugador'] || row.jugador || '-';
-    var equipo = row['Equipo'] || row.equipo || '-';
-    var cantidad = row['Cant'] || row['Amarillas'] || row.cant || 1;
-    txt += pos + '. ' + jugador + ' (' + equipo + ')';
-    if (!esRojas) txt += ' — ' + cantidad;
-    txt += '\n';
-  });
-  
-  if (data.length > 10) {
-    txt += '_... y ' + (data.length - 10) + ' más_\n';
+  if (esRojas) {
+    // Calcular próxima fecha
+    var proximaFecha = 999;
+    if (state.fixture && state.fixture.length) {
+      var groups = {};
+      state.fixture.forEach(function(p) {
+        var numMatch = String(p.fecha || '0').match(/(\d+)/);
+        var key = numMatch ? parseInt(numMatch[1]) : 0;
+        if (!key) return;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(p);
+      });
+      var fechaNums = Object.keys(groups).map(Number).sort(function(a,b) { return a-b; });
+      for (var i = 0; i < fechaNums.length; i++) {
+        var fn = fechaNums[i];
+        var sinLibre = groups[fn].filter(function(p) { return !String(p.partido||'').toLowerCase().includes('libre'); });
+        var completa = sinLibre.length > 0 && sinLibre.every(function(p) { return p.jugado === true || p.jugado === 'Jugado'; });
+        if (!completa) { proximaFecha = fn; break; }
+      }
+    }
+    
+    // Filtrar solo activas
+    var activas = data.filter(function(r) {
+      var partidos = r['Partidos'];
+      if (partidos === undefined || partidos === null || partidos === '') return false;
+      
+      var raw = r['Habilitado FECHA'];
+      if (raw === undefined || raw === null || raw === '') return true;
+      if (typeof raw === 'number' && raw > 40000) return true; // fecha calendario
+      var str = String(raw);
+      var m = str.match(/^F?(\d+)$/i);
+      if (m) {
+        var habNum = parseInt(m[1]);
+        return habNum > proximaFecha;
+      }
+      return true;
+    });
+    
+    if (activas.length === 0) {
+      txt += '_Sin sanciones activas_\n';
+    } else {
+      txt += '_Sanciones activas_\n\n';
+      activas.forEach(function(r, i) {
+        var jugador = r['Jugador'] || '-';
+        var equipo = r['Equipo'] || '-';
+        var partidos = r['Partidos'] || '';
+        var habFecha = r['Habilitado FECHA'] || '';
+        txt += (i+1) + '. ' + jugador + ' (' + equipo + ')';
+        if (partidos) {
+          // Si partidos es número, agregar "fechas"
+          if (typeof partidos === 'number') {
+            txt += ' - ' + partidos + ' fecha' + (partidos > 1 ? 's' : '');
+          } else {
+            txt += ' - ' + partidos;
+          }
+        }
+        if (habFecha) {
+          var habStr = String(habFecha);
+          if (!habStr.toUpperCase().startsWith('F')) habStr = 'F' + habStr;
+          txt += ' - Hab: ' + habStr;
+        }
+        txt += '\n';
+      });
+    }
+  } else {
+    // Amarillas - mostrar top con 2+ amarillas
+    var conDosOMas = data.filter(function(r) { return (r['Total'] || 0) >= 2; });
+    if (conDosOMas.length === 0) {
+      txt += '_Sin jugadores con 2+ amarillas_\n';
+    } else {
+      conDosOMas.forEach(function(r, i) {
+        var pos = i + 1;
+        var jugador = r['Jugador'] || '-';
+        var equipo = r['Equipo'] || '-';
+        var cant = r['Total'] || 0;
+        if (pos <= 3) {
+          txt += '*' + pos + '. ' + jugador + ' (' + equipo + ') - ' + cant + '*\n';
+        } else {
+          txt += pos + '. ' + jugador + ' (' + equipo + ') - ' + cant + '\n';
+        }
+      });
+    }
   }
   
-  txt += '\n👉 cdpcedelu.github.io/CDP-Stats';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
