@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-30 10:00 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
+<!-- CDP Fixture — index.html — 2026-04-30 10:15 ARG — Visual Supabase + Backend Sheets + Cache SWR -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6903,8 +6903,8 @@ function compartirTabla() {
   
   data.forEach(function(row, i) {
     var pos = i + 1;
-    var equipo = row['Equipo'] || row.equipo || '-';
-    var pts = row['Pts'] || row.pts || 0;
+    var equipo = row['Equipo'] || '-';
+    var pts = row['Puntos'] || row['Pts'] || row.pts || 0;
     var dif = row['Diferencia'] || row.dif || 0;
     var difStr = dif > 0 ? '+' + dif : String(dif);
     
