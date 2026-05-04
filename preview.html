@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-04 11:55 ARG — fix admin: _idx sintético + parseo equipoL/V (backend v2.6 manda rowIndex) -->
+<!-- CDP Fixture — index.html — 2026-05-04 12:10 ARG — admin: filtrar partidos LIBRE (equipo descansa) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6455,27 +6455,34 @@ async function adminLoadMatches() {
     //  · equipoL/equipoV parseados desde "F7A. Local vs Visitante" si no vienen
     //  · golesL/golesV parseados desde "[2-1]" si no vienen
     // Backend v2.6+ ya manda rowIndex/equipoL/equipoV, esto es fallback.
-    adminState.matches = state.fixture.map(function(m, i) {
-      var enriched = Object.assign({ _idx: i }, m);
-      if (!enriched.equipoL || !enriched.equipoV) {
-        var teams = parsearPartido(enriched.partido);
-        if (teams) {
-          enriched.equipoL = teams.local;
-          enriched.equipoV = teams.visitante;
-        } else {
-          enriched.equipoL = enriched.equipoL || '';
-          enriched.equipoV = enriched.equipoV || '';
+    // Filtrar partidos "LIBRE" (equipo que descansa, no hay nada que completar)
+    adminState.matches = state.fixture
+      .filter(function(m) {
+        var fecha = String(m.fecha || '').toUpperCase();
+        var partido = String(m.partido || '').toUpperCase();
+        return fecha.indexOf('LIBRE') === -1 && partido.indexOf('LIBRE') === -1;
+      })
+      .map(function(m, i) {
+        var enriched = Object.assign({ _idx: i }, m);
+        if (!enriched.equipoL || !enriched.equipoV) {
+          var teams = parsearPartido(enriched.partido);
+          if (teams) {
+            enriched.equipoL = teams.local;
+            enriched.equipoV = teams.visitante;
+          } else {
+            enriched.equipoL = enriched.equipoL || '';
+            enriched.equipoV = enriched.equipoV || '';
+          }
         }
-      }
-      if (enriched.golesL === undefined || enriched.golesL === null) {
-        var goles = parsearResultado(enriched.resultado);
-        if (goles) {
-          enriched.golesL = goles.local;
-          enriched.golesV = goles.visitante;
+        if (enriched.golesL === undefined || enriched.golesL === null) {
+          var goles = parsearResultado(enriched.resultado);
+          if (goles) {
+            enriched.golesL = goles.local;
+            enriched.golesV = goles.visitante;
+          }
         }
-      }
-      return enriched;
-    });
+        return enriched;
+      });
 
     adminRenderFechaTabs();
     adminRenderMatchList();
