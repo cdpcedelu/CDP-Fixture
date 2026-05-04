@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-04 12:10 ARG — admin: filtrar partidos LIBRE (equipo descansa) -->
+<!-- CDP Fixture — index.html — 2026-05-04 13:15 ARG — admin: triple filtro LIBRE (matches + tabs + render) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6446,43 +6446,44 @@ async function adminLoadMatches() {
   container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando partidos...</div></div>';
 
   try {
-    // Usar el fixture ya cargado o cargarlo
-    if (!state.fixture) {
-      state.fixture = await fetchAPI('getFixture');
-    }
+    // Forzar fetch fresco (no usar cache potencialmente viejo)
+    state.fixture = await fetchAPI('getFixture');
+
+    var totalAntes = state.fixture.length;
+    // Filtrar partidos "LIBRE" (equipo que descansa, no hay nada que completar)
+    // Chequeamos en TODOS los campos string para ser robustos a cómo viene
+    var filtrados = state.fixture.filter(function(m) {
+      var blob = [m.fecha, m.partido, m.equipoL, m.equipoV, m.canchaHora]
+        .map(function(x) { return String(x || '').toUpperCase(); })
+        .join(' | ');
+      return !/LIBRE/.test(blob);
+    });
+
     // Enriquecer cada match:
     //  · _idx sintético para identificación en el frontend (find/onclick)
     //  · equipoL/equipoV parseados desde "F7A. Local vs Visitante" si no vienen
     //  · golesL/golesV parseados desde "[2-1]" si no vienen
-    // Backend v2.6+ ya manda rowIndex/equipoL/equipoV, esto es fallback.
-    // Filtrar partidos "LIBRE" (equipo que descansa, no hay nada que completar)
-    adminState.matches = state.fixture
-      .filter(function(m) {
-        var fecha = String(m.fecha || '').toUpperCase();
-        var partido = String(m.partido || '').toUpperCase();
-        return fecha.indexOf('LIBRE') === -1 && partido.indexOf('LIBRE') === -1;
-      })
-      .map(function(m, i) {
-        var enriched = Object.assign({ _idx: i }, m);
-        if (!enriched.equipoL || !enriched.equipoV) {
-          var teams = parsearPartido(enriched.partido);
-          if (teams) {
-            enriched.equipoL = teams.local;
-            enriched.equipoV = teams.visitante;
-          } else {
-            enriched.equipoL = enriched.equipoL || '';
-            enriched.equipoV = enriched.equipoV || '';
-          }
+    adminState.matches = filtrados.map(function(m, i) {
+      var enriched = Object.assign({ _idx: i }, m);
+      if (!enriched.equipoL || !enriched.equipoV) {
+        var teams = parsearPartido(enriched.partido);
+        if (teams) {
+          enriched.equipoL = teams.local;
+          enriched.equipoV = teams.visitante;
+        } else {
+          enriched.equipoL = enriched.equipoL || '';
+          enriched.equipoV = enriched.equipoV || '';
         }
-        if (enriched.golesL === undefined || enriched.golesL === null) {
-          var goles = parsearResultado(enriched.resultado);
-          if (goles) {
-            enriched.golesL = goles.local;
-            enriched.golesV = goles.visitante;
-          }
+      }
+      if (enriched.golesL === undefined || enriched.golesL === null) {
+        var goles = parsearResultado(enriched.resultado);
+        if (goles) {
+          enriched.golesL = goles.local;
+          enriched.golesV = goles.visitante;
         }
-        return enriched;
-      });
+      }
+      return enriched;
+    });
 
     adminRenderFechaTabs();
     adminRenderMatchList();
@@ -6497,7 +6498,10 @@ async function adminLoadMatches() {
 }
 
 function adminRenderFechaTabs() {
-  const fechas = [...new Set(adminState.matches.map(m => m.fecha).filter(Boolean))];
+  // Doble filtro: cualquier fecha que tenga "LIBRE" se descarta del tab
+  // (no hay nada que completar para el equipo que descansa)
+  const fechas = [...new Set(adminState.matches.map(m => m.fecha).filter(Boolean))]
+    .filter(f => !/LIBRE/i.test(String(f)));
   fechas.sort((a, b) => {
     const na = parseInt(a.replace('F', ''));
     const nb = parseInt(b.replace('F', ''));
@@ -6505,6 +6509,10 @@ function adminRenderFechaTabs() {
   });
 
   if (!adminState.currentFecha && fechas.length) adminState.currentFecha = fechas[0];
+  // Si la fecha actual era "F1 LIBRE", saltar a la primera válida
+  if (adminState.currentFecha && /LIBRE/i.test(adminState.currentFecha)) {
+    adminState.currentFecha = fechas[0] || '';
+  }
 
   let html = '<button class="tab-pill ' + (!adminState.currentFecha ? 'active' : '') + '" onclick="adminFilterFecha(\'\', this)">Todos</button>';
   fechas.forEach(f => {
@@ -6524,7 +6532,11 @@ function adminRenderMatchList() {
   document.getElementById('adminMatchEditor').style.display = 'none';
   document.getElementById('adminMatchList').style.display = '';
 
-  let matches = adminState.matches;
+  // Tercera capa: descartar cualquier partido que tenga LIBRE en fecha o partido
+  let matches = adminState.matches.filter(m => {
+    var blob = String((m.fecha || '') + ' ' + (m.partido || ''));
+    return !/LIBRE/i.test(blob);
+  });
   if (adminState.currentFecha) {
     matches = matches.filter(m => m.fecha === adminState.currentFecha);
   }
