@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-04-30 17:15 ARG — GoatCounter (german) + popup welcome v32 + tabla dif/racha -->
+<!-- CDP Fixture — index.html — 2026-05-04 11:35 ARG — fix admin: parseo equipoL/equipoV/golesL/golesV desde getAll -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6450,7 +6450,29 @@ async function adminLoadMatches() {
     if (!state.fixture) {
       state.fixture = await fetchAPI('getFixture');
     }
-    adminState.matches = state.fixture;
+    // Enriquecer cada match con equipoL/equipoV/golesL/golesV parseados
+    // desde los strings "F7A. Local vs Visitante" y "[2-1]" del backend
+    adminState.matches = state.fixture.map(function(m) {
+      var enriched = Object.assign({}, m);
+      if (!enriched.equipoL || !enriched.equipoV) {
+        var teams = parsearPartido(enriched.partido);
+        if (teams) {
+          enriched.equipoL = teams.local;
+          enriched.equipoV = teams.visitante;
+        } else {
+          enriched.equipoL = enriched.equipoL || '';
+          enriched.equipoV = enriched.equipoV || '';
+        }
+      }
+      if (enriched.golesL === undefined || enriched.golesL === null) {
+        var goles = parsearResultado(enriched.resultado);
+        if (goles) {
+          enriched.golesL = goles.local;
+          enriched.golesV = goles.visitante;
+        }
+      }
+      return enriched;
+    });
 
     adminRenderFechaTabs();
     adminRenderMatchList();
