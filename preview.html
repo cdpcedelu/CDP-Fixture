@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-04 11:35 ARG — fix admin: parseo equipoL/equipoV/golesL/golesV desde getAll -->
+<!-- CDP Fixture — index.html — 2026-05-04 11:55 ARG — fix admin: _idx sintético + parseo equipoL/V (backend v2.6 manda rowIndex) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6450,10 +6450,13 @@ async function adminLoadMatches() {
     if (!state.fixture) {
       state.fixture = await fetchAPI('getFixture');
     }
-    // Enriquecer cada match con equipoL/equipoV/golesL/golesV parseados
-    // desde los strings "F7A. Local vs Visitante" y "[2-1]" del backend
-    adminState.matches = state.fixture.map(function(m) {
-      var enriched = Object.assign({}, m);
+    // Enriquecer cada match:
+    //  · _idx sintético para identificación en el frontend (find/onclick)
+    //  · equipoL/equipoV parseados desde "F7A. Local vs Visitante" si no vienen
+    //  · golesL/golesV parseados desde "[2-1]" si no vienen
+    // Backend v2.6+ ya manda rowIndex/equipoL/equipoV, esto es fallback.
+    adminState.matches = state.fixture.map(function(m, i) {
+      var enriched = Object.assign({ _idx: i }, m);
       if (!enriched.equipoL || !enriched.equipoV) {
         var teams = parsearPartido(enriched.partido);
         if (teams) {
@@ -6569,7 +6572,7 @@ function adminMatchRowHtml(m) {
     ? '<span class="badge" style="font-size:9px">✓ Jugado</span>'
     : (isNR ? '<span class="badge yellow" style="font-size:9px">NR</span>' : '<span class="badge gray" style="font-size:9px">Pendiente</span>');
 
-  return '<div class="admin-match-row ' + statusClass + '" onclick="adminOpenMatch(' + m.rowIndex + ')">' +
+  return '<div class="admin-match-row ' + statusClass + '" onclick="adminOpenMatch(' + m._idx + ')">' +
     '<div class="match-teams">' +
       '<strong>' + (m.equipoL || '?') + ' vs ' + (m.equipoV || '?') + '</strong>' +
       '<div style="font-size:11px;color:var(--text-dimmer);margin-top:2px">' + m.fecha + ' ' + statusBadge + '</div>' +
@@ -6579,8 +6582,8 @@ function adminMatchRowHtml(m) {
   '</div>';
 }
 
-async function adminOpenMatch(rowIndex) {
-  var match = adminState.matches.find(function(m) { return m.rowIndex === rowIndex; });
+async function adminOpenMatch(idx) {
+  var match = adminState.matches.find(function(m) { return m._idx === idx; });
   if (!match) return;
 
   adminState.currentMatch = match;
@@ -6629,9 +6632,11 @@ async function adminOpenMatch(rowIndex) {
   };
 
   // Load incidencias desde el backend
+  // Usa rowIndex real del backend si está disponible; si no, doGetDetail busca por partido
   try {
     var partidoEnc = encodeURIComponent(match.partido || '');
-    var url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + rowIndex + (partidoEnc ? '&partido=' + partidoEnc : '');
+    var ri = match.rowIndex || '';
+    var url = APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + ri + (partidoEnc ? '&partido=' + partidoEnc : '');
     var res = await fetch(url);
     var json = await res.json();
     if (json.ok && json.data) {
