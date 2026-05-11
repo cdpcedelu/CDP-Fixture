@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-10 22:40 ARG — fix excluir fecha "0" basura del listado -->
+<!-- CDP Fixture — index.html — 2026-05-11 00:00 ARG — tablas Campeonato/Descenso/Promoción desde F10 + toggle general -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3014,6 +3014,65 @@
   .ultimos-res.draw { background: rgba(217,119,6,0.15); color: #d97706; }
   .ultimos-res.loss { background: rgba(220,38,38,0.15); color: #dc2626; }
 
+  /* ═══ TABLAS NUEVAS: Campeonato / Descenso / Promoción ═══ */
+  .grupo-card { margin-bottom: 14px; }
+  .grupo-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    padding: 12px 14px 8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+  /* Colores por posición */
+  .pos-num.pos-green {
+    background: #16a34a !important;
+    color: #fff !important;
+    border: none !important;
+  }
+  .pos-num.pos-yellow {
+    background: #facc15 !important;
+    color: #1e293b !important;
+    border: none !important;
+  }
+  .pos-num.pos-red {
+    background: #dc2626 !important;
+    color: #fff !important;
+    border: none !important;
+  }
+  /* Toggle clasificación general */
+  .toggle-general {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    margin: 8px 0;
+    text-align: left;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toggle-general:hover {
+    background: var(--bg3);
+    color: var(--text);
+  }
+  .toggle-arrow {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .clasificacion-general.oculta {
+    display: none;
+  }
+
   /* ═══ WELCOME MODAL ═══ */
   .welcome-overlay {
     position: fixed;
@@ -4169,6 +4228,169 @@ function isCacheValid(cached) {
   return (Date.now() - cached.timestamp) < CACHE_TTL;
 }
 
+// ════════════════════════════════════════════════════════════════
+// TABLAS NUEVAS (Campeonato / Descenso / Promoción) desde fecha N
+// Editar acá si cambia la fecha de corte o la composición de grupos
+// ════════════════════════════════════════════════════════════════
+var FECHA_DESDE_TABLAS_NUEVAS = 10;
+var GRUPOS_LIBRES = {
+  'zona-a-libres': [
+    {
+      titulo: 'Campeonato A',
+      equipos: ['Profesores', 'Contadores A', 'Abogados AR', 'Abogados A'],
+      colores: { 1: 'green' }
+    },
+    {
+      titulo: 'Descenso A',
+      equipos: ['Técnicos A', 'Arquitectos', 'Maestros', 'Docentes E', 'Docentes B'],
+      colores: { 3: 'yellow', 4: 'red', 5: 'red' }
+    }
+  ],
+  'zona-b-libres': [
+    {
+      titulo: 'Campeonato B',
+      equipos: ['Ingenieros S', 'Salud B', 'Ingenieros', 'Docentes W'],
+      colores: { 1: 'green', 2: 'green' }
+    },
+    {
+      titulo: 'Promoción B',
+      equipos: ['Salud T', 'Docentes A', 'Psicólogos', 'Abogados B', 'Salud F', 'Contadores Z'],
+      colores: { 1: 'yellow' }
+    }
+  ]
+};
+
+// Normaliza para comparar nombres (sin tildes, sin espacios extra, minúsculas)
+function normalizarNombreEquipo(s) {
+  return String(s || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Calcula tabla de un grupo desde una fecha determinada
+function calcularTablaGrupo(equipos, fechaDesde) {
+  var equiposNorm = {};
+  equipos.forEach(function(eq) { equiposNorm[normalizarNombreEquipo(eq)] = eq; });
+
+  // Inicializar stats
+  var stats = {};
+  equipos.forEach(function(eq) {
+    stats[eq] = { equipo: eq, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dif: 0, pts: 0 };
+  });
+
+  if (!state.fixture || !state.fixture.length) return Object.values(stats);
+
+  state.fixture.forEach(function(p) {
+    if (!(p.jugado === true || p.jugado === 'Jugado')) return;
+    var fechaNum = parseInt(String(p.fecha || '').replace(/\D/g, '')) || 0;
+    if (fechaNum < fechaDesde) return;
+
+    // Extraer equipos y goles
+    var eqL = p.equipoL;
+    var eqV = p.equipoV;
+    if ((!eqL || !eqV) && p.partido) {
+      var m = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+      if (m) { eqL = m[1].trim(); eqV = m[2].trim(); }
+    }
+    if (!eqL || !eqV) return;
+
+    var gL = parseInt(p.golesL);
+    var gV = parseInt(p.golesV);
+    if ((isNaN(gL) || isNaN(gV)) && p.resultado) {
+      var r = String(p.resultado).match(/\[?\s*(\d+)\s*[-–]\s*(\d+)\s*\]?/);
+      if (r) { gL = parseInt(r[1]); gV = parseInt(r[2]); }
+    }
+    if (isNaN(gL) || isNaN(gV)) return;
+
+    var eqLKey = equiposNorm[normalizarNombreEquipo(eqL)];
+    var eqVKey = equiposNorm[normalizarNombreEquipo(eqV)];
+
+    // Sumar a los que estén en el grupo
+    if (eqLKey) {
+      stats[eqLKey].pj++;
+      stats[eqLKey].gf += gL;
+      stats[eqLKey].gc += gV;
+      if (gL > gV) { stats[eqLKey].pg++; stats[eqLKey].pts += 3; }
+      else if (gL < gV) { stats[eqLKey].pp++; }
+      else { stats[eqLKey].pe++; stats[eqLKey].pts += 1; }
+    }
+    if (eqVKey) {
+      stats[eqVKey].pj++;
+      stats[eqVKey].gf += gV;
+      stats[eqVKey].gc += gL;
+      if (gV > gL) { stats[eqVKey].pg++; stats[eqVKey].pts += 3; }
+      else if (gV < gL) { stats[eqVKey].pp++; }
+      else { stats[eqVKey].pe++; stats[eqVKey].pts += 1; }
+    }
+  });
+
+  // Calcular dif y ordenar
+  var arr = Object.values(stats);
+  arr.forEach(function(s) { s.dif = s.gf - s.gc; });
+  arr.sort(function(a, b) {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.dif !== a.dif) return b.dif - a.dif;
+    return b.gf - a.gf;
+  });
+  return arr;
+}
+
+// Renderiza una tabla de grupo (Campeonato/Descenso/Promoción)
+function renderTablaGrupo(grupo, fechaDesde) {
+  var tabla = calcularTablaGrupo(grupo.equipos, fechaDesde);
+
+  var html = '<div class="card grupo-card">' +
+    '<div class="grupo-titulo">' + escapeHTML(grupo.titulo) + '</div>' +
+    '<table class="standings-table">' +
+      '<thead><tr>' +
+        '<th>#</th><th>Equipo</th><th>PJ</th><th>Pts</th><th>PG</th><th>PE</th><th>PP</th>' +
+        '<th class="hide-mobile">GF</th><th class="hide-mobile">GC</th><th>Dif</th>' +
+      '</tr></thead><tbody>';
+
+  tabla.forEach(function(row, i) {
+    var pos = i + 1;
+    var equipo = row.equipo;
+    var colorClass = grupo.colores[pos] ? ('pos-' + grupo.colores[pos]) : '';
+
+    var difBadgeClass = row.dif > 0 ? 'pos' : (row.dif < 0 ? 'neg' : 'zero');
+    var difBadgeText  = row.dif > 0 ? '+' + row.dif : String(row.dif);
+    var difClass     = row.dif > 0 ? 'diff-pos' : (row.dif < 0 ? 'diff-neg' : '');
+    var difCellText  = row.dif > 0 ? '+' + row.dif : String(row.dif);
+
+    var rachaHtml = getRachaDotsHtml(equipo);
+    if (rachaHtml) {
+      rachaHtml = '<button class="racha-btn" data-equipo="' + escapeHTML(equipo) + '" onclick="event.stopPropagation();showUltimosPartidos(this.dataset.equipo, this)">' + rachaHtml + '</button>';
+    }
+
+    html += '<tr>' +
+      '<td><div class="pos-num ' + colorClass + '">' + pos + '</div></td>' +
+      '<td>' +
+        '<div class="team-cell">' +
+          getEscudo(equipo, 28) +
+          '<div class="team-name-cell">' +
+            '<span class="team-name-row">' +
+              '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
+              '<span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' +
+            '</span>' +
+            (rachaHtml ? '<span class="team-racha-row">' + rachaHtml + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td class="stat-cell">' + row.pj + '</td>' +
+      '<td><div class="pts">' + row.pts + '</div></td>' +
+      '<td class="stat-cell">' + row.pg + '</td>' +
+      '<td class="stat-cell">' + row.pe + '</td>' +
+      '<td class="stat-cell">' + row.pp + '</td>' +
+      '<td class="stat-cell hide-mobile">' + row.gf + '</td>' +
+      '<td class="stat-cell hide-mobile">' + row.gc + '</td>' +
+      '<td class="' + difClass + '">' + difCellText + '</td>' +
+    '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  return html;
+}
+// ════════════════════════════════════════════════════════════════
+
 // Aplicar datos del cache o de la API al state
 function applyAllData(data) {
   // Fixture
@@ -4912,11 +5134,23 @@ function renderPos(view) {
 
   var isGeneral = view.includes('general');
   var isSenior = view.includes('senior');
-  
+  var isLibresZona = (view === 'zona-a-libres' || view === 'zona-b-libres');
+
   // Calcular rachas
   calcularRachasEquipos();
 
-  var html = '<div class="card">' +
+  // ── PARTE NUEVA: tablas Campeonato/Descenso/Promoción para Libres A y B ──
+  var preHtml = '';
+  if (isLibresZona && GRUPOS_LIBRES[view]) {
+    GRUPOS_LIBRES[view].forEach(function(grupo) {
+      preHtml += renderTablaGrupo(grupo, FECHA_DESDE_TABLAS_NUEVAS);
+    });
+    preHtml += '<button class="toggle-general" onclick="toggleClasificacionGeneral(this)">' +
+                 '<span class="toggle-arrow">▼</span> Ver clasificación general' +
+               '</button>';
+  }
+
+  var html = preHtml + '<div class="card' + (isLibresZona ? ' clasificacion-general oculta' : '') + '">' +
     '<table class="standings-table">' +
       '<thead>' +
         '<tr>' +
@@ -5208,23 +5442,28 @@ function calcularRachasEquipos() {
 // Generar HTML de los dots de racha
 function getRachaDotsHtml(equipo) {
   calcularRachasEquipos();
-  
-  // Buscar case-insensitive
+
+  function normalize(s) {
+    return String(s || '').trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  // Buscar match exacto, después case-insensitive, después normalizado (sin tildes/espacios)
   var partidos = null;
   if (state.partidosPorEquipo) {
     if (state.partidosPorEquipo[equipo]) {
       partidos = state.partidosPorEquipo[equipo];
     } else {
-      var equipoLower = equipo.toLowerCase();
+      var equipoNorm = normalize(equipo);
       for (var key in state.partidosPorEquipo) {
-        if (key.toLowerCase() === equipoLower) {
+        if (normalize(key) === equipoNorm) {
           partidos = state.partidosPorEquipo[key];
           break;
         }
       }
     }
   }
-  
+
   if (!partidos || !partidos.length) return '';
   
   var dots = partidos.slice(0, 3).map(function(p) {
@@ -5291,6 +5530,16 @@ function getPosBadgeHtml(equipo) {
   return '<span class="pos-badge ' + cls + '">' + pos + '°</span>' + deltaHtml;
 }
 
+// Toggle para mostrar/ocultar la clasificación general en Libres A/B
+function toggleClasificacionGeneral(btn) {
+  var card = btn.nextElementSibling;
+  if (!card) return;
+  var oculta = card.classList.toggle('oculta');
+  var arrow = btn.querySelector('.toggle-arrow');
+  if (arrow) arrow.textContent = oculta ? '▼' : '▲';
+  btn.firstChild.nextSibling.textContent = oculta ? ' Ver clasificación general' : ' Ocultar clasificación general';
+}
+
 // Generar HTML del badge de posición SIN flecha (para Fixture)
 function getPosBadgeHtmlSimple(equipo) {
   var posData = getPosicionEquipo(equipo);
@@ -5322,19 +5571,22 @@ function showUltimosPartidos(equipo, btn) {
   }
   
   calcularRachasEquipos();
-  
-  // Buscar case-insensitive
+
+  function normalize(s) {
+    return String(s || '').trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  // Match exacto → case-insensitive → normalizado (tildes/espacios)
   var partidos = null;
   var equipoKey = equipo;
   if (state.partidosPorEquipo) {
-    // Primero buscar exacto
     if (state.partidosPorEquipo[equipo]) {
       partidos = state.partidosPorEquipo[equipo];
     } else {
-      // Buscar case-insensitive
-      var equipoLower = equipo.toLowerCase();
+      var equipoNorm = normalize(equipo);
       for (var key in state.partidosPorEquipo) {
-        if (key.toLowerCase() === equipoLower) {
+        if (normalize(key) === equipoNorm) {
           partidos = state.partidosPorEquipo[key];
           equipoKey = key;
           break;
