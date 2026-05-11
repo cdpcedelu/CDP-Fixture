@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-10 21:00 ARG — fix detección LIBRE estricta + jugado por resultado -->
+<!-- CDP Fixture — index.html — 2026-05-10 22:40 ARG — fix excluir fecha "0" basura del listado -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4617,7 +4617,9 @@ function filterByEquipo(equipo) {
     groups[key].push(p);
   });
 
-  const fechaKeys = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
+  const fechaKeys = Object.keys(groups)
+    .filter(k => Number(k) > 0)
+    .sort((a, b) => Number(a) - Number(b));
 
   // Una fecha está completa si todos sus partidos están jugados (con resultado) o son LIBRE
   function fechaCompleta(partidos) {
