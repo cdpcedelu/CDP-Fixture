@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-11 00:00 ARG — tablas Campeonato/Descenso/Promoción desde F10 + toggle general -->
+<!-- CDP Fixture — index.html — 2026-05-11 00:20 ARG — títulos sin A/B + Impact con sombra moderna -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3017,14 +3017,35 @@
   /* ═══ TABLAS NUEVAS: Campeonato / Descenso / Promoción ═══ */
   .grupo-card { margin-bottom: 14px; }
   .grupo-titulo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 1.5px;
+    font-family: 'Impact', 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: 2.5px;
     color: var(--text);
-    padding: 12px 14px 8px;
+    padding: 16px 16px 12px;
     text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 6px;
+    text-shadow:
+      1px 1px 0 rgba(0,0,0,0.06),
+      2px 2px 0 rgba(0,0,0,0.04),
+      3px 3px 8px rgba(0,0,0,0.10);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+  [data-theme="dark"] .grupo-titulo {
+    text-shadow:
+      1px 1px 0 rgba(0,0,0,0.4),
+      2px 2px 0 rgba(0,0,0,0.3),
+      3px 3px 12px rgba(0,0,0,0.6),
+      0 0 24px rgba(255,255,255,0.04);
+  }
+  @media (max-width: 600px) {
+    .grupo-titulo {
+      font-size: 26px;
+      letter-spacing: 1.8px;
+      padding: 12px 12px 10px;
+    }
   }
   /* Colores por posición */
   .pos-num.pos-green {
@@ -4236,24 +4257,24 @@ var FECHA_DESDE_TABLAS_NUEVAS = 10;
 var GRUPOS_LIBRES = {
   'zona-a-libres': [
     {
-      titulo: 'Campeonato A',
+      titulo: 'Campeonato',
       equipos: ['Profesores', 'Contadores A', 'Abogados AR', 'Abogados A'],
       colores: { 1: 'green' }
     },
     {
-      titulo: 'Descenso A',
+      titulo: 'Descenso',
       equipos: ['Técnicos A', 'Arquitectos', 'Maestros', 'Docentes E', 'Docentes B'],
       colores: { 3: 'yellow', 4: 'red', 5: 'red' }
     }
   ],
   'zona-b-libres': [
     {
-      titulo: 'Campeonato B',
+      titulo: 'Campeonato',
       equipos: ['Ingenieros S', 'Salud B', 'Ingenieros', 'Docentes W'],
       colores: { 1: 'green', 2: 'green' }
     },
     {
-      titulo: 'Promoción B',
+      titulo: 'Promoción',
       equipos: ['Salud T', 'Docentes A', 'Psicólogos', 'Abogados B', 'Salud F', 'Contadores Z'],
       colores: { 1: 'yellow' }
     }
