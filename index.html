@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-05 14:10 ARG — meta tags Open Graph + íconos PWA actualizados para dominio torneo.cdpcdelu.ar -->
+<!-- CDP Fixture — index.html — 2026-05-10 21:00 ARG — fix detección LIBRE estricta + jugado por resultado -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -10,36 +10,26 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0f1923">
-<meta name="description" content="Fixture, resultados y posiciones del torneo del CDP. Seguí el torneo del Club de Profesionales: partidos y posiciones.">
+<meta name="description" content="Club de Profesionales CDP - Fixture y estadísticas">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Torneo CDP">
-
-<!-- Favicons + íconos PWA / iOS -->
+<!-- Favicon + Apple Touch Icon -->
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-<!-- Open Graph — preview en WhatsApp / Facebook / LinkedIn -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Torneo CDP">
-<meta property="og:title" content="Torneo CDP">
-<meta property="og:description" content="Fixture, resultados y posiciones del torneo del CDP. Seguí el torneo del Club de Profesionales: partidos y posiciones.">
-<meta property="og:image" content="https://torneo.cdpcdelu.ar/preview.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Open Graph — preview en WhatsApp / redes -->
+<meta property="og:title" content="CDP Stats — Club de Profesionales">
+<meta property="og:description" content="Fixture, posiciones, goleadores, disciplina y más del torneo del Club de Profesionales de Concepción del Uruguay.">
+<meta property="og:image" content="https://cdpcedelu.github.io/CDP-Fixture/preview.jpg">
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="1200">
-<meta property="og:image:alt" content="Torneo CDP">
-<meta property="og:url" content="https://torneo.cdpcdelu.ar/">
-<meta property="og:locale" content="es_AR">
-
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cdpcedelu.github.io/CDP-Fixture/">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Torneo CDP">
-<meta name="twitter:description" content="Fixture, resultados y posiciones del torneo del CDP. Seguí el torneo del Club de Profesionales: partidos y posiciones.">
-<meta name="twitter:image" content="https://torneo.cdpcdelu.ar/preview.png">
-
-<title>Torneo CDP</title>
+<meta name="twitter:title" content="CDP Stats — Club de Profesionales">
+<meta name="twitter:description" content="Fixture, posiciones, goleadores, disciplina y más del torneo del Club de Profesionales de Concepción del Uruguay.">
+<meta name="twitter:image" content="https://cdpcedelu.github.io/CDP-Fixture/preview.jpg">
+<title>Stats CDP</title>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
@@ -3440,7 +3430,7 @@
           <div class="admin-login-icon">🔒</div>
           <div>
             <div class="admin-login-title">Panel Admin</div>
-            <div class="admin-login-subtitle">Torneo CDP</div>
+            <div class="admin-login-subtitle">CDP Stats</div>
           </div>
         </div>
         <div style="font-size:13px;color:var(--text-dimmer);margin-bottom:6px">Contraseña</div>
@@ -4629,16 +4619,24 @@ function filterByEquipo(equipo) {
 
   const fechaKeys = Object.keys(groups).sort((a, b) => Number(a) - Number(b));
 
-  // Una fecha está completa si todos sus partidos son Jugado o NR
+  // Una fecha está completa si todos sus partidos están jugados (con resultado) o son LIBRE
   function fechaCompleta(partidos) {
-    // Solo cuenta como completa si TODOS están Jugados (NR = no jugado = pendiente)
-    // Los partidos LIBRE no cuentan para determinar si la fecha está completa
-    const sinLibre = partidos.filter(p => {
-      const vis = String(p.partido || '').toLowerCase();
-      return !vis.includes('libre');
-    });
+    if (!partidos.length) return true;
+    // Identificar LIBRE de forma estricta: solo si el partido termina en "vs LIBRE"
+    // (no por contener "libre" como substring, porque "LIBRES" como categoría falsea)
+    function esLibre(p) {
+      var s = String(p.partido || '').trim().toLowerCase();
+      return /\bvs\s+libre\s*$/.test(s) || s.endsWith(' libre');
+    }
+    var sinLibre = partidos.filter(function(p) { return !esLibre(p); });
     if (!sinLibre.length) return true; // todos son libre
-    return sinLibre.every(p => p.jugado === true || p.jugado === 'Jugado');
+
+    // Un partido cuenta como jugado si tiene flag jugado O un resultado numérico válido
+    return sinLibre.every(function(p) {
+      if (p.jugado === true || p.jugado === 'Jugado') return true;
+      var res = String(p.resultado || '');
+      return /\d+\s*[-–]\s*\d+/.test(res);
+    });
   }
 
   // Primera fecha incompleta (o la última si todas completas)
@@ -4655,9 +4653,15 @@ function filterByEquipo(equipo) {
   const selKey    = state.fechaSeleccionada;
   const selItems  = groups[selKey] || [];
   const completa  = fechaCompleta(selItems);
-  // No contar LIBRE para el badge de estado
-  const sinLibre  = selItems.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
-  const jugados   = sinLibre.filter(p => p.jugado === true || p.jugado === 'Jugado').length;
+  // No contar LIBRE para el badge de estado (detección estricta, no por substring)
+  const sinLibre  = selItems.filter(p => {
+    const s = String(p.partido || '').trim().toLowerCase();
+    return !(/\bvs\s+libre\s*$/.test(s) || s.endsWith(' libre'));
+  });
+  const jugados   = sinLibre.filter(p => {
+    if (p.jugado === true || p.jugado === 'Jugado') return true;
+    return /\d+\s*[-–]\s*\d+/.test(String(p.resultado || ''));
+  }).length;
   const pendientes = sinLibre.length - jugados;
   const statusCls = completa ? 'completa' : '';
   const statusTxt = completa ? '✓ Completa' : `${pendientes} pendiente${pendientes !== 1 ? 's' : ''}`;
@@ -7130,7 +7134,7 @@ function compartirFixture() {
     });
   }
   
-  txt += '\ntorneo.cdpcdelu.ar';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
@@ -7169,7 +7173,7 @@ function compartirTabla() {
     }
   });
   
-  txt += '\ntorneo.cdpcdelu.ar';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
@@ -7192,7 +7196,7 @@ function compartirGoleadores() {
     }
   });
   
-  txt += '\ntorneo.cdpcdelu.ar';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
@@ -7288,7 +7292,7 @@ function compartirDisciplina() {
     }
   }
   
-  txt += '\ntorneo.cdpcdelu.ar';
+  txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
 
