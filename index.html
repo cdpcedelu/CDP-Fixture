@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-11 00:30 ARG — títulos grupo igual tamaño que POSICIONES (28px/24px) -->
+<!-- CDP Fixture — index.html — 2026-05-11 12:30 ARG — normalizar nombres MAYÚSCULA→Capitalize (tabla Senior consistente con Libres) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4120,6 +4120,22 @@ function escapeHTML(str) {
     .replace(/'/g, '&#39;');
 }
 
+// Normaliza nombre de equipo: si viene TODO EN MAYÚSCULAS lo convierte a
+// formato capitalizado ("DOCENTES F (S)" → "Docentes F (S)") manteniendo
+// los identificadores entre paréntesis en mayúsculas. Si ya viene en
+// formato mixto, lo deja igual.
+function formatTeamName(name) {
+  var s = String(name || '');
+  if (!s) return s;
+  // Solo formatear si está todo en mayúsculas (al menos una letra que cambie)
+  if (s === s.toUpperCase() && s !== s.toLowerCase()) {
+    return s.toLowerCase()
+      .replace(/\b([a-záéíóúñü])/g, function(m) { return m.toUpperCase(); })
+      .replace(/\(\s*([a-z])\s*\)/gi, function(_, l) { return '(' + l.toUpperCase() + ')'; });
+  }
+  return s;
+}
+
 // Formatea canchaHora como badge con íconos
 function formatCanchaHora(ch) {
   if (!ch) return '';
@@ -4385,7 +4401,7 @@ function renderTablaGrupo(grupo, fechaDesde) {
           getEscudo(equipo, 28) +
           '<div class="team-name-cell">' +
             '<span class="team-name-row">' +
-              '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
+              '<span class="team-name-text">' + escapeHTML(formatTeamName(equipo)) + '</span>' +
               '<span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' +
             '</span>' +
             (rachaHtml ? '<span class="team-racha-row">' + rachaHtml + '</span>' : '') +
@@ -5167,7 +5183,10 @@ function renderPos(view) {
                '</button>';
   }
 
-  var html = preHtml + '<div class="card' + (isLibresZona ? ' clasificacion-general oculta' : '') + '">' +
+  var html = preHtml + '<div class="' +
+    (isSenior ? 'card grupo-card' : ('card' + (isLibresZona ? ' clasificacion-general oculta' : ''))) +
+    '">' +
+    (isSenior ? '<div class="grupo-titulo">Senior</div>' : '') +
     '<table class="standings-table">' +
       '<thead>' +
         '<tr>' +
@@ -5245,7 +5264,7 @@ function renderPos(view) {
           deltaHtml +
           '<div class="team-name-cell">' +
             '<span class="team-name-row">' +
-              '<span class="team-name-text">' + escapeHTML(equipo) + '</span>' +
+              '<span class="team-name-text">' + escapeHTML(formatTeamName(equipo)) + '</span>' +
               '<span class="dif-badge ' + difBadgeClass + '">' + difBadgeText + '</span>' +
             '</span>' +
             (rachaHtml ? '<span class="team-racha-row">' + rachaHtml + '</span>' : '') +
