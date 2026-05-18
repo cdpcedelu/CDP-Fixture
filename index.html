@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-11 13:00 ARG — SW Network First + botón Forzar actualización + auto-update -->
+<!-- CDP Fixture — index.html — 2026-05-11 13:30 ARG — tabla general Libres congelada F1-F9 calculada en frontend -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4347,8 +4347,9 @@ function normalizarNombreEquipo(s) {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-// Calcula tabla de un grupo desde una fecha determinada
-function calcularTablaGrupo(equipos, fechaDesde) {
+// Calcula tabla de un grupo desde una fecha determinada (o entre rango)
+// fechaDesde: incluida. fechaHasta: incluida (null = sin límite superior)
+function calcularTablaGrupo(equipos, fechaDesde, fechaHasta) {
   var equiposNorm = {};
   equipos.forEach(function(eq) { equiposNorm[normalizarNombreEquipo(eq)] = eq; });
 
@@ -4364,6 +4365,7 @@ function calcularTablaGrupo(equipos, fechaDesde) {
     if (!(p.jugado === true || p.jugado === 'Jugado')) return;
     var fechaNum = parseInt(String(p.fecha || '').replace(/\D/g, '')) || 0;
     if (fechaNum < fechaDesde) return;
+    if (fechaHasta != null && fechaNum > fechaHasta) return;
 
     // Extraer equipos y goles
     var eqL = p.equipoL;
@@ -4413,6 +4415,42 @@ function calcularTablaGrupo(equipos, fechaDesde) {
     return b.gf - a.gf;
   });
   return arr;
+}
+
+// Devuelve TODOS los equipos de una zona (union de los grupos definidos)
+function getEquiposZona(view) {
+  if (!GRUPOS_LIBRES[view]) return [];
+  var todos = [];
+  GRUPOS_LIBRES[view].forEach(function(g) {
+    g.equipos.forEach(function(eq) {
+      if (todos.indexOf(eq) === -1) todos.push(eq);
+    });
+  });
+  return todos;
+}
+
+// Tabla general congelada hasta la fecha anterior al corte de tablas nuevas
+// (ej. si FECHA_DESDE_TABLAS_NUEVAS=10, devuelve la tabla F1-F9)
+// Formato compatible con state.posiciones[view] que espera renderPos.
+function calcularTablaGeneralCongelada(view) {
+  var equipos = getEquiposZona(view);
+  if (!equipos.length) return null;
+  var stats = calcularTablaGrupo(equipos, 1, FECHA_DESDE_TABLAS_NUEVAS - 1);
+  return stats.map(function(s, i) {
+    return {
+      'Pos':         i + 1,
+      'Equipo':      s.equipo,
+      'PJ':          s.pj,
+      'Puntos':      s.pts,
+      'PG':          s.pg,
+      'PE':          s.pe,
+      'PP':          s.pp,
+      'GF':          s.gf,
+      'GC':          s.gc,
+      'Diferencia':  s.dif,
+      'Img':         ''
+    };
+  });
 }
 
 // Renderiza una tabla de grupo (Campeonato/Descenso/Promoción)
@@ -5216,6 +5254,14 @@ function renderPos(view) {
   var isGeneral = view.includes('general');
   var isSenior = view.includes('senior');
   var isLibresZona = (view === 'zona-a-libres' || view === 'zona-b-libres');
+
+  // Para Libres A/B: la "Clasificación general" colapsada queda CONGELADA en F9
+  // (los puntos desde F10 se suman solo en las tablas nuevas Campeonato/Descenso/Promoción)
+  // Recalculamos localmente desde state.fixture para no depender del Sheet.
+  if (isLibresZona) {
+    var congelada = calcularTablaGeneralCongelada(view);
+    if (congelada && congelada.length) data = congelada;
+  }
 
   // Calcular rachas
   calcularRachasEquipos();
