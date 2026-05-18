@@ -1,30 +1,87 @@
-const CACHE_NAME = 'cdp-v1';
-const STATIC = ['/', '/index.html', '/manifest.json'];
+// CDP Fixture — sw.js — 2026-05-11 13:00 ARG
+// Estrategia:
+//   · HTML (index.html, navegaciones): Network First → siempre busca lo último.
+//     Si falla la red, sirve de cache (modo offline).
+//   · Recursos estáticos (escudos, imágenes, fuentes): Cache First → rápido.
+//   · Cuando se sube una versión nueva, los usuarios ven los cambios al recargar.
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(STATIC)));
+const VERSION    = 'v4-2026-05-11';
+const CACHE_HTML = 'cdp-html-' + VERSION;
+const CACHE_ASSETS = 'cdp-assets-' + VERSION;
+
+self.addEventListener('install', (event) => {
+  // Activar el SW nuevo inmediatamente sin esperar a que cierren todas las pestañas
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    // Limpiar caches de versiones viejas
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter(k => k !== CACHE_HTML && k !== CACHE_ASSETS)
+          .map(k => caches.delete(k))
+    );
+    // Tomar control de las pestañas abiertas inmediatamente
+    await self.clients.claim();
+  })());
 });
 
-self.addEventListener('fetch', e => {
-  // For Google Sheets API: network first, fall back to cache
-  if (e.request.url.includes('docs.google.com')) {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
-    );
-    return;
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+
+  // Solo GET y solo mismo origen
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
+
+  // Estrategia distinta para HTML vs estáticos
+  const isHTML = req.mode === 'navigate' ||
+                 (req.headers.get('accept') || '').includes('text/html') ||
+                 url.pathname.endsWith('.html') ||
+                 url.pathname === '/' ||
+                 url.pathname.endsWith('/');
+
+  if (isHTML) {
+    // NETWORK FIRST: siempre intenta lo último, cae a cache si no hay red
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetch(req, { cache: 'no-store' });
+        // Guardar copia en cache para modo offline
+        const cache = await caches.open(CACHE_HTML);
+        cache.put(req, fresh.clone()).catch(()=>{});
+        return fresh;
+      } catch (err) {
+        // Sin red: servir lo que haya en cache
+        const cache = await caches.open(CACHE_HTML);
+        const cached = await cache.match(req);
+        if (cached) return cached;
+        // Último recurso: buscar index.html cacheado
+        const indexFallback = await cache.match('/') || await cache.match('index.html');
+        if (indexFallback) return indexFallback;
+        throw err;
+      }
+    })());
+  } else {
+    // CACHE FIRST para estáticos (escudos, imágenes, fonts, etc.)
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_ASSETS);
+      const cached = await cache.match(req);
+      if (cached) return cached;
+      try {
+        const fresh = await fetch(req);
+        if (fresh && fresh.status === 200) {
+          cache.put(req, fresh.clone()).catch(()=>{});
+        }
+        return fresh;
+      } catch (err) {
+        throw err;
+      }
+    })());
   }
-  // Static: cache first
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
-  );
+});
+
+// Mensaje para forzar actualización desde la app
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
