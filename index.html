@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-11 13:30 ARG — tabla general Libres congelada F1-F9 calculada en frontend -->
+<!-- CDP Fixture — index.html — 2026-05-23 23:15 ARG — menú hamburguesa (con Forzar actualización) visible también en desktop -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -288,7 +288,9 @@
 
   /* Hamburguesa mobile */
   .header-hamburger {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     padding: 8px;
@@ -301,13 +303,6 @@
     stroke: var(--text);
     stroke-width: 2;
     fill: none;
-  }
-  @media (max-width: 640px) {
-    .header-hamburger {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   }
 
   .status-dot {
@@ -3096,6 +3091,66 @@
     to   { transform: rotate(360deg); }
   }
 
+  /* ═══ COPAS SENIOR (semifinales) ═══ */
+  .copa-card { padding: 0 0 10px; margin-bottom: 14px; }
+  .copa-titulo {
+    font-family: Impact, 'Arial Black', 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.8px;
+    color: var(--text);
+    padding: 12px 16px 10px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 8px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.06), 2px 2px 6px rgba(0,0,0,0.08);
+  }
+  .copa-sub {
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+  .copa-oro    { border-top: 4px solid #f59e0b; }
+  .copa-plata  { border-top: 4px solid #94a3b8; }
+  .copa-bronce { border-top: 4px solid #b45309; }
+  .copa-cruce {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 9px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .copa-cruce:not(:last-child) { border-bottom: 1px solid var(--border2); }
+  .copa-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    justify-content: flex-end;
+    text-align: right;
+  }
+  .copa-team-right {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .copa-vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  @media (max-width: 600px) {
+    .copa-titulo { font-size: 20px; }
+    .copa-cruce { font-size: 14px; gap: 6px; }
+  }
+
   /* ═══ WELCOME MODAL ═══ */
   .welcome-overlay {
     position: fixed;
@@ -4347,6 +4402,71 @@ function normalizarNombreEquipo(s) {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+// ════════════════════════════════════════════════════════════════
+// SENIOR: fase regular termina en F11; después semifinales por copa
+// ════════════════════════════════════════════════════════════════
+var FECHA_FIN_SENIOR = 11; // última fecha regular (la tabla general congela acá)
+var SEMIFINALES_SENIOR = [
+  {
+    copa: 'Copa de Oro', medalla: '🥇', clase: 'copa-oro',
+    cruces: [
+      ['Docentes F (S)', 'Abogados A (S)'],
+      ['Docentes B (S)', 'Contadores A (S)']
+    ]
+  },
+  {
+    copa: 'Copa de Plata', medalla: '🥈', clase: 'copa-plata',
+    cruces: [
+      ['Contadores Z (S)', 'Arquitectos (S)'],
+      ['Docentes T (S)', 'Salud F (S)']
+    ]
+  },
+  {
+    copa: 'Copa de Bronce', medalla: '🥉', clase: 'copa-bronce',
+    cruces: [
+      ['Docentes X (S)', 'Docentes A (S)'],
+      ['Salud B (S)', 'Licenciados (S)']
+    ]
+  }
+];
+
+// Renderiza los 3 bloques de semifinales por copa
+function renderSemifinalesSenior() {
+  var html = '';
+  SEMIFINALES_SENIOR.forEach(function(c) {
+    html += '<div class="card copa-card ' + c.clase + '">' +
+      '<div class="copa-titulo">' + c.medalla + ' ' + escapeHTML(c.copa) +
+        ' <span class="copa-sub">Semifinal</span></div>';
+    c.cruces.forEach(function(cr) {
+      html += '<div class="copa-cruce">' +
+        '<span class="copa-team">' + getEscudo(cr[0], 22) + '<span>' + escapeHTML(formatTeamName(cr[0])) + '</span></span>' +
+        '<span class="copa-vs">vs</span>' +
+        '<span class="copa-team copa-team-right"><span>' + escapeHTML(formatTeamName(cr[1])) + '</span>' + getEscudo(cr[1], 22) + '</span>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+  return html;
+}
+
+// Tabla Senior congelada hasta FECHA_FIN_SENIOR (no suma semis/finales)
+function calcularTablaSeniorCongelada() {
+  var data = state.posiciones['general-senior'];
+  if (!data || !data.length) return null;
+  var equipos = data.map(function(r) {
+    return r['Equipo'] || r['Equipo '] || r['Equipos'] || '';
+  }).filter(Boolean);
+  if (!equipos.length) return null;
+  var stats = calcularTablaGrupo(equipos, 1, FECHA_FIN_SENIOR);
+  return stats.map(function(s, i) {
+    return {
+      'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
+      'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
+      'Diferencia': s.dif, 'Img': ''
+    };
+  });
+}
+
 // Calcula tabla de un grupo desde una fecha determinada (o entre rango)
 // fechaDesde: incluida. fechaHasta: incluida (null = sin límite superior)
 function calcularTablaGrupo(equipos, fechaDesde, fechaHasta) {
@@ -5263,6 +5383,12 @@ function renderPos(view) {
     if (congelada && congelada.length) data = congelada;
   }
 
+  // Para Senior: tabla congelada en F11 (no suma semifinales ni finales)
+  if (isSenior) {
+    var congeladaS = calcularTablaSeniorCongelada();
+    if (congeladaS && congeladaS.length) data = congeladaS;
+  }
+
   // Calcular rachas
   calcularRachasEquipos();
 
@@ -5277,10 +5403,18 @@ function renderPos(view) {
                '</button>';
   }
 
-  var html = preHtml + '<div class="' +
-    (isSenior ? 'card grupo-card' : ('card' + (isLibresZona ? ' clasificacion-general oculta' : ''))) +
+  // ── Senior: bloques de copa (semifinales) + toggle a tabla general ──
+  if (isSenior) {
+    preHtml += renderSemifinalesSenior();
+    preHtml += '<button class="toggle-general" onclick="toggleClasificacionGeneral(this)">' +
+                 '<span class="toggle-arrow">▼</span> Ver tabla general' +
+               '</button>';
+  }
+
+  var html = preHtml + '<div class="card' +
+    (isSenior ? ' grupo-card clasificacion-general oculta' : (isLibresZona ? ' clasificacion-general oculta' : '')) +
     '">' +
-    (isSenior ? '<div class="grupo-titulo">Senior</div>' : '') +
+    (isSenior ? '<div class="grupo-titulo">Tabla General</div>' : '') +
     '<table class="standings-table">' +
       '<thead>' +
         '<tr>' +
@@ -5606,8 +5740,30 @@ function getRachaDotsHtml(equipo) {
 
 // Obtener posición del equipo en la tabla
 function getPosicionEquipo(equipo) {
-  // Buscar en todas las tablas de posiciones cargadas
-  var vistas = ['zona-a-libres', 'zona-b-libres', 'general-senior'];
+  var equipoNorm = normalizarNombreEquipo(equipo);
+
+  // 1. Buscar primero en las TABLAS NUEVAS de Libres (Campeonato/Descenso/Promoción)
+  //    para que el badge del fixture refleje la posición en esas tablas, no en la general
+  for (var view in GRUPOS_LIBRES) {
+    var grupos = GRUPOS_LIBRES[view];
+    for (var g = 0; g < grupos.length; g++) {
+      var grupo = grupos[g];
+      var estaEnGrupo = grupo.equipos.some(function(eq) {
+        return normalizarNombreEquipo(eq) === equipoNorm;
+      });
+      if (estaEnGrupo) {
+        var tablaG = calcularTablaGrupo(grupo.equipos, FECHA_DESDE_TABLAS_NUEVAS);
+        for (var k = 0; k < tablaG.length; k++) {
+          if (normalizarNombreEquipo(tablaG[k].equipo) === equipoNorm) {
+            return { pos: k + 1, total: tablaG.length, vista: view, grupo: grupo.titulo };
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Fallback: tablas del backend (Senior y cualquier otra)
+  var vistas = ['general-senior', 'zona-a-libres', 'zona-b-libres'];
   for (var i = 0; i < vistas.length; i++) {
     var vista = vistas[i];
     var data = state.posiciones[vista];
@@ -5615,7 +5771,7 @@ function getPosicionEquipo(equipo) {
       for (var j = 0; j < data.length; j++) {
         var row = data[j];
         var nombreEquipo = row['Equipo'] || row['Equipo '] || row['Equipos'] || '';
-        if (nombreEquipo.toLowerCase() === equipo.toLowerCase()) {
+        if (normalizarNombreEquipo(nombreEquipo) === equipoNorm) {
           return { pos: row['Pos'] || (j + 1), total: data.length, vista: vista };
         }
       }
