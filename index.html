@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-23 23:15 ARG — menú hamburguesa (con Forzar actualización) visible también en desktop -->
+<!-- CDP Fixture — index.html — 2026-05-23 23:45 ARG — clima con fallback WeatherAPI (Open-Meteo caído) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
   <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.open-meteo.com https://german.goatcounter.com; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com https://drive.google.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.open-meteo.com https://api.weatherapi.com https://german.goatcounter.com; frame-ancestors 'none';">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -8328,20 +8328,74 @@ document.getElementById('rojaModalOverlay').addEventListener('click', function(e
     return null;
   }
 
+  // WeatherAPI (backup). Sus códigos de condición → códigos WMO (los que usa getWmo)
+  var WEATHERAPI_KEY = '1a4a07c776ca404e9e1185454252805';
+  function weatherApiToWmo(code) {
+    if (code === 1000) return 0;                                   // soleado
+    if (code === 1003) return 2;                                   // parcial nublado
+    if (code === 1006 || code === 1009) return 3;                  // nublado
+    if ([1030,1135,1147].indexOf(code) >= 0) return 45;            // niebla
+    if ([1087,1273,1276,1279,1282].indexOf(code) >= 0) return 95;  // tormenta
+    if ([1066,1069,1072,1114,1117,1210,1213,1216,1219,1222,1225,1237,1255,1258,1261,1264].indexOf(code) >= 0) return 71; // nieve
+    if ([1186,1189,1192,1195,1243,1246].indexOf(code) >= 0) return 65; // lluvia fuerte
+    if ([1063,1150,1153,1168,1171,1180,1183,1198,1201,1240].indexOf(code) >= 0) return 61; // lluvia leve
+    return 3; // default nublado
+  }
+  function weatherApiToDaily(json) {
+    var fd = (json.forecast && json.forecast.forecastday) || [];
+    var daily = {
+      time: [], weathercode: [], temperature_2m_max: [], temperature_2m_min: [],
+      precipitation_sum: [], precipitation_probability_max: [], windspeed_10m_max: []
+    };
+    var hourly = { time: [], precipitation: [], precipitation_probability: [] };
+    fd.forEach(function(d) {
+      daily.time.push(d.date);
+      daily.weathercode.push(weatherApiToWmo(d.day.condition.code));
+      daily.temperature_2m_max.push(d.day.maxtemp_c);
+      daily.temperature_2m_min.push(d.day.mintemp_c);
+      daily.precipitation_sum.push(d.day.totalprecip_mm);
+      daily.precipitation_probability_max.push(d.day.daily_chance_of_rain || 0);
+      daily.windspeed_10m_max.push(d.day.maxwind_kph);
+      (d.hour || []).forEach(function(h) {
+        hourly.time.push(h.time.replace(' ', 'T'));
+        hourly.precipitation.push(h.precip_mm);
+        hourly.precipitation_probability.push(h.chance_of_rain);
+      });
+    });
+    return { daily: daily, hourly: hourly };
+  }
+
   async function loadClima() {
     if (climaLoaded) return;
     const container = document.getElementById('climaContainer');
     container.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Obteniendo pronóstico...</div></div>';
 
+    // Intento 1: Open-Meteo
     try {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${CLIMA_LAT}&longitude=${CLIMA_LON}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&hourly=precipitation,precipitation_probability&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=10`;
-
       const res  = await fetch(url);
+      if (!res.ok) throw new Error('Open-Meteo HTTP ' + res.status);
       const data = await res.json();
+      if (!data || !data.daily || !data.daily.time) throw new Error('Open-Meteo sin datos');
       renderClima(data.daily, data.hourly);
       climaLoaded = true;
-    } catch (err) {
-      container.innerHTML = `<div class="clima-error">⚠️ No se pudo cargar el pronóstico.<br><small>${err.message}</small><br><br><button class="btn-primary" onclick="climaLoaded=false;loadClima()">Reintentar</button></div>`;
+      return;
+    } catch (err1) {
+      console.warn('Open-Meteo falló, usando WeatherAPI:', err1.message);
+    }
+
+    // Intento 2: WeatherAPI (backup)
+    try {
+      const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHERAPI_KEY}&q=${CLIMA_LAT},${CLIMA_LON}&days=10&aqi=no&alerts=no&lang=es`;
+      const res  = await fetch(url);
+      if (!res.ok) throw new Error('WeatherAPI HTTP ' + res.status);
+      const json = await res.json();
+      const mapped = weatherApiToDaily(json);
+      if (!mapped.daily.time.length) throw new Error('WeatherAPI sin datos');
+      renderClima(mapped.daily, mapped.hourly);
+      climaLoaded = true;
+    } catch (err2) {
+      container.innerHTML = `<div class="clima-error">⚠️ No se pudo cargar el pronóstico.<br><small>${err2.message}</small><br><br><button class="btn-primary" onclick="climaLoaded=false;loadClima()">Reintentar</button></div>`;
     }
   }
 
