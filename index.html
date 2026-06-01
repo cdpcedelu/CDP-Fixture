@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-05-23 23:45 ARG — clima con fallback WeatherAPI (Open-Meteo caído) -->
+<!-- CDP Fixture — index.html — 2026-05-24 00:15 ARG — ganador por penales (admin + fixture público) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3085,6 +3085,26 @@
     display: none;
   }
 
+  /* Badge ganador por penales (debajo del resultado) */
+  .pen-badge {
+    display: inline-block;
+    font-family: 'Barlow', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #b45309;
+    background: rgba(245,158,11,0.15);
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-top: 4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  [data-theme="dark"] .pen-badge {
+    background: rgba(245,158,11,0.2);
+    color: #fbbf24;
+  }
+
   /* Animación spin para botón Forzar actualización */
   @keyframes spin {
     from { transform: rotate(0deg); }
@@ -3809,12 +3829,27 @@
           <div style="padding:20px;display:flex;align-items:center;gap:16px;justify-content:center">
             <div style="text-align:center;flex:1">
               <div id="editorEqL" class="equipo-name" style="font-size:15px;margin-bottom:8px"></div>
-              <input type="number" id="editorGolesL" class="admin-score-input" min="0" max="99" oninput="actualizarJugadoBadge()" value="0">
+              <input type="number" id="editorGolesL" class="admin-score-input" min="0" max="99" oninput="actualizarJugadoBadge();actualizarSeccionPenales()" value="0">
             </div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text-dimmer)">—</div>
             <div style="text-align:center;flex:1">
               <div id="editorEqV" class="equipo-name" style="font-size:15px;margin-bottom:8px"></div>
-              <input type="number" id="editorGolesV" class="admin-score-input" min="0" max="99" oninput="actualizarJugadoBadge()" value="0">
+              <input type="number" id="editorGolesV" class="admin-score-input" min="0" max="99" oninput="actualizarJugadoBadge();actualizarSeccionPenales()" value="0">
+            </div>
+          </div>
+          <!-- Penales: aparece SOLO si hay empate -->
+          <div id="editorPenalesBox" style="display:none;padding:0 20px 16px;border-top:1px solid var(--border2);margin-top:4px">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px">
+              <span style="font-size:13px;font-weight:600;color:var(--text-dim)">¿Se definió por penales?</span>
+              <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="radio" name="ganadorPen" value="" checked> No
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="radio" name="ganadorPen" value="L"> <span id="penLabelL">Ganó Local</span>
+              </label>
+              <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="radio" name="ganadorPen" value="V"> <span id="penLabelV">Ganó Visitante</span>
+              </label>
             </div>
           </div>
         </div>
@@ -5204,6 +5239,11 @@ function filterByEquipo(equipo) {
 
     if (jugado && p.resultado) {
       result = `<div class="score">${escapeHTML(p.resultado)}</div>`;
+      // Badge de penales si está cargado (empate definido por penales)
+      if (p.ganadorPenales === 'L' || p.ganadorPenales === 'V') {
+        const ganadorPen = p.ganadorPenales === 'L' ? local : visitante;
+        result += `<div class="pen-badge">Pen. ${escapeHTML(ganadorPen)}</div>`;
+      }
     } else if (nrCase) {
       result = `<div class="score pendiente">NR</div>`;
     } else {
@@ -7226,6 +7266,7 @@ async function adminOpenMatch(idx) {
       adminState.editorData.amonestadosV = d.amonestadosV || [];
       adminState.editorData.rojasL = d.rojasL || [];
       adminState.editorData.rojasV = d.rojasV || [];
+      adminState.editorData.ganadorPenales = d.ganadorPenales || '';
     } else if (json.ok) {
       // Formato alternativo (Sheets)
       adminState.editorData.goleadoresL = (json.goleadoresL || []).map(function(g) { return { jugador: g.jugador, goles: g.goles }; });
@@ -7234,11 +7275,18 @@ async function adminOpenMatch(idx) {
       adminState.editorData.amonestadosV = json.amonestadosV || [];
       adminState.editorData.rojasL = json.rojasL || [];
       adminState.editorData.rojasV = json.rojasV || [];
+      adminState.editorData.ganadorPenales = json.ganadorPenales || '';
     }
   } catch(e) { /* fallback to local data */ }
 
   // Render current tags
   renderPlayerTags();
+
+  // Setear radio de penales según valor guardado
+  var gp = adminState.editorData.ganadorPenales || '';
+  var radios = document.getElementsByName('ganadorPen');
+  for (var r of radios) r.checked = (r.value === gp);
+  actualizarSeccionPenales();
 
   // Load rosters for dropdowns
   await loadRosterForTeam(match.equipoL, 'L');
@@ -7353,6 +7401,33 @@ function actualizarJugadoBadge() {
   }
 }
 
+// Muestra la sección de penales solo si hay empate (con goles válidos > 0 igualados)
+function actualizarSeccionPenales() {
+  const box = document.getElementById('editorPenalesBox');
+  if (!box) return;
+  const rawL = document.getElementById('editorGolesL')?.value;
+  const rawV = document.getElementById('editorGolesV')?.value;
+  const gL = Number(rawL);
+  const gV = Number(rawV);
+  const isNR = (!rawL && rawL !== '0') || (!rawV && rawV !== '0') || isNaN(gL) || isNaN(gV);
+  // Mostrar solo si hay empate con número válido (incluye 0-0)
+  if (!isNR && gL === gV) {
+    box.style.display = '';
+  } else {
+    box.style.display = 'none';
+    // Si dejó de ser empate, resetear a "No"
+    const radios = document.getElementsByName('ganadorPen');
+    for (const r of radios) { if (r.value === '') r.checked = true; else r.checked = false; }
+  }
+  // Actualizar labels con nombres reales de equipos
+  const eqL = document.getElementById('editorEqL')?.textContent || 'Local';
+  const eqV = document.getElementById('editorEqV')?.textContent || 'Visitante';
+  const lblL = document.getElementById('penLabelL');
+  const lblV = document.getElementById('penLabelV');
+  if (lblL) lblL.textContent = 'Ganó ' + eqL;
+  if (lblV) lblV.textContent = 'Ganó ' + eqV;
+}
+
 function addGoleador(side) {
   const selectId = 'goleador' + (side === 'L' ? 'Local' : 'Visitante') + 'Select';
   const sel = document.getElementById(selectId);
@@ -7438,6 +7513,13 @@ async function adminSaveMatch() {
   const golesV = isNR ? 'NR' : rawV;
   const jugado = isNR ? 'NR' : 'Jugado';
 
+  // Ganador por penales (solo aplica si hay empate)
+  var ganadorPen = '';
+  if (!isNR && Number(rawL) === Number(rawV)) {
+    var radios = document.getElementsByName('ganadorPen');
+    for (var r of radios) { if (r.checked) { ganadorPen = r.value; break; } }
+  }
+
   const payload = {
     action: 'saveMatch',
     rowIndex: match.rowIndex,
@@ -7451,7 +7533,8 @@ async function adminSaveMatch() {
     rojasLTipo: adminState.editorData.rojasL.map(r => typeof r === 'string' ? (r.split('|')[1]||'directa') : 'directa'),
     rojasVTipo: adminState.editorData.rojasV.map(r => typeof r === 'string' ? (r.split('|')[1]||'directa') : 'directa'),
     goleadoresL: adminState.editorData.goleadoresL,
-    goleadoresV: adminState.editorData.goleadoresV
+    goleadoresV: adminState.editorData.goleadoresV,
+    ganadorPenales: ganadorPen
   };
 
   try {
