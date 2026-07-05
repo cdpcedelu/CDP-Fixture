@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-06-01 12:30 ARG — fix badge penales en render real del fixture (línea inline en la card) -->
+<!-- CDP Fixture — index.html — 2026-06-08 18:15 ARG — Clausura Senior arranca F14 + toggle Apertura/Clausura en Tablas y Goleadores + copas ocultas en Clausura -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3085,6 +3085,40 @@
     display: none;
   }
 
+  /* Toggle Apertura/Clausura para vistas Senior */
+  .torneo-toggle {
+    display: inline-flex;
+    background: var(--surface-alt);
+    border-radius: 22px;
+    padding: 3px;
+    gap: 3px;
+    margin-bottom: 14px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .torneo-btn {
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-transform: uppercase;
+  }
+  .torneo-btn:hover:not(.active) { color: var(--text); }
+  .torneo-btn.active {
+    background: var(--bg2);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  @media (max-width: 600px) {
+    .torneo-btn { font-size: 11px; padding: 7px 12px; }
+  }
+
   /* Línea informativa "Ganó por penales: X" dentro de la card del partido */
   .partido-penales {
     margin: 6px 12px 4px;
@@ -4466,10 +4500,21 @@ function normalizarNombreEquipo(s) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// SENIOR: fase regular termina en F11; después semifinales por copa
+// TORNEOS SENIOR / LIBRES
 // ════════════════════════════════════════════════════════════════
-var FECHA_FIN_SENIOR = 11; // última fecha regular (la tabla general congela acá)
-var SEMIFINALES_SENIOR = [
+// Numeración interna del sheet es lineal. Cada categoría tiene su propio
+// "inicio de Clausura":
+//   - Senior:   Apertura F1..F13, Clausura desde F14 (visualmente F1)
+//   - Libres:   Apertura F1..F15, Clausura desde F16 (visualmente F1)
+var FECHA_INICIO_CLAUSURA_SENIOR = 14;
+var FECHA_INICIO_CLAUSURA_LIBRES = 16;
+// (Compat con lógica anterior — no se usa para congelar más nada)
+var FECHA_FIN_APERTURA_SENIOR = 13;
+
+// Copas del Apertura (semifinales). YA SON HISTÓRICO — no se muestran
+// más arriba de la tabla Senior. Quedan acá solo por si en algún momento
+// se agrega un toggle "Ver Apertura" que las muestre como histórico.
+var SEMIFINALES_SENIOR_HISTORICO = [
   {
     copa: 'Copa de Oro', medalla: '🥇', clase: 'copa-oro',
     cruces: [
@@ -4493,10 +4538,10 @@ var SEMIFINALES_SENIOR = [
   }
 ];
 
-// Renderiza los 3 bloques de semifinales por copa
+// Renderiza los 3 bloques de semifinales por copa (SOLO se llama desde modo Apertura)
 function renderSemifinalesSenior() {
   var html = '';
-  SEMIFINALES_SENIOR.forEach(function(c) {
+  SEMIFINALES_SENIOR_HISTORICO.forEach(function(c) {
     html += '<div class="card copa-card ' + c.clase + '">' +
       '<div class="copa-titulo">' + c.medalla + ' ' + escapeHTML(c.copa) +
         ' <span class="copa-sub">Semifinal</span></div>';
@@ -4512,21 +4557,47 @@ function renderSemifinalesSenior() {
   return html;
 }
 
-// Tabla Senior congelada hasta FECHA_FIN_SENIOR (no suma semis/finales)
-function calcularTablaSeniorCongelada() {
+// Tabla Senior CLAUSURA: cuenta solo partidos F14+ (arranca de cero).
+// Es la tabla "live" del torneo actual.
+function calcularTablaSeniorClausura() {
   var data = state.posiciones['general-senior'];
   if (!data || !data.length) return null;
   var equipos = data.map(function(r) {
     return r['Equipo'] || r['Equipo '] || r['Equipos'] || '';
   }).filter(Boolean);
   if (!equipos.length) return null;
-  var stats = calcularTablaGrupo(equipos, 1, FECHA_FIN_SENIOR);
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_SENIOR, null);
   return stats.map(function(s, i) {
     return {
       'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
       'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
       'Diferencia': s.dif, 'Img': ''
     };
+  });
+}
+
+// Tabla Senior APERTURA (histórico): cuenta partidos F1-F13, congelada.
+function calcularTablaSeniorApertura() {
+  var data = state.posiciones['general-senior'];
+  if (!data || !data.length) return null;
+  var equipos = data.map(function(r) {
+    return r['Equipo'] || r['Equipo '] || r['Equipos'] || '';
+  }).filter(Boolean);
+  if (!equipos.length) return null;
+  var stats = calcularTablaGrupo(equipos, 1, FECHA_FIN_APERTURA_SENIOR);
+  return stats.map(function(s, i) {
+    return {
+      'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
+      'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
+      'Diferencia': s.dif, 'Img': ''
+    };
+  });
+}
+
+// Alias legacy (nombre viejo usado en renderPos). Ahora devuelve la Clausura.
+// Si el user tiene el toggle en Apertura, renderPos usa calcularTablaSeniorApertura.
+function calcularTablaSeniorCongelada() {
+  return calcularTablaSeniorClausura();
   });
 }
 
@@ -4831,10 +4902,14 @@ let state = {
   sponsors: null,
   currentFixtureFilter: 'todos',
   currentPos: 'general-libres',
+  currentPosView: 'general-libres', // vista actual de posiciones (para re-render en toggle Senior)
   currentScorers: 'libres-a',
   currentDisc: 'rojas',
   currentEquipo: '',
-  currentCategoria: 'libres' // 'libres' | 'senior' - sincroniza entre secciones
+  currentCategoria: 'libres', // 'libres' | 'senior' - sincroniza entre secciones
+  // Torneo activo para vistas Senior (por default Clausura)
+  torneoSeniorView: (function(){ try { return localStorage.getItem('cdp_torneo_senior_view') || 'C'; } catch(e) { return 'C'; } })(),
+  torneoSeniorScorers: (function(){ try { return localStorage.getItem('cdp_torneo_senior_scorers') || 'C'; } catch(e) { return 'C'; } })()
 };
 
 // Obtener posición anterior de un equipo (calcula dinámicamente)
@@ -5439,6 +5514,7 @@ async function loadPosView(view) {
 }
 
 function renderPos(view) {
+  state.currentPosView = view;
   var data = state.posiciones[view];
   if (!data || !data.length) {
     document.getElementById('posContainer').innerHTML = '<div class="empty">Sin datos disponibles</div>';
@@ -5457,10 +5533,11 @@ function renderPos(view) {
     if (congelada && congelada.length) data = congelada;
   }
 
-  // Para Senior: tabla congelada en F11 (no suma semifinales ni finales)
+  // Para Senior: tabla del torneo actual (Clausura por default, Apertura si el user cambió el toggle)
   if (isSenior) {
-    var congeladaS = calcularTablaSeniorCongelada();
-    if (congeladaS && congeladaS.length) data = congeladaS;
+    var torneoSenior = state.torneoSeniorView || 'C'; // 'C' Clausura (default) o 'A' Apertura
+    var tblSenior = (torneoSenior === 'A') ? calcularTablaSeniorApertura() : calcularTablaSeniorClausura();
+    if (tblSenior && tblSenior.length) data = tblSenior;
   }
 
   // Calcular rachas
@@ -5477,18 +5554,25 @@ function renderPos(view) {
                '</button>';
   }
 
-  // ── Senior: bloques de copa (semifinales) + toggle a tabla general ──
+  // ── Senior: toggle Clausura / Apertura + tabla del torneo elegido ──
   if (isSenior) {
-    preHtml += renderSemifinalesSenior();
-    preHtml += '<button class="toggle-general" onclick="toggleClasificacionGeneral(this)">' +
-                 '<span class="toggle-arrow">▼</span> Ver tabla general' +
-               '</button>';
+    var torneoSenior2 = state.torneoSeniorView || 'C';
+    var esApert = (torneoSenior2 === 'A');
+    preHtml +=
+      '<div class="torneo-toggle">' +
+        '<button class="torneo-btn' + (!esApert ? ' active' : '') + '" onclick="setTorneoSenior(\'C\')">Clausura</button>' +
+        '<button class="torneo-btn' + (esApert  ? ' active' : '') + '" onclick="setTorneoSenior(\'A\')">Apertura (histórico)</button>' +
+      '</div>';
+    // Solo en Apertura mostramos las copas (semifinales) como parte del histórico
+    if (esApert) {
+      preHtml += renderSemifinalesSenior();
+    }
   }
 
   var html = preHtml + '<div class="card' +
-    (isSenior ? ' grupo-card clasificacion-general oculta' : (isLibresZona ? ' clasificacion-general oculta' : '')) +
+    (isSenior ? ' grupo-card' : (isLibresZona ? ' clasificacion-general oculta' : '')) +
     '">' +
-    (isSenior ? '<div class="grupo-titulo">Tabla General</div>' : '') +
+    (isSenior ? '<div class="grupo-titulo">' + (esApert ? 'Tabla Apertura' : 'Tabla Clausura') + '</div>' : '') +
     '<table class="standings-table">' +
       '<thead>' +
         '<tr>' +
@@ -5900,6 +5984,21 @@ function toggleClasificacionGeneral(btn) {
   btn.firstChild.nextSibling.textContent = oculta ? ' Ver clasificación general' : ' Ocultar clasificación general';
 }
 
+// Toggle torneo Senior en la vista Tabla: 'C' (Clausura, default) o 'A' (Apertura, histórico)
+function setTorneoSenior(t) {
+  state.torneoSeniorView = t;
+  try { localStorage.setItem('cdp_torneo_senior_view', t); } catch(e) {}
+  renderPos(state.currentPosView || 'general-senior');
+}
+
+// Toggle torneo Senior en la vista Goleadores
+function setTorneoSeniorScorers(t) {
+  state.torneoSeniorScorers = t;
+  try { localStorage.setItem('cdp_torneo_senior_scorers', t); } catch(e) {}
+  // Refetch scorers de Senior y re-renderizar
+  loadScorers('senior', t);
+}
+
 // Generar HTML del badge de posición SIN flecha (para Fixture)
 function getPosBadgeHtmlSimple(equipo) {
   var posData = getPosicionEquipo(equipo);
@@ -6097,6 +6196,10 @@ async function loadScorersView(view, verTodos) {
   try {
     var params = { vista: view };
     if (verTodos) params.verTodos = 'true';
+    // Senior: pasar torneo (C=Clausura default, A=Apertura histórico)
+    if (view === 'senior') {
+      params.torneo = state.torneoSeniorScorers || 'C';
+    }
     var result = await fetchAPI('getScorers', params);
     // fetchAPI devuelve { scorers, hayMas, totalConUno }
     var scorers = result.scorers || result || [];
@@ -6118,6 +6221,15 @@ async function loadScorersView(view, verTodos) {
   }
 }
 
+// Wrapper para cambiar el torneo del ranking Senior desde el toggle
+function loadScorers(view, torneo) {
+  if (view === 'senior' && torneo) {
+    state.torneoSeniorScorers = torneo;
+    try { localStorage.setItem('cdp_torneo_senior_scorers', torneo); } catch(e) {}
+  }
+  loadScorersView(view);
+}
+
 function filterScorers(query) {
   const q = query.trim().toLowerCase();
   const rows = document.querySelectorAll('#scorersContainer .scorer-row');
@@ -6129,8 +6241,22 @@ function filterScorers(query) {
 
 function renderScorers(view, showAll) {
   var data = state.goleadores[view];
+  var isSenior = (view === 'senior');
+  var torneo = isSenior ? (state.torneoSeniorScorers || 'C') : null;
+
+  // Toggle Apertura/Clausura para Senior (siempre visible aunque no haya data)
+  var toggleHtml = '';
+  if (isSenior) {
+    var esApert = (torneo === 'A');
+    toggleHtml =
+      '<div class="torneo-toggle">' +
+        '<button class="torneo-btn' + (!esApert ? ' active' : '') + '" onclick="setTorneoSeniorScorers(\'C\')">Clausura</button>' +
+        '<button class="torneo-btn' + (esApert  ? ' active' : '') + '" onclick="setTorneoSeniorScorers(\'A\')">Apertura (histórico)</button>' +
+      '</div>';
+  }
+
   if (!data || !data.length) {
-    document.getElementById('scorersContainer').innerHTML = '<div class="empty">Sin datos disponibles</div>';
+    document.getElementById('scorersContainer').innerHTML = toggleHtml + '<div class="empty">Sin goleadores en el torneo actual</div>';
     return;
   }
 
@@ -6138,7 +6264,7 @@ function renderScorers(view, showAll) {
   var hayMas = hayMasInfo.hayMas;
   var totalConUno = hayMasInfo.totalConUno || 0;
 
-  var html = '<div class="card">';
+  var html = toggleHtml + '<div class="card">';
   data.forEach(function(p, i) {
     var rank = i + 1;
     var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
