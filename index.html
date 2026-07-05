@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-06-08 18:15 ARG — Clausura Senior arranca F14 + toggle Apertura/Clausura en Tablas y Goleadores + copas ocultas en Clausura -->
+<!-- CDP Fixture — index.html — 2026-06-08 20:30 ARG — fix próxima fecha (999 → última + 1) + sanciones cumplen si habFecha <= próxima -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6374,7 +6374,7 @@ function renderDisc(view) {
   if (isRojas) {
 
     // ── Calcular próxima fecha (primera incompleta del fixture) ──
-    let proximaFecha = 999;
+    let proximaFecha = null;
     if (state.fixture && state.fixture.length) {
       const groups = {};
       state.fixture.forEach(p => {
@@ -6390,7 +6390,13 @@ function renderDisc(view) {
         const completa = sinLibre.length > 0 && sinLibre.every(p => p.jugado === true || p.jugado === 'Jugado');
         if (!completa) { proximaFecha = fn; break; }
       }
+      // Si todas las fechas del fixture están jugadas, la próxima es una más allá de la última
+      if (proximaFecha === null && fechaNums.length > 0) {
+        proximaFecha = fechaNums[fechaNums.length - 1] + 1;
+      }
     }
+    // Fallback si no hay fixture cargado: F1
+    if (proximaFecha === null) proximaFecha = 1;
 
     // ── Helper: extraer nro de fecha de habilitación ──
     function getHabFechaNum(r) {
@@ -8019,8 +8025,8 @@ function compartirDisciplina() {
   var txt = '*' + nombre.toUpperCase() + '*\n\n';
   
   if (esRojas) {
-    // Calcular próxima fecha
-    var proximaFecha = 999;
+    // Calcular próxima fecha (primera incompleta del fixture; si todas están completas, última + 1)
+    var proximaFecha = null;
     if (state.fixture && state.fixture.length) {
       var groups = {};
       state.fixture.forEach(function(p) {
@@ -8037,7 +8043,11 @@ function compartirDisciplina() {
         var completa = sinLibre.length > 0 && sinLibre.every(function(p) { return p.jugado === true || p.jugado === 'Jugado'; });
         if (!completa) { proximaFecha = fn; break; }
       }
+      if (proximaFecha === null && fechaNums.length > 0) {
+        proximaFecha = fechaNums[fechaNums.length - 1] + 1;
+      }
     }
+    if (proximaFecha === null) proximaFecha = 1;
     
     // Filtrar solo activas
     var activas = data.filter(function(r) {
