@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-06-08 20:30 ARG — fix próxima fecha (999 → última + 1) + sanciones cumplen si habFecha <= próxima -->
+<!-- CDP Fixture — index.html — 2026-07-05 21:00 ARG — Docentes X (S) −3 pts iniciales Clausura + nota al pie -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3085,6 +3085,21 @@
     display: none;
   }
 
+  /* Nota al pie con ajustes iniciales (sanciones arrastradas) */
+  .tabla-nota-ajustes {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: var(--surface-alt);
+    border-left: 3px solid var(--text-dimmer);
+    border-radius: 4px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .tabla-nota-ajustes .ajuste-item { margin: 2px 0; }
+  .tabla-nota-ajustes strong { color: var(--text); font-weight: 700; }
+
   /* Toggle Apertura/Clausura para vistas Senior */
   .torneo-toggle {
     display: inline-flex;
@@ -4557,8 +4572,14 @@ function renderSemifinalesSenior() {
   return html;
 }
 
+// Ajustes iniciales de puntos para el Clausura Senior.
+// Motivo: sanciones/penalizaciones arrastradas del Apertura.
+// Se aplican al calcular la tabla Clausura y se muestran como nota al pie.
+var AJUSTES_INICIALES_CLAUSURA_SENIOR = [
+  { equipo: 'Docentes X (S)', puntos: -3, motivo: 'Comienza con −3 pts por incomparecencia en el Apertura.' }
+];
+
 // Tabla Senior CLAUSURA: cuenta solo partidos F14+ (arranca de cero).
-// Es la tabla "live" del torneo actual.
 function calcularTablaSeniorClausura() {
   var data = state.posiciones['general-senior'];
   if (!data || !data.length) return null;
@@ -4567,6 +4588,25 @@ function calcularTablaSeniorClausura() {
   }).filter(Boolean);
   if (!equipos.length) return null;
   var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_SENIOR, null);
+
+  // Aplicar ajustes iniciales (sanciones arrastradas del Apertura)
+  AJUSTES_INICIALES_CLAUSURA_SENIOR.forEach(function(aj) {
+    var norm = normalizarNombreEquipo(aj.equipo);
+    for (var i = 0; i < stats.length; i++) {
+      if (normalizarNombreEquipo(stats[i].equipo) === norm) {
+        stats[i].pts += aj.puntos;
+        break;
+      }
+    }
+  });
+
+  // Reordenar después del ajuste
+  stats.sort(function(a, b) {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.dif !== a.dif) return b.dif - a.dif;
+    return b.gf - a.gf;
+  });
+
   return stats.map(function(s, i) {
     return {
       'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
@@ -5668,6 +5708,19 @@ function renderPos(view) {
   });
 
   html += '</tbody></table></div>';
+
+  // Nota al pie con ajustes iniciales (solo en Senior Clausura)
+  if (isSenior && (state.torneoSeniorView || 'C') === 'C' && AJUSTES_INICIALES_CLAUSURA_SENIOR.length) {
+    html += '<div class="tabla-nota-ajustes">';
+    AJUSTES_INICIALES_CLAUSURA_SENIOR.forEach(function(aj) {
+      html += '<div class="ajuste-item">' +
+        '<strong>' + escapeHTML(formatTeamName(aj.equipo)) + ':</strong> ' +
+        escapeHTML(aj.motivo) +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
   document.getElementById('posContainer').innerHTML = html;
 }
 
