@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-07-05 21:00 ARG — Docentes X (S) −3 pts iniciales Clausura + nota al pie -->
+<!-- CDP Fixture — index.html — 2026-07-15 21:15 ARG — Clausura Libres: nueva ZONA_LIBRES (10A + 9B), tabla plana desde F16, sin Campeonato/Descenso/Promoción -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4477,9 +4477,41 @@ function isCacheValid(cached) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// TABLAS NUEVAS (Campeonato / Descenso / Promoción) desde fecha N
-// Editar acá si cambia la fecha de corte o la composición de grupos
 // ════════════════════════════════════════════════════════════════
+// LIBRES CLAUSURA 2026
+// ════════════════════════════════════════════════════════════════
+// Solo dos tablas planas (A y B). Sin Campeonato/Descenso/Promoción.
+// Fecha desde la que arranca el Clausura Libres (interna del sheet).
+var FECHA_INICIO_CLAUSURA_LIBRES_FRONT = 16;
+
+// Equipos por zona en el Clausura (10 en A, 9 en B).
+var EQUIPOS_LIBRES_CLAUSURA = {
+  'zona-a-libres': [
+    'Abogados A','Abogados AR','Arquitectos','Contadores A',
+    'Ingenieros','Ingenieros S','Maestros','Profesores','Salud B','Tecnicos A'
+  ],
+  'zona-b-libres': [
+    'Abogados B','Contadores Z','Docentes A','Docentes B',
+    'Docentes E','Docentes W','Psicologos','Salud F','Salud T'
+  ]
+};
+
+// Tabla Libres A/B del CLAUSURA: cuenta solo partidos F16+ (arranca de cero).
+function calcularTablaLibresClausura(view) {
+  var equipos = EQUIPOS_LIBRES_CLAUSURA[view];
+  if (!equipos) return null;
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_LIBRES_FRONT, null);
+  return stats.map(function(s, i) {
+    return {
+      'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
+      'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
+      'Diferencia': s.dif, 'Img': ''
+    };
+  });
+}
+
+// (Legacy) Constantes que quedan por compatibilidad con código huérfano
+// que no removí para no romper nada. NO se usan más en el render.
 var FECHA_DESDE_TABLAS_NUEVAS = 10;
 var GRUPOS_LIBRES = {
   'zona-a-libres': [
@@ -4948,7 +4980,9 @@ let state = {
   currentCategoria: 'libres', // 'libres' | 'senior' - sincroniza entre secciones
   // Torneo activo para vistas Senior (por default Clausura)
   torneoSeniorView: (function(){ try { return localStorage.getItem('cdp_torneo_senior_view') || 'C'; } catch(e) { return 'C'; } })(),
-  torneoSeniorScorers: (function(){ try { return localStorage.getItem('cdp_torneo_senior_scorers') || 'C'; } catch(e) { return 'C'; } })()
+  torneoSeniorScorers: (function(){ try { return localStorage.getItem('cdp_torneo_senior_scorers') || 'C'; } catch(e) { return 'C'; } })(),
+  torneoAmarillasSenior: (function(){ try { return localStorage.getItem('cdp_torneo_amarillas_senior') || 'C'; } catch(e) { return 'C'; } })(),
+  torneoAmarillasLibres: (function(){ try { return localStorage.getItem('cdp_torneo_amarillas_libres') || 'C'; } catch(e) { return 'C'; } })()
 };
 
 // Obtener posición anterior de un equipo (calcula dinámicamente)
@@ -5564,54 +5598,32 @@ function renderPos(view) {
   var isSenior = view.includes('senior');
   var isLibresZona = (view === 'zona-a-libres' || view === 'zona-b-libres');
 
-  // Para Libres A/B: la "Clasificación general" colapsada queda CONGELADA en F9
-  // (los puntos desde F10 se suman solo en las tablas nuevas Campeonato/Descenso/Promoción)
-  // Recalculamos localmente desde state.fixture para no depender del Sheet.
+  // Para Libres A/B: siempre tabla del Clausura (F16+, arranca de cero)
   if (isLibresZona) {
-    var congelada = calcularTablaGeneralCongelada(view);
-    if (congelada && congelada.length) data = congelada;
+    var tblLibres = calcularTablaLibresClausura(view);
+    if (tblLibres && tblLibres.length) data = tblLibres;
   }
 
-  // Para Senior: tabla del torneo actual (Clausura por default, Apertura si el user cambió el toggle)
+  // Para Senior: siempre tabla del Clausura (F14+)
   if (isSenior) {
-    var torneoSenior = state.torneoSeniorView || 'C'; // 'C' Clausura (default) o 'A' Apertura
-    var tblSenior = (torneoSenior === 'A') ? calcularTablaSeniorApertura() : calcularTablaSeniorClausura();
+    var tblSenior = calcularTablaSeniorClausura();
     if (tblSenior && tblSenior.length) data = tblSenior;
   }
 
   // Calcular rachas
   calcularRachasEquipos();
 
-  // ── PARTE NUEVA: tablas Campeonato/Descenso/Promoción para Libres A y B ──
+  // Libres A/B: solo tabla plana del Clausura (sin Campeonato/Descenso/Promoción)
+  // Las tablas nuevas del Apertura quedan solo como histórico en el sheet.
   var preHtml = '';
-  if (isLibresZona && GRUPOS_LIBRES[view]) {
-    GRUPOS_LIBRES[view].forEach(function(grupo) {
-      preHtml += renderTablaGrupo(grupo, FECHA_DESDE_TABLAS_NUEVAS);
-    });
-    preHtml += '<button class="toggle-general" onclick="toggleClasificacionGeneral(this)">' +
-                 '<span class="toggle-arrow">▼</span> Ver clasificación general' +
-               '</button>';
-  }
 
-  // ── Senior: toggle Clausura / Apertura + tabla del torneo elegido ──
-  if (isSenior) {
-    var torneoSenior2 = state.torneoSeniorView || 'C';
-    var esApert = (torneoSenior2 === 'A');
-    preHtml +=
-      '<div class="torneo-toggle">' +
-        '<button class="torneo-btn' + (!esApert ? ' active' : '') + '" onclick="setTorneoSenior(\'C\')">Clausura</button>' +
-        '<button class="torneo-btn' + (esApert  ? ' active' : '') + '" onclick="setTorneoSenior(\'A\')">Apertura (histórico)</button>' +
-      '</div>';
-    // Solo en Apertura mostramos las copas (semifinales) como parte del histórico
-    if (esApert) {
-      preHtml += renderSemifinalesSenior();
-    }
-  }
+  // ── Senior: título "Tabla Clausura" arriba de la tabla (sin toggle, siempre Clausura) ──
+  // (Las copas del Apertura y toda esa lógica quedaron en histórico, ya no se muestran)
 
   var html = preHtml + '<div class="card' +
-    (isSenior ? ' grupo-card' : (isLibresZona ? ' clasificacion-general oculta' : '')) +
+    (isSenior ? ' grupo-card' : '') +
     '">' +
-    (isSenior ? '<div class="grupo-titulo">' + (esApert ? 'Tabla Apertura' : 'Tabla Clausura') + '</div>' : '') +
+    (isSenior ? '<div class="grupo-titulo">Tabla Clausura</div>' : '') +
     '<table class="standings-table">' +
       '<thead>' +
         '<tr>' +
@@ -5709,8 +5721,8 @@ function renderPos(view) {
 
   html += '</tbody></table></div>';
 
-  // Nota al pie con ajustes iniciales (solo en Senior Clausura)
-  if (isSenior && (state.torneoSeniorView || 'C') === 'C' && AJUSTES_INICIALES_CLAUSURA_SENIOR.length) {
+  // Nota al pie con ajustes iniciales (siempre en Senior, ya que la tabla es siempre Clausura)
+  if (isSenior && AJUSTES_INICIALES_CLAUSURA_SENIOR.length) {
     html += '<div class="tabla-nota-ajustes">';
     AJUSTES_INICIALES_CLAUSURA_SENIOR.forEach(function(aj) {
       html += '<div class="ajuste-item">' +
@@ -5952,37 +5964,48 @@ function getRachaDotsHtml(equipo) {
 function getPosicionEquipo(equipo) {
   var equipoNorm = normalizarNombreEquipo(equipo);
 
-  // 1. Buscar primero en las TABLAS NUEVAS de Libres (Campeonato/Descenso/Promoción)
-  //    para que el badge del fixture refleje la posición en esas tablas, no en la general
-  for (var view in GRUPOS_LIBRES) {
-    var grupos = GRUPOS_LIBRES[view];
-    for (var g = 0; g < grupos.length; g++) {
-      var grupo = grupos[g];
-      var estaEnGrupo = grupo.equipos.some(function(eq) {
-        return normalizarNombreEquipo(eq) === equipoNorm;
-      });
-      if (estaEnGrupo) {
-        var tablaG = calcularTablaGrupo(grupo.equipos, FECHA_DESDE_TABLAS_NUEVAS);
-        for (var k = 0; k < tablaG.length; k++) {
-          if (normalizarNombreEquipo(tablaG[k].equipo) === equipoNorm) {
-            return { pos: k + 1, total: tablaG.length, vista: view, grupo: grupo.titulo };
+  // 1. Buscar en tabla Clausura Libres A/B (arranca F16+)
+  for (var view in EQUIPOS_LIBRES_CLAUSURA) {
+    var equipos = EQUIPOS_LIBRES_CLAUSURA[view];
+    var estaEnZona = equipos.some(function(eq) {
+      return normalizarNombreEquipo(eq) === equipoNorm;
+    });
+    if (estaEnZona) {
+      var tabla = calcularTablaLibresClausura(view);
+      if (tabla) {
+        for (var k = 0; k < tabla.length; k++) {
+          if (normalizarNombreEquipo(tabla[k]['Equipo']) === equipoNorm) {
+            return { pos: k + 1, total: tabla.length, vista: view };
           }
         }
       }
     }
   }
 
-  // 2. Fallback: tablas del backend (Senior y cualquier otra)
+  // 2. Buscar en tabla Clausura Senior (arranca F14+)
+  var partidoTest = String(equipo || '');
+  if (partidoTest.indexOf('(S)') > -1) {
+    var tablaSenior = calcularTablaSeniorClausura();
+    if (tablaSenior) {
+      for (var k = 0; k < tablaSenior.length; k++) {
+        if (normalizarNombreEquipo(tablaSenior[k]['Equipo']) === equipoNorm) {
+          return { pos: k + 1, total: tablaSenior.length, vista: 'general-senior' };
+        }
+      }
+    }
+  }
+
+  // 3. Fallback: tabla del backend (por si aparece algún equipo no mapeado)
   var vistas = ['general-senior', 'zona-a-libres', 'zona-b-libres'];
   for (var i = 0; i < vistas.length; i++) {
-    var vista = vistas[i];
-    var data = state.posiciones[vista];
-    if (data && data.length) {
-      for (var j = 0; j < data.length; j++) {
-        var row = data[j];
+    var vistaBk = vistas[i];
+    var dataBk = state.posiciones[vistaBk];
+    if (dataBk && dataBk.length) {
+      for (var j = 0; j < dataBk.length; j++) {
+        var row = dataBk[j];
         var nombreEquipo = row['Equipo'] || row['Equipo '] || row['Equipos'] || '';
         if (normalizarNombreEquipo(nombreEquipo) === equipoNorm) {
-          return { pos: row['Pos'] || (j + 1), total: data.length, vista: vista };
+          return { pos: row['Pos'] || (j + 1), total: dataBk.length, vista: vistaBk };
         }
       }
     }
@@ -6049,6 +6072,29 @@ function setTorneoSeniorScorers(t) {
   try { localStorage.setItem('cdp_torneo_senior_scorers', t); } catch(e) {}
   // Refetch scorers de Senior y re-renderizar
   loadScorers('senior', t);
+}
+
+// Toggle torneo Senior en la vista Amarillas (disciplina)
+function setTorneoAmarillasSenior(t) {
+  state.torneoAmarillasSenior = t;
+  try { localStorage.setItem('cdp_torneo_amarillas_senior', t); } catch(e) {}
+  // Forzar recarga de amarillas Senior
+  delete state.disciplina['amarillas-senior'];
+  document.getElementById('discContainer').innerHTML =
+    '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div>';
+  loadDiscView('amarillas-senior');
+}
+
+// Toggle torneo Libres en las vistas Amarillas (disciplina)
+function setTorneoAmarillasLibres(t) {
+  state.torneoAmarillasLibres = t;
+  try { localStorage.setItem('cdp_torneo_amarillas_libres', t); } catch(e) {}
+  var view = state.currentDisc;
+  if (view !== 'amarillas-a' && view !== 'amarillas-b') view = 'amarillas-a';
+  delete state.disciplina[view];
+  document.getElementById('discContainer').innerHTML =
+    '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Cargando...</div></div>';
+  loadDiscView(view);
 }
 
 // Generar HTML del badge de posición SIN flecha (para Fixture)
@@ -6293,22 +6339,9 @@ function filterScorers(query) {
 
 function renderScorers(view, showAll) {
   var data = state.goleadores[view];
-  var isSenior = (view === 'senior');
-  var torneo = isSenior ? (state.torneoSeniorScorers || 'C') : null;
-
-  // Toggle Apertura/Clausura para Senior (siempre visible aunque no haya data)
-  var toggleHtml = '';
-  if (isSenior) {
-    var esApert = (torneo === 'A');
-    toggleHtml =
-      '<div class="torneo-toggle">' +
-        '<button class="torneo-btn' + (!esApert ? ' active' : '') + '" onclick="setTorneoSeniorScorers(\'C\')">Clausura</button>' +
-        '<button class="torneo-btn' + (esApert  ? ' active' : '') + '" onclick="setTorneoSeniorScorers(\'A\')">Apertura (histórico)</button>' +
-      '</div>';
-  }
 
   if (!data || !data.length) {
-    document.getElementById('scorersContainer').innerHTML = toggleHtml + '<div class="empty">Sin goleadores en el torneo actual</div>';
+    document.getElementById('scorersContainer').innerHTML = '<div class="empty">Sin goleadores en el torneo actual</div>';
     return;
   }
 
@@ -6316,7 +6349,7 @@ function renderScorers(view, showAll) {
   var hayMas = hayMasInfo.hayMas;
   var totalConUno = hayMasInfo.totalConUno || 0;
 
-  var html = toggleHtml + '<div class="card">';
+  var html = '<div class="card">';
   data.forEach(function(p, i) {
     var rank = i + 1;
     var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
@@ -6384,7 +6417,14 @@ async function showDisc(view, btn) {
 
 async function loadDiscView(view) {
   try {
-    const rows = await fetchAPI('getDisciplina', { vista: view });
+    // Para amarillas: pasar torneo (C=Clausura default, A=Apertura histórico)
+    var params = { vista: view };
+    if (view === 'amarillas-senior') {
+      params.torneo = state.torneoAmarillasSenior || 'C';
+    } else if (view === 'amarillas-a' || view === 'amarillas-b') {
+      params.torneo = state.torneoAmarillasLibres || 'C';
+    }
+    const rows = await fetchAPI('getDisciplina', params);
     // fetchAPI devuelve json.rows directamente
 
     if (view === 'rojas') {
@@ -6416,12 +6456,13 @@ async function loadDiscView(view) {
 
 function renderDisc(view) {
   const data = state.disciplina[view];
+  const isRojas = view === 'rojas';
+
   if (!data || !data.length) {
     document.getElementById('discContainer').innerHTML = '<div class="empty">Sin sanciones registradas</div>';
     return;
   }
 
-  const isRojas = view === 'rojas';
   let html = '<div class="card">';
 
   if (isRojas) {
