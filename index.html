@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-07-17 10:25 ARG — actualizado link Reglamento Interno CDP -->
+<!-- CDP Fixture — index.html — 2026-07-17 13:00 ARG — fix goleadores vacío: si no hay 2+ goles pero sí con 1, mostrar botón "Ver más" -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6339,15 +6339,26 @@ function filterScorers(query) {
 
 function renderScorers(view, showAll) {
   var data = state.goleadores[view];
-
-  if (!data || !data.length) {
-    document.getElementById('scorersContainer').innerHTML = '<div class="empty">Sin goleadores en el torneo actual</div>';
-    return;
-  }
-
   var hayMasInfo = (state.goleadoresHayMas && state.goleadoresHayMas[view]) || {};
   var hayMas = hayMasInfo.hayMas;
   var totalConUno = hayMasInfo.totalConUno || 0;
+
+  if (!data || !data.length) {
+    // Caso especial: no hay goleadores con 2+, pero SÍ hay jugadores con 1 gol
+    // Mostrar botón para cargarlos en vez de "Sin goleadores"
+    if (hayMas && totalConUno > 0) {
+      document.getElementById('scorersContainer').innerHTML =
+        '<div class="empty" style="padding-bottom:12px">Sin goleadores con 2 o más goles todavía</div>' +
+        '<div style="text-align:center;padding-bottom:20px">' +
+          '<button class="btn-ver-mas" onclick="loadScorersView(\'' + view + '\', true)">' +
+            'Ver ' + totalConUno + ' goleador' + (totalConUno === 1 ? '' : 'es') + ' con 1 gol' +
+          '</button>' +
+        '</div>';
+    } else {
+      document.getElementById('scorersContainer').innerHTML = '<div class="empty">Sin goleadores en el torneo actual</div>';
+    }
+    return;
+  }
 
   var html = '<div class="card">';
   data.forEach(function(p, i) {
