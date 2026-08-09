@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-07-17 13:00 ARG — fix goleadores vacío: si no hay 2+ goles pero sí con 1, mostrar botón "Ver más" -->
+<!-- CDP Fixture — index.html — 2026-07-17 14:00 ARG — Docentes B (Libres B) −3 pts iniciales Clausura + nota al pie -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4496,11 +4496,41 @@ var EQUIPOS_LIBRES_CLAUSURA = {
   ]
 };
 
+// Ajustes iniciales de puntos para el Clausura Libres.
+// Motivo: sanciones/penalizaciones arrastradas o incomparecencias.
+// Se aplican por vista (zona-a-libres / zona-b-libres) y se muestran como nota al pie.
+var AJUSTES_INICIALES_CLAUSURA_LIBRES = {
+  'zona-a-libres': [],
+  'zona-b-libres': [
+    { equipo: 'Docentes B', puntos: -3, motivo: 'Comienza con −3 pts por incomparecencia.' }
+  ]
+};
+
 // Tabla Libres A/B del CLAUSURA: cuenta solo partidos F16+ (arranca de cero).
 function calcularTablaLibresClausura(view) {
   var equipos = EQUIPOS_LIBRES_CLAUSURA[view];
   if (!equipos) return null;
   var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_LIBRES_FRONT, null);
+
+  // Aplicar ajustes iniciales (sanciones/incomparecencias arrastradas)
+  var ajustes = AJUSTES_INICIALES_CLAUSURA_LIBRES[view] || [];
+  ajustes.forEach(function(aj) {
+    var norm = normalizarNombreEquipo(aj.equipo);
+    for (var i = 0; i < stats.length; i++) {
+      if (normalizarNombreEquipo(stats[i].equipo) === norm) {
+        stats[i].pts += aj.puntos;
+        break;
+      }
+    }
+  });
+
+  // Reordenar después del ajuste
+  stats.sort(function(a, b) {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.dif !== a.dif) return b.dif - a.dif;
+    return b.gf - a.gf;
+  });
+
   return stats.map(function(s, i) {
     return {
       'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
@@ -5733,6 +5763,21 @@ function renderPos(view) {
     html += '</div>';
   }
 
+  // Nota al pie con ajustes iniciales para Libres A/B (si los hay)
+  if (isLibresZona) {
+    var ajustesLibres = AJUSTES_INICIALES_CLAUSURA_LIBRES[view] || [];
+    if (ajustesLibres.length) {
+      html += '<div class="tabla-nota-ajustes">';
+      ajustesLibres.forEach(function(aj) {
+        html += '<div class="ajuste-item">' +
+          '<strong>' + escapeHTML(formatTeamName(aj.equipo)) + ':</strong> ' +
+          escapeHTML(aj.motivo) +
+        '</div>';
+      });
+      html += '</div>';
+    }
+  }
+
   document.getElementById('posContainer').innerHTML = html;
 }
 
@@ -6313,10 +6358,56 @@ async function loadScorersView(view, verTodos) {
     // Guardar info de "ver más"
     state.goleadoresHayMas = state.goleadoresHayMas || {};
     state.goleadoresHayMas[view] = { hayMas: result.hayMas, totalConUno: result.totalConUno };
+    // Aplicar orden manual (excepciones puntuales)
+    aplicarOrdenManualGoleadores(view);
     renderScorers(view, verTodos);
   } catch(e) {
     showError('scorersContainer', 'No se pudo cargar goleadores', function() { loadScorersView(view); });
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// ORDEN MANUAL DE GOLEADORES (excepciones puntuales)
+// ════════════════════════════════════════════════════════════════
+// Cuando dos o más goleadores empatan en cantidad de goles, los que
+// figuran acá se muestran ARRIBA de los demás empatados, en el orden
+// en que aparecen en la lista. Editar acá para agregar/quitar casos.
+// Nombres deben coincidir con lo que devuelve el sheet (mayúsculas ok,
+// se compara sin importar mayúsculas/minúsculas ni tildes).
+var GOLEADORES_ORDEN_MANUAL = {
+  'libres-a': [],
+  'libres-b': [
+    'FREYRE GUILLERMO'
+  ],
+  'senior':   []
+};
+
+function aplicarOrdenManualGoleadores(view) {
+  var lista = state.goleadores[view];
+  var prioridad = GOLEADORES_ORDEN_MANUAL[view];
+  if (!lista || !lista.length || !prioridad || !prioridad.length) return;
+
+  function norm(s) {
+    return String(s || '').trim().toUpperCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  var prioNorm = prioridad.map(norm);
+
+  // Sort estable: mismo total → los priorizados van arriba (en el orden del array)
+  lista.sort(function(a, b) {
+    var ta = parseInt(a['Total']) || 0;
+    var tb = parseInt(b['Total']) || 0;
+    if (tb !== ta) return tb - ta;
+    var ia = prioNorm.indexOf(norm(a['Jugador']));
+    var ib = prioNorm.indexOf(norm(b['Jugador']));
+    // Si ninguno está priorizado, mantener orden
+    if (ia === -1 && ib === -1) return 0;
+    // El que NO está priorizado va abajo
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    // Ambos priorizados: orden según posición en el array
+    return ia - ib;
+  });
 }
 
 // Wrapper para cambiar el torneo del ranking Senior desde el toggle
