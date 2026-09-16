@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-07-17 14:00 ARG — Docentes B (Libres B) −3 pts iniciales Clausura + nota al pie -->
+<!-- CDP Fixture — index.html — 2026-09-07 16:30 ARG — modal de publicidad al arrancar (Novaderma), 5s bloqueado, 1x por día, click tracking GoatCounter -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3101,6 +3101,85 @@
   .tabla-nota-ajustes strong { color: var(--text); font-weight: 700; }
 
   /* Toggle Apertura/Clausura para vistas Senior */
+  /* ═══════════════ MODAL DE PUBLICIDAD ═══════════════ */
+  #pub-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 999997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pubFadeIn 0.3s ease;
+  }
+  @keyframes pubFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  #pub-modal {
+    position: relative;
+    max-width: 400px;
+    width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    background: #fff;
+  }
+  #pub-link {
+    display: block;
+    line-height: 0;
+    cursor: pointer;
+  }
+  #pub-img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  #pub-timer {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Barlow', sans-serif;
+    pointer-events: none;
+  }
+  #pub-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  #pub-close:hover { background: rgba(0,0,0,0.95); }
+  @media (max-width: 480px) {
+    #pub-modal { max-width: 100vw; width: 100vw; max-height: 100vh; border-radius: 0; }
+    #pub-overlay { padding: 0; }
+  }
+
+  /* Toggle Apertura/Clausura para vistas Senior */
   .torneo-toggle {
     display: inline-flex;
     background: var(--surface-alt);
@@ -3385,6 +3464,18 @@
 </head>
 <body>
 
+<!-- ===================== MODAL DE PUBLICIDAD ===================== -->
+<div id="pub-overlay" style="display:none">
+  <div id="pub-modal">
+    <div id="pub-timer">
+      <span id="pub-timer-num">5</span>
+    </div>
+    <button id="pub-close" style="display:none" aria-label="Cerrar publicidad">✕</button>
+    <a id="pub-link" href="#" target="_blank" rel="noopener">
+      <img id="pub-img" alt="Publicidad" />
+    </a>
+  </div>
+</div>
 <header class="header">
   <div class="header-inner">
     <div class="logo-mark">
@@ -4991,6 +5082,111 @@ async function loadAllDataLegacy() {
   } catch(e) {
     showError('fixtureContainer', 'No se pudo cargar el fixture', loadAllDataLegacy);
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MÓDULO PUBLICIDAD
+// ═══════════════════════════════════════════════════════════════
+// Frecuencia: 1 vez por día (localStorage guarda fecha última vista).
+// Se muestra al arrancar la app. Contador 5s, después botón cerrar.
+// Click en imagen → link externo (track vía GoatCounter).
+// Para agregar más publicidades: sumar objetos al array PUBLICIDADES.
+// Si hay varias activas, rota al azar.
+// ═══════════════════════════════════════════════════════════════
+var PUBLICIDADES = [
+  {
+    id: 'novaderma',
+    imagen: 'publicidad/novaderma.jpeg',
+    link: 'https://www.instagram.com/novaderma.capilar?stkn=MXJvbmtobG1hbGNzMQ%3D%3D&utm_source=qr',
+    activo: true,
+    hasta: null // ej: '2026-12-31' — null = sin vencimiento
+  }
+];
+
+function mostrarPublicidad() {
+  try {
+    // 1. Filtrar publicidades activas y vigentes
+    var hoy = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    var vigentes = PUBLICIDADES.filter(function(p) {
+      if (!p.activo) return false;
+      if (p.hasta && p.hasta < hoy) return false;
+      return true;
+    });
+    if (!vigentes.length) return;
+
+    // 2. Chequear si ya se mostró hoy (1 vez por día)
+    var ultimaVista = null;
+    try { ultimaVista = localStorage.getItem('cdp_pub_ultima_vista'); } catch(e) {}
+    if (ultimaVista === hoy) return;
+
+    // 3. Elegir una al azar
+    var pub = vigentes[Math.floor(Math.random() * vigentes.length)];
+
+    // 4. Setear imagen y link
+    var img  = document.getElementById('pub-img');
+    var link = document.getElementById('pub-link');
+    var overlay = document.getElementById('pub-overlay');
+    var timer = document.getElementById('pub-timer');
+    var timerNum = document.getElementById('pub-timer-num');
+    var closeBtn = document.getElementById('pub-close');
+    if (!img || !link || !overlay) return;
+
+    img.src = pub.imagen;
+    link.href = pub.link;
+
+    // 5. GoatCounter: registrar impresión y click
+    link.setAttribute('data-goatcounter-click', 'pub-' + pub.id);
+    link.setAttribute('data-goatcounter-title', 'Publicidad: ' + pub.id);
+    // Registrar impresión manualmente
+    if (window.goatcounter && window.goatcounter.count) {
+      try {
+        window.goatcounter.count({
+          path: 'pub-impresion-' + pub.id,
+          title: 'Impresión: ' + pub.id,
+          event: true
+        });
+      } catch(e) {}
+    }
+
+    // 6. Marcar como vista hoy (así no vuelve a aparecer)
+    try { localStorage.setItem('cdp_pub_ultima_vista', hoy); } catch(e) {}
+
+    // 7. Mostrar el overlay
+    overlay.style.display = 'flex';
+
+    // 8. Contador regresivo 5s
+    var seg = 5;
+    timerNum.textContent = seg;
+    timer.style.display = 'flex';
+    closeBtn.style.display = 'none';
+    var intervalo = setInterval(function() {
+      seg--;
+      if (seg > 0) {
+        timerNum.textContent = seg;
+      } else {
+        clearInterval(intervalo);
+        timer.style.display = 'none';
+        closeBtn.style.display = 'flex';
+      }
+    }, 1000);
+
+    // 9. Handler cerrar (solo funciona después de los 5s porque antes está hidden)
+    closeBtn.onclick = function() {
+      overlay.style.display = 'none';
+    };
+  } catch(e) {
+    // Cualquier error: no mostrar publicidad, no romper la app
+    console.warn('Publicidad no mostrada:', e);
+  }
+}
+
+// Disparar en el arranque (con pequeño delay para que la app cargue primero)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(mostrarPublicidad, 600);
+  });
+} else {
+  setTimeout(mostrarPublicidad, 600);
 }
 
 // ============================================================
