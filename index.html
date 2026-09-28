@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-09-16 18:15 ARG — quitar modal "Nueva versión 2026" (obsoleto) + publicidad Novaderma -->
+<!-- CDP Fixture — index.html — 2026-09-28 13:45 ARG — publicidad Sarandí sumada + rotación round-robin + sin límite diario -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4959,11 +4959,13 @@ async function loadAllDataLegacy() {
 // ═══════════════════════════════════════════════════════════════
 // MÓDULO PUBLICIDAD
 // ═══════════════════════════════════════════════════════════════
-// Frecuencia: 1 vez por día (localStorage guarda fecha última vista).
-// Se muestra al arrancar la app. Contador 5s, después botón cerrar.
+// Frecuencia: CADA VEZ que se abre la app (sin límite).
+// Rotación: alternada por usuario (round-robin). Cada usuario recorre
+//   todas las publicidades activas una por una antes de repetir.
+//   Ej: si hay 2, el usuario ve A, luego B, luego A, luego B...
+// Se muestra al arrancar. Contador 5s, después botón cerrar.
 // Click en imagen → link externo (track vía GoatCounter).
 // Para agregar más publicidades: sumar objetos al array PUBLICIDADES.
-// Si hay varias activas, rota al azar.
 // ═══════════════════════════════════════════════════════════════
 var PUBLICIDADES = [
   {
@@ -4972,6 +4974,13 @@ var PUBLICIDADES = [
     link: 'https://www.instagram.com/novaderma.capilar?stkn=MXJvbmtobG1hbGNzMQ%3D%3D&utm_source=qr',
     activo: true,
     hasta: null // ej: '2026-12-31' — null = sin vencimiento
+  },
+  {
+    id: 'sarandi',
+    imagen: 'publicidad/sarandi.jpeg',
+    link: 'https://www.instagram.com/sarandi.ar?stkn=MWxwd2cycHY5bDU5ZQ==',
+    activo: true,
+    hasta: null
   }
 ];
 
@@ -4986,15 +4995,21 @@ function mostrarPublicidad() {
     });
     if (!vigentes.length) return;
 
-    // 2. Chequear si ya se mostró hoy (1 vez por día)
-    var ultimaVista = null;
-    try { ultimaVista = localStorage.getItem('cdp_pub_ultima_vista'); } catch(e) {}
-    if (ultimaVista === hoy) return;
+    // 2. Rotación round-robin: cada usuario avanza en la lista de vigentes
+    //    Guardo el índice del último visto en localStorage y avanzo al siguiente.
+    var idx = 0;
+    try {
+      var raw = localStorage.getItem('cdp_pub_next_idx');
+      if (raw !== null) idx = parseInt(raw) || 0;
+    } catch(e) {}
+    // Ajustar si cambió la cantidad de publicidades activas
+    if (idx < 0 || idx >= vigentes.length) idx = 0;
+    var pub = vigentes[idx];
+    // Guardar el índice para la próxima visita
+    var proxIdx = (idx + 1) % vigentes.length;
+    try { localStorage.setItem('cdp_pub_next_idx', String(proxIdx)); } catch(e) {}
 
-    // 3. Elegir una al azar
-    var pub = vigentes[Math.floor(Math.random() * vigentes.length)];
-
-    // 4. Setear imagen y link
+    // 3. Setear imagen y link
     var img  = document.getElementById('pub-img');
     var link = document.getElementById('pub-link');
     var overlay = document.getElementById('pub-overlay');
@@ -5006,10 +5021,9 @@ function mostrarPublicidad() {
     img.src = pub.imagen;
     link.href = pub.link;
 
-    // 5. GoatCounter: registrar impresión y click
+    // 4. GoatCounter: tracking de click e impresión
     link.setAttribute('data-goatcounter-click', 'pub-' + pub.id);
     link.setAttribute('data-goatcounter-title', 'Publicidad: ' + pub.id);
-    // Registrar impresión manualmente
     if (window.goatcounter && window.goatcounter.count) {
       try {
         window.goatcounter.count({
@@ -5020,13 +5034,10 @@ function mostrarPublicidad() {
       } catch(e) {}
     }
 
-    // 6. Marcar como vista hoy (así no vuelve a aparecer)
-    try { localStorage.setItem('cdp_pub_ultima_vista', hoy); } catch(e) {}
-
-    // 7. Mostrar el overlay
+    // 5. Mostrar el overlay
     overlay.style.display = 'flex';
 
-    // 8. Contador regresivo 5s
+    // 6. Contador regresivo 5s
     var seg = 5;
     timerNum.textContent = seg;
     timer.style.display = 'flex';
@@ -5042,12 +5053,11 @@ function mostrarPublicidad() {
       }
     }, 1000);
 
-    // 9. Handler cerrar (solo funciona después de los 5s porque antes está hidden)
+    // 7. Handler cerrar (solo funciona después de los 5s porque antes está hidden)
     closeBtn.onclick = function() {
       overlay.style.display = 'none';
     };
   } catch(e) {
-    // Cualquier error: no mostrar publicidad, no romper la app
     console.warn('Publicidad no mostrada:', e);
   }
 }
