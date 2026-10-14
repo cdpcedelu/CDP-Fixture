@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-01 ARG — 3ra publicidad CDP comercial (WhatsApp) sumada a la rotación -->
+<!-- CDP Fixture — index.html — 2026-10-14 ARG — sección Sponsors: grid 3 cols con imágenes de publicidades, click → link -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1189,6 +1189,36 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+  /* Grid 3 columnas con solo imagen clickeable */
+  .sponsors-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .sponsor-tile {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    aspect-ratio: 9 / 16;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+  }
+  .sponsor-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  }
+  .sponsor-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  @media (max-width: 480px) {
+    .sponsors-grid { gap: 8px; }
+    .sponsor-tile { border-radius: 10px; }
   }
   .sponsor-card {
     background: var(--bg2);
@@ -6912,70 +6942,37 @@ function toggleCumplidas() {
 // ============================================================
 // SPONSORS
 // ============================================================
+// Sponsors ahora son hardcoded (desde el array PUBLICIDADES). No requiere fetch.
 async function loadSponsors() {
-  try {
-    const data = await fetchAPI('getSponsors');
-    // Mapear al formato que espera renderSponsors
-    state.sponsors = (data || []).map(s => ({
-      'Sponsor':      s.nombre,
-      'Informacion':  s.descripcion,
-      'Direccion':    s.direccion,
-      'Telefono':     s.telefono,
-      'Logo':         s.logo_url,
-      'Link':         s.link_url
-    }));
-    renderSponsors();
-  } catch(e) {
-    showError('sponsorsContainer', 'No se pudo cargar sponsors', loadSponsors);
-  }
+  renderSponsors();
 }
 
 function renderSponsors() {
-  const data = state.sponsors;
   const container = document.getElementById('sponsorsContainer');
 
-  // Datos de ejemplo para mostrar el diseño
-  const ejemplos = [
-    {
-      nombre: 'Club de Profesionales',
-      desc: 'El Club de Profesionales Justo José de Urquiza es una institución social y deportiva de Concepción del Uruguay que reúne a distintos grupos de profesionales de la ciudad.',
-      dir: 'C del Uruguay, Entre Ríos',
-      tel: '3442-457846'
-    }
-  ];
-
-  let html = '';
-  let sponsors = [];
-
-  if (data && data.length) {
-    const seen = new Set();
-    data.forEach(r => {
-      const name = (r['Sponsor'] || '').replace('➜ ', '').trim();
-      if (!name || seen.has(name)) return;
-      seen.add(name);
-      if (r['Informacion'] || r['Direccion'] || r['Telefono']) {
-        sponsors.push({ nombre: name, desc: r['Informacion'], dir: r['Direccion'], tel: r['Telefono'] });
-      }
-    });
-  }
-
-  // Si no hay sponsors con datos, usar ejemplos
-  if (!sponsors.length) sponsors = ejemplos;
-
-  sponsors.forEach(s => {
-    html += `<div class="sponsor-card">
-      <div class="sponsor-icon">⭐</div>
-      <div class="sponsor-info">
-        <div class="sponsor-name">${escapeHTML(s.nombre)}</div>
-        ${s.desc ? `<div class="sponsor-desc">${escapeHTML(s.desc)}</div>` : ''}
-        <div class="sponsor-meta">
-          ${s.dir ? `<span>📍 ${escapeHTML(s.dir)}</span>` : ''}
-          ${s.tel ? `<span>📞 ${s.tel}</span>` : ''}
-        </div>
-      </div>
-    </div>`;
+  // Grid de sponsors — usa el mismo array PUBLICIDADES del modal rotativo.
+  // Para agregar/sacar/editar, modificar PUBLICIDADES arriba.
+  const sponsorsActivos = (PUBLICIDADES || []).filter(function(p) {
+    if (!p.activo) return false;
+    var hoy = new Date().toISOString().slice(0, 10);
+    if (p.hasta && p.hasta < hoy) return false;
+    return true;
   });
 
+  if (!sponsorsActivos.length) {
+    container.innerHTML = '<div class="empty">No hay sponsors activos</div>';
+    return;
+  }
+
+  var html = '<div class="sponsors-grid">';
+  sponsorsActivos.forEach(function(s) {
+    html += '<a class="sponsor-tile" href="' + s.link + '" target="_blank" rel="noopener"' +
+            ' data-goatcounter-click="sponsors-grid-' + s.id + '"' +
+            ' data-goatcounter-title="Grid sponsors: ' + s.id + '">' +
+            '<img src="' + s.imagen + '" alt="' + s.id + '" loading="lazy">' +
+            '</a>';
+  });
+  html += '</div>';
   container.innerHTML = html;
 }
 
