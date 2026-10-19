@@ -9,27 +9,50 @@
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0f1923">
-<meta name="description" content="Club de Profesionales CDP - Fixture y estadísticas">
+<title>Torneo CDP — Club de Profesionales JJ Urquiza</title>
+<meta name="description" content="Fixture, tablas, goleadores y disciplina del torneo del CDP.">
+<link rel="canonical" href="https://torneo.cdpcdelu.ar/">
+<meta name="theme-color" content="#1a5fa8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!-- Favicon + Apple Touch Icon -->
-<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/escudos/logo_1.png">
+<link rel="apple-touch-icon" href="/escudos/logo_1.png">
 <!-- Open Graph — preview en WhatsApp / redes -->
-<meta property="og:title" content="CDP Stats — Club de Profesionales">
-<meta property="og:description" content="Fixture, posiciones, goleadores, disciplina y más del torneo del Club de Profesionales de Concepción del Uruguay.">
-<meta property="og:image" content="https://cdpcedelu.github.io/CDP-Fixture/preview.jpg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Torneo CDP">
+<meta property="og:locale" content="es_AR">
+<meta property="og:title" content="Torneo CDP — Club de Profesionales JJ Urquiza">
+<meta property="og:description" content="Fixture, tablas, goleadores y disciplina del torneo del CDP.">
+<meta property="og:url" content="https://torneo.cdpcdelu.ar/">
+<meta property="og:image" content="https://torneo.cdpcdelu.ar/og/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://cdpcedelu.github.io/CDP-Fixture/">
+<meta property="og:image:alt" content="Torneo CDP — Club de Profesionales JJ Urquiza">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CDP Stats — Club de Profesionales">
-<meta name="twitter:description" content="Fixture, posiciones, goleadores, disciplina y más del torneo del Club de Profesionales de Concepción del Uruguay.">
-<meta name="twitter:image" content="https://cdpcedelu.github.io/CDP-Fixture/preview.jpg">
-<title>Stats CDP</title>
+<meta name="twitter:title" content="Torneo CDP — Club de Profesionales JJ Urquiza">
+<meta name="twitter:description" content="Fixture, tablas, goleadores y disciplina del torneo del CDP.">
+<meta name="twitter:image" content="https://torneo.cdpcdelu.ar/og/og-image.png">
+<meta name="twitter:image:alt" content="Torneo CDP — Club de Profesionales JJ Urquiza">
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SportsOrganization",
+  "name": "Club de Profesionales JJ Urquiza",
+  "alternateName": "CDP",
+  "sport": "Soccer",
+  "url": "https://torneo.cdpcdelu.ar/",
+  "logo": "https://torneo.cdpcdelu.ar/escudos/logo_1.png",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Concepción del Uruguay",
+    "addressRegion": "Entre Ríos",
+    "addressCountry": "AR"
+  }
+}
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1593,6 +1616,16 @@
     font-size: 13px;
     color: var(--text2);
   }
+  .legal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px 24px;
+    font-size: 11px;
+    color: var(--text-dimmer);
+  }
+  .legal-footer a { color: inherit; text-decoration: none; }
+  .legal-footer a:hover { text-decoration: underline; }
   .gr10-pill {
     display: inline-flex;
     align-items: center;
@@ -3425,14 +3458,14 @@
     </div>
     <button id="pub-close" style="display:none" aria-label="Cerrar publicidad"><span class="pub-close-x">✕</span><span class="pub-close-text">Cerrar</span></button>
     <a id="pub-link" href="#" target="_blank" rel="noopener">
-      <img id="pub-img" alt="Publicidad" />
+      <img id="pub-img" alt="Publicidad" loading="lazy" />
     </a>
   </div>
 </div>
 <header class="header">
   <div class="header-inner">
     <div class="logo-mark">
-      <img src="escudos/logo_1.png" alt="CDP" style="width:100%;height:100%;object-fit:contain;padding:3px;"/>
+      <img src="escudos/logo_1.png" alt="Escudo Club de Profesionales JJ Urquiza" style="width:100%;height:100%;object-fit:contain;padding:3px;"/>
     </div>
     <div class="header-info">
       <div class="header-title">Club de Profesionales</div>
@@ -4097,6 +4130,11 @@
       GR10
     </a>
   </footer>
+  <nav class="legal-footer" aria-label="Información legal">
+    <a href="/legal/aviso-legal.html">Aviso legal</a>
+    <span aria-hidden="true">·</span>
+    <a href="/legal/privacidad.html">Privacidad</a>
+  </nav>
 
 </main>
 
@@ -4290,7 +4328,7 @@ function getEscudo(nombre, size) {
     const initials = nombre.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0,2).toUpperCase();
     return `<div class="team-shield" style="width:${sz}px;height:${sz}px">${initials}</div>`;
   }
-  return `<div class="team-shield" style="width:${sz}px;height:${sz}px;background:transparent;border-radius:4px;overflow:hidden"><img src="${src}" style="width:100%;height:100%;object-fit:contain" alt="${nombre}"></div>`;
+  return `<div class="team-shield" style="width:${sz}px;height:${sz}px;background:transparent;border-radius:4px;overflow:hidden"><img src="${src}" style="width:100%;height:100%;object-fit:contain" alt="Escudo ${nombre}" loading="lazy"></div>`;
 }
 
 // ============================================================
@@ -5051,6 +5089,7 @@ async function loadAllDataLegacy() {
 var PUBLICIDADES = [
   {
     id: 'novaderma',
+    nombre: 'Novaderma',
     imagen: 'publicidad/novaderma.jpeg',
     link: 'https://www.instagram.com/novaderma.capilar?stkn=MXJvbmtobG1hbGNzMQ%3D%3D&utm_source=qr',
     activo: true,
@@ -5058,6 +5097,7 @@ var PUBLICIDADES = [
   },
   {
     id: 'sarandi',
+    nombre: 'Sarandí',
     imagen: 'publicidad/sarandi.jpeg',
     link: 'https://www.instagram.com/sarandi.ar?stkn=MWxwd2cycHY5bDU5ZQ==',
     activo: true,
@@ -5065,6 +5105,7 @@ var PUBLICIDADES = [
   },
   {
     id: 'cdp-comercial',
+    nombre: 'CDP Comercial',
     imagen: 'publicidad/cdp-comercial.jpeg',
     link: 'https://wa.me/5493442657371?text=' + encodeURIComponent('Hola, quiero info sobre publicidad en el CDP'),
     activo: true,
@@ -5107,6 +5148,7 @@ function mostrarPublicidad() {
     if (!img || !link || !overlay) return;
 
     img.src = pub.imagen;
+    img.alt = 'Publicidad ' + (pub.nombre || pub.id);
     link.href = pub.link;
 
     // 4. GoatCounter: tracking de click e impresión
@@ -7011,7 +7053,7 @@ function renderSponsors() {
     html += '<a class="sponsor-tile" href="' + s.link + '" target="_blank" rel="noopener"' +
             ' data-goatcounter-click="sponsors-grid-' + s.id + '"' +
             ' data-goatcounter-title="Grid sponsors: ' + s.id + '">' +
-            '<img src="' + s.imagen + '" alt="' + s.id + '" loading="lazy">' +
+            '<img src="' + s.imagen + '" alt="Publicidad ' + escapeHTML(s.nombre || s.id) + '" loading="lazy">' +
             '</a>';
   });
   html += '</div>';
@@ -7321,7 +7363,7 @@ function renderAdminSponsors() {
     var nombre = sp.nombre || sp.Sponsor || 'Sin nombre';
     html += '<div class="admin-match-row" style="cursor:pointer" onclick="editSponsor(' + spId + ')">' +
       '<div style="display:flex;align-items:center;gap:12px;flex:1">' +
-        (imgUrl ? '<img src="' + escapeHTML(imgUrl) + '" style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#fff">' : '<div style="width:40px;height:40px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center">⭐</div>') +
+        (imgUrl ? '<img src="' + escapeHTML(imgUrl) + '" alt="Publicidad ' + escapeHTML(nombre) + '" loading="lazy" style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#fff">' : '<div style="width:40px;height:40px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center">⭐</div>') +
         '<div>' +
           '<strong>' + escapeHTML(nombre) + '</strong>' +
           '<div style="font-size:11px;color:var(--text-dimmer)">Orden: ' + (sp.orden || 1) + ' · ' + (sp.activo !== false ? '✓ Activo' : '✗ Inactivo') + '</div>' +
