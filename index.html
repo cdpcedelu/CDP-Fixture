@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-14 ARG — Sponsors: mobile 1 card grande por fila + peek + hint "↓ Deslizá para ver más" -->
+<!-- CDP Fixture — index.html — 2026-10-19 ARG — Libres Clausura: Fase Final (Campeonato / Permanencia / Promoción) desde F25 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4588,11 +4588,21 @@ var AJUSTES_INICIALES_CLAUSURA_LIBRES = {
   ]
 };
 
+// Fase Final del Clausura Libres: arranca en F25 (= Libres fecha #10).
+// Todos los equipos arrancan en 0 (sin ajustes). La Fase Regular queda F16..F24.
+const EQUIPOS_CAMPEONATO_A = ['Contadores A', 'Profesores', 'Abogados A', 'Arquitectos'];
+const EQUIPOS_PERMANENCIA_A = ['Salud B', 'Maestros', 'Tecnicos A', 'Ingenieros S', 'Ingenieros', 'Abogados AR'];
+const EQUIPOS_CAMPEONATO_B = ['Docentes E', 'Salud F', 'Docentes W', 'Docentes B'];
+const EQUIPOS_PROMOCION_B = ['Psicologos', 'Docentes A', 'Abogados B', 'Salud T', 'Contadores Z'];
+const FECHA_INICIO_FASE_FINAL = 25;
+const FECHA_FIN_FASE_REGULAR_LIBRES = FECHA_INICIO_FASE_FINAL - 1;
+
 // Tabla Libres A/B del CLAUSURA: cuenta solo partidos F16+ (arranca de cero).
-function calcularTablaLibresClausura(view) {
+// fechaFin opcional: tope de fecha (null = sin tope). La Fase Regular usa 24.
+function calcularTablaLibresClausura(view, fechaFin) {
   var equipos = EQUIPOS_LIBRES_CLAUSURA[view];
   if (!equipos) return null;
-  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_LIBRES_FRONT, null);
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_LIBRES_FRONT, fechaFin != null ? fechaFin : null);
 
   // Aplicar ajustes iniciales (sanciones/incomparecencias arrastradas)
   var ajustes = AJUSTES_INICIALES_CLAUSURA_LIBRES[view] || [];
@@ -4613,6 +4623,19 @@ function calcularTablaLibresClausura(view) {
     return b.gf - a.gf;
   });
 
+  return stats.map(function(s, i) {
+    return {
+      'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
+      'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
+      'Diferencia': s.dif, 'Img': ''
+    };
+  });
+}
+
+// Tabla de un grupo de la Fase Final: solo partidos F25+, sin ajustes.
+// Orden: puntos > diferencia > GF (ya lo hace calcularTablaGrupo).
+function calcularTablaFaseFinal(equipos) {
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_FASE_FINAL, null);
   return stats.map(function(s, i) {
     return {
       'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
@@ -5836,11 +5859,6 @@ function renderPos(view) {
   var isSenior = view.includes('senior');
   var isLibresZona = (view === 'zona-a-libres' || view === 'zona-b-libres');
 
-  // Para Libres A/B: siempre tabla del Clausura (F16+, arranca de cero)
-  if (isLibresZona) {
-    var tblLibres = calcularTablaLibresClausura(view);
-    if (tblLibres && tblLibres.length) data = tblLibres;
-  }
 
   // Para Senior: siempre tabla del Clausura (F14+)
   if (isSenior) {
@@ -5850,6 +5868,12 @@ function renderPos(view) {
 
   // Calcular rachas
   calcularRachasEquipos();
+
+  // Libres A/B: Fase Final (F25+) + Fase Regular (F16-F24) colapsada
+  if (isLibresZona) {
+    document.getElementById('posContainer').innerHTML = renderFaseFinalLibres(view);
+    return;
+  }
 
   // Libres A/B: solo tabla plana del Clausura (sin Campeonato/Descenso/Promoción)
   // Las tablas nuevas del Apertura quedan solo como histórico en el sheet.
@@ -5862,7 +5886,32 @@ function renderPos(view) {
     (isSenior ? ' grupo-card' : '') +
     '">' +
     (isSenior ? '<div class="grupo-titulo">Tabla Clausura</div>' : '') +
-    '<table class="standings-table">' +
+    renderStandingsTableHtml(data, view) +
+    '</div>';
+
+  // Nota al pie con ajustes iniciales (siempre en Senior, ya que la tabla es siempre Clausura)
+  if (isSenior && AJUSTES_INICIALES_CLAUSURA_SENIOR.length) {
+    html += '<div class="tabla-nota-ajustes">';
+    AJUSTES_INICIALES_CLAUSURA_SENIOR.forEach(function(aj) {
+      html += '<div class="ajuste-item">' +
+        '<strong>' + escapeHTML(formatTeamName(aj.equipo)) + ':</strong> ' +
+        escapeHTML(aj.motivo) +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('posContainer').innerHTML = html;
+}
+
+// Arma la <table> de posiciones (filas, escudos, rachas, delta).
+// opts.sinColores: sin colores de posición · opts.sinDelta: sin ▲▼ vs fecha anterior
+function renderStandingsTableHtml(data, view, opts) {
+  opts = opts || {};
+  var isGeneral = view.includes('general');
+  var isSenior = view.includes('senior');
+
+  var html = '<table class="standings-table">' +
       '<thead>' +
         '<tr>' +
           '<th>#</th>' +
@@ -5893,7 +5942,9 @@ function renderPos(view) {
     var difNum = parseInt(dif) || 0;
 
     var posClass = '';
-    if (isSenior || isGeneral) {
+    if (opts.sinColores) {
+      posClass = '';
+    } else if (isSenior || isGeneral) {
       if (i < 4) posClass = 'oro';
       else if (i < 8) posClass = 'plata';
       else posClass = 'bronce';
@@ -5919,7 +5970,7 @@ function renderPos(view) {
     
     // Calcular cambio de posición (si hay datos previos)
     var deltaHtml = '';
-    var prevPos = getPreviousPosition(equipo, view);
+    var prevPos = opts.sinDelta ? null : getPreviousPosition(equipo, view);
     if (prevPos !== null && prevPos !== undefined) {
       var delta = prevPos - pos; // positivo = subió, negativo = bajó
       if (delta > 0) {
@@ -5957,36 +6008,48 @@ function renderPos(view) {
     '</tr>';
   });
 
-  html += '</tbody></table></div>';
+  html += '</tbody></table>';
+  return html;
+}
 
-  // Nota al pie con ajustes iniciales (siempre en Senior, ya que la tabla es siempre Clausura)
-  if (isSenior && AJUSTES_INICIALES_CLAUSURA_SENIOR.length) {
-    html += '<div class="tabla-nota-ajustes">';
-    AJUSTES_INICIALES_CLAUSURA_SENIOR.forEach(function(aj) {
-      html += '<div class="ajuste-item">' +
-        '<strong>' + escapeHTML(formatTeamName(aj.equipo)) + ':</strong> ' +
-        escapeHTML(aj.motivo) +
-      '</div>';
-    });
-    html += '</div>';
-  }
+// Libres A/B: tablas de la Fase Final (F25+, todos arrancan en 0)
+// y la Fase Regular (F16-F24) colapsada debajo.
+function renderFaseFinalLibres(view) {
+  var esA = view === 'zona-a-libres';
+  var grupos = esA
+    ? [{ titulo: '🏆 FASE CAMPEONATO', equipos: EQUIPOS_CAMPEONATO_A },
+       { titulo: '🛡️ FASE PERMANENCIA', equipos: EQUIPOS_PERMANENCIA_A }]
+    : [{ titulo: '🏆 FASE CAMPEONATO', equipos: EQUIPOS_CAMPEONATO_B },
+       { titulo: '🛡️ FASE PROMOCIÓN', equipos: EQUIPOS_PROMOCION_B }];
+  var opts = { sinColores: true, sinDelta: true };
 
-  // Nota al pie con ajustes iniciales para Libres A/B (si los hay)
-  if (isLibresZona) {
-    var ajustesLibres = AJUSTES_INICIALES_CLAUSURA_LIBRES[view] || [];
-    if (ajustesLibres.length) {
-      html += '<div class="tabla-nota-ajustes">';
-      ajustesLibres.forEach(function(aj) {
-        html += '<div class="ajuste-item">' +
-          '<strong>' + escapeHTML(formatTeamName(aj.equipo)) + ':</strong> ' +
-          escapeHTML(aj.motivo) +
-        '</div>';
-      });
-      html += '</div>';
-    }
-  }
+  var html = '';
+  grupos.forEach(function(g) {
+    html += '<div class="card grupo-card">' +
+      '<h2 class="grupo-titulo">' + g.titulo + '</h2>' +
+      renderStandingsTableHtml(calcularTablaFaseFinal(g.equipos), view, opts) +
+    '</div>';
+  });
 
-  document.getElementById('posContainer').innerHTML = html;
+  var zona = esA ? 'a' : 'b';
+  var regular = calcularTablaLibresClausura(view, FECHA_FIN_FASE_REGULAR_LIBRES) || [];
+  html += '<button class="toggle-general" onclick="toggleFaseRegular(\'' + zona + '\')">' +
+      '<span class="toggle-arrow">▼</span> Ver tabla Fase Regular (F16 - F24)' +
+    '</button>' +
+    '<div id="faseRegular' + zona.toUpperCase() + '" class="clasificacion-general oculta">' +
+      '<div class="card">' + renderStandingsTableHtml(regular, view, { sinDelta: true }) + '</div>' +
+    '</div>';
+  return html;
+}
+
+// Muestra/oculta la Fase Regular de Libres A ('a') o B ('b')
+function toggleFaseRegular(zona) {
+  var cont = document.getElementById('faseRegular' + String(zona).toUpperCase());
+  if (!cont) return;
+  var oculta = cont.classList.toggle('oculta');
+  var btn = cont.previousElementSibling;
+  var arrow = btn && btn.querySelector('.toggle-arrow');
+  if (arrow) arrow.textContent = oculta ? '▼' : '▲';
 }
 
 // Calcular posiciones sin la última fecha jugada
