@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-19 ARG — Libres Clausura: Fase Final (Campeonato / Permanencia / Promoción) desde F25 -->
+<!-- CDP Fixture — index.html — 2026-10-25 ARG — Fixture: día de la semana en el sidebar de la card (desde "Cancha y Hora" o FECHA) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -704,6 +704,14 @@
   }
   .partido-row.expanded .sidebar-arrow {
     transform: rotate(180deg);
+  }
+  .partido-sidebar-dia {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.85;
+    margin-bottom: 4px;
   }
   .partido-sidebar-hora {
     font-family: Impact, 'Arial Black', sans-serif;
@@ -5409,6 +5417,21 @@ function syncDisciplinaToCategoria() {
 // ============================================================
 // FIXTURE
 // ============================================================
+// Día de la semana (LUN..DOM) desde la columna FECHA del sheet. '' si no hay fecha válida.
+// "2026-10-28" y "28/10/2026" se leen como fecha local: new Date('2026-10-28') es UTC
+// y en Argentina (UTC-3) daría el día anterior.
+function diaSemanaDesdeFecha(fecha) {
+  if (!fecha) return '';
+  const dias = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+  const str = String(fecha).trim();
+  let d;
+  let m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) d = new Date(+m[1], +m[2] - 1, +m[3]);
+  else if ((m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) d = new Date(+m[3], +m[2] - 1, +m[1]);
+  else d = new Date(str);
+  return isNaN(d.getTime()) ? '' : dias[d.getDay()];
+}
+
 async function loadFixture() {
   try {
     const data = await fetchAPI('getFixture');
@@ -5645,7 +5668,7 @@ function filterByEquipo(equipo) {
   // ── Partidos a renderizar ──
   // Cuando hay equipo: agrupar por fecha con separador visual
   let lastFecha = null;
-  itemsToRender.forEach(p => {
+  itemsToRender.forEach((p, idx) => {
     if (state.currentEquipo) {
       const fNum = p.fecha != null ? String(p.fecha) : '?';
       if (fNum !== lastFecha) {
@@ -5731,18 +5754,24 @@ function filterByEquipo(equipo) {
       detHtmlV = incV.length ? incV.join('') : '<div class="details-empty" style="text-align:right">Sin incidencias</div>';
     }
 
-    // Extraer hora y cancha para el sidebar
-    let horaStr = '', canchaStr = '';
+    // Extraer día, hora y cancha para el sidebar
+    // "Cancha y Hora": "Cancha 2, 20:30hs, MIE, 28/10" (el día puede faltar: "Cancha 3, 13:00hs, -")
+    let horaStr = '', canchaStr = '', diaStr = '';
     if (p.canchaHora) {
       const ch = String(p.canchaHora);
       const horaMatch = ch.match(/(\d{1,2}:\d{2})/);
       const canchaMatch = ch.match(/cancha\s*(\d+)/i) || ch.match(/-\s*(\d+)\s*$/);
+      const diaMatch = ch.match(/\b(LUN|MAR|MIE|JUE|VIE|SAB|DOM)\b/i);
       if (horaMatch) horaStr = horaMatch[1] + ' hs';
       if (canchaMatch) canchaStr = 'Cancha ' + canchaMatch[1];
+      if (diaMatch) diaStr = diaMatch[1].toUpperCase();
     }
+    // Fallback: si "Cancha y Hora" no trae el día, derivarlo de la columna FECHA (fechaDate)
+    if (!diaStr) diaStr = diaSemanaDesdeFecha(p.fechaDate);
     const sidebarHtml = (horaStr || canchaStr || jugado) ? `
       <div class="partido-sidebar">
         ${jugado ? '<div class="jugado-badge">JUGADO</div>' : ''}
+        ${diaStr ? `<div class="partido-sidebar-dia" id="sidebarDia${idx}">${diaStr}</div>` : ''}
         ${horaStr ? `<div class="partido-sidebar-hora">${horaStr}</div>` : ''}
         ${canchaStr ? `<div class="partido-sidebar-cancha">${canchaStr}</div>` : ''}
         ${jugado ? '<div class="sidebar-arrow">▼</div>' : ''}
