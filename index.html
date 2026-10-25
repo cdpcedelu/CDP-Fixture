@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-25 ARG — Fixture: día de la semana (FECHA → "Cancha y Hora") + orden cronológico dentro de cada fecha -->
+<!-- CDP Fixture — index.html — 2026-10-25 ARG — Etiquetas de fecha F25-F30 por desfase Libres (Fase Final) / Senior (Semis y Finales) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -705,6 +705,28 @@
   .partido-row.expanded .sidebar-arrow {
     transform: rotate(180deg);
   }
+  /* Separador de categoría dentro de una fecha (F25+: Libres / Senior desfasados) */
+  .fecha-cat-separator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 10px;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+  }
+  .fecha-cat-separator:first-child { margin-top: 0; }
+  .fecha-cat-icon { font-size: 18px; }
+  .fecha-cat-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .fecha-cat-separator.senior { border-left-color: var(--gold); }
   .partido-sidebar-dia {
     font-size: 13px;
     font-weight: 800;
@@ -3557,9 +3579,6 @@
           <span class="fix-fecha-text" id="fixFechaText">Fecha 1 · 0/0</span>
           <span class="fix-pendientes" id="fixPendientes">--</span>
         </div>
-        <button class="whatsapp-share-btn" onclick="compartirFixture()" title="Compartir en WhatsApp">
-          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        </button>
       </div>
       <div class="fix-cats-v3" id="fixtureFilters">
         <button class="fix-cat-v3 active" onclick="filterFixture('todos', this)">Todos</button>
@@ -3634,9 +3653,6 @@
   <section class="section" id="section-posiciones">
     <div class="pos-header-v2">
       <div class="pos-title-v2">POSICIONES
-        <button class="whatsapp-share-btn" onclick="compartirTabla()" title="Compartir en WhatsApp" style="margin-left:12px;vertical-align:middle;">
-          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        </button>
       </div>
       <div class="pos-segment-v2" id="posTab">
         <button class="pos-seg-btn active" onclick="showPos('zona-a-libres', this)">Libres A</button>
@@ -3653,9 +3669,6 @@
   <section class="section" id="section-goleadores">
     <div class="pos-header-v2">
       <div class="pos-title-v2">GOLEADORES
-        <button class="whatsapp-share-btn" onclick="compartirGoleadores()" title="Compartir en WhatsApp" style="margin-left:12px;vertical-align:middle;">
-          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        </button>
       </div>
       <div class="pos-segment-v2" id="scorersTab">
         <button class="pos-seg-btn active" onclick="showScorers('libres-a', this)">Libres A</button>
@@ -3677,9 +3690,6 @@
   <section class="section" id="section-disciplina">
     <div class="pos-header-v2">
       <div class="pos-title-v2">DISCIPLINA
-        <button class="whatsapp-share-btn" onclick="compartirDisciplina()" title="Compartir en WhatsApp" style="margin-left:12px;vertical-align:middle;">
-          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        </button>
       </div>
       <div class="pos-segment-v2" id="discTab">
         <button class="pos-seg-btn active" onclick="showDisc('rojas', this)"><span class="card-icon red"></span>Rojas</button>
@@ -3833,6 +3843,15 @@
                   <option value="7">F7</option><option value="8">F8</option><option value="9">F9</option>
                   <option value="10">F10</option><option value="11">F11</option><option value="12">F12</option>
                   <option value="13">F13</option><option value="14">F14</option><option value="15">F15</option>
+                  <option value="16">F16</option><option value="17">F17</option><option value="18">F18</option>
+                  <option value="19">F19</option><option value="20">F20</option><option value="21">F21</option>
+                  <option value="22">F22</option><option value="23">F23</option><option value="24">F24</option>
+                  <option value="25">F25 · Libres F10 (Fase Final)</option>
+                  <option value="26">F26 · Libres F11 + Senior Semifinales</option>
+                  <option value="27">F27 · Libres F12 + Senior Finales</option>
+                  <option value="28">F28 · Libres F13 (Fase Final)</option>
+                  <option value="29">F29 · Libres F14 (Fase Final)</option>
+                  <option value="30">F30 · Libres F15 (Fase Final)</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1">
@@ -4605,6 +4624,72 @@ const EQUIPOS_CAMPEONATO_B = ['Docentes E', 'Salud F', 'Docentes W', 'Docentes B
 const EQUIPOS_PROMOCION_B = ['Psicologos', 'Docentes A', 'Abogados B', 'Salud T', 'Contadores Z'];
 const FECHA_INICIO_FASE_FINAL = 25;
 const FECHA_FIN_FASE_REGULAR_LIBRES = FECHA_INICIO_FASE_FINAL - 1;
+
+// Desde F25 Libres y Senior se desfasan: el sheet sigue numerado F1-F30
+// (compartido), pero cada categoría muestra su propia etiqueta.
+// F1-F24 no están acá → se muestran como siempre ("Fecha N").
+const FECHA_LABELS = {
+  25: { libres: 'Fase Final · Fecha 10', senior: null },
+  26: { libres: 'Fase Final · Fecha 11', senior: 'Semifinales' },
+  27: { libres: 'Fase Final · Fecha 12', senior: 'Finales' },
+  28: { libres: 'Fase Final · Fecha 13', senior: null },
+  29: { libres: 'Fase Final · Fecha 14', senior: null },
+  30: { libres: 'Fase Final · Fecha 15', senior: null }
+};
+
+// Número de fecha Libres de la Fase Final ("Fase Final · Fecha 10" → 10)
+function libresNumFecha(labels) {
+  const m = String(labels && labels.libres || '').match(/Fecha\s*(\d+)/);
+  return m ? m[1] : '';
+}
+
+// Etiqueta larga. categoria: 'libres' | 'senior' | 'ambos'.
+// Senior sin partidos en esa fecha → null.
+function etiquetaFecha(sheetNum, categoria) {
+  const n = parseInt(sheetNum, 10);
+  const labels = FECHA_LABELS[n];
+  if (!labels) return `Fecha ${n}`;  // F1-F24 sin cambios
+
+  if (categoria === 'libres') return `F${n} · Libres ${labels.libres}`;
+  if (categoria === 'senior') return labels.senior ? `F${n} · Senior ${labels.senior}` : null;
+
+  const partes = [`Libres ${labels.libres}`];
+  if (labels.senior) partes.push(`Senior ${labels.senior}`);
+  return `F${n} · ${partes.join(' + ')}`;
+}
+
+// Etiqueta corta: selector de fecha y header pill del Fixture.
+function etiquetaCortaFecha(sheetNum) {
+  const n = parseInt(sheetNum, 10);
+  const labels = FECHA_LABELS[n];
+  if (!labels) return `Fecha ${n}`;
+  const lib = libresNumFecha(labels);
+  if (labels.senior) return `F${n} · Libres F${lib} + Senior ${labels.senior}`;
+  return `F${n} · Libres F${lib} (Fase Final)`;
+}
+
+// Partido Senior: flag del sheet o equipos con "(S)"
+function esPartidoSenior(p) {
+  return p.isSenior === true || /\(S\)/i.test(String(p.partido || ''));
+}
+
+// Footer de los mensajes de WhatsApp de tablas/goleadores: hasta qué fecha llega el cálculo
+// (última fecha con partidos jugados de la categoría). '' si no hay datos.
+function textoActualizadoHasta(categoria) {
+  const senior = categoria === 'senior';
+  let ultima = 0;
+  (state.fixture || []).forEach(p => {
+    if (!(p.jugado === true || p.jugado === 'Jugado')) return;
+    if (esPartidoSenior(p) !== senior) return;
+    const n = parseInt(String(p.fecha || '').replace(/\D/g, ''), 10) || 0;
+    if (n > ultima) ultima = n;
+  });
+  if (!ultima) return '';
+  const labels = FECHA_LABELS[ultima];
+  if (!labels) return `Actualizado hasta Fecha ${ultima}`;
+  if (senior) return labels.senior ? `Actualizado hasta Senior ${labels.senior} (F${ultima})` : `Actualizado hasta Fecha ${ultima}`;
+  return `Actualizado hasta ${labels.libres.replace(' · ', ' ')} (F${ultima})`;
+}
 
 // Tabla Libres A/B del CLAUSURA: cuenta solo partidos F16+ (arranca de cero).
 // fechaFin opcional: tope de fecha (null = sin tope). La Fase Regular usa 24.
@@ -5460,6 +5545,29 @@ function parseCanchaNum(s) {
   return m ? parseInt(m[1], 10) : 9;
 }
 
+// Ordenar cronológicamente: fecha del torneo (F25) → día real → hora → cancha.
+// Día real: FECHA (datetime) si ambas filas la tienen; si no, el día de la semana
+// (LUN primero, sin día al final). Así MAR va antes que MIE y VIE antes que SAB.
+const ORDEN_DIAS = ['LUN','MAR','MIE','JUE','VIE','SAB','DOM'];
+const fechaNumPartido = p => parseInt(String(p.fecha || '').replace(/\D/g, ''), 10) || 0;
+const diaIdxPartido = p => { const i = ORDEN_DIAS.indexOf(diaDePartido(p)); return i < 0 ? 99 : i; };
+function compararPartidosCronologico(a, b) {
+  const na = fechaNumPartido(a), nb = fechaNumPartido(b);
+  if (na !== nb) return na - nb;
+  const da = parseFechaPartido(a.fechaDate), db = parseFechaPartido(b.fechaDate);
+  if (da && db) {
+    const ta = new Date(da.getFullYear(), da.getMonth(), da.getDate()).getTime();
+    const tb = new Date(db.getFullYear(), db.getMonth(), db.getDate()).getTime();
+    if (ta !== tb) return ta - tb;
+  } else {
+    const ia = diaIdxPartido(a), ib = diaIdxPartido(b);
+    if (ia !== ib) return ia - ib;
+  }
+  const ha = parseHoraMinutos(a.canchaHora), hb = parseHoraMinutos(b.canchaHora);
+  if (ha !== hb) return ha - hb;
+  return parseCanchaNum(a.canchaHora) - parseCanchaNum(b.canchaHora);
+}
+
 async function loadFixture() {
   try {
     const data = await fetchAPI('getFixture');
@@ -5575,28 +5683,7 @@ function filterByEquipo(equipo) {
     return;
   }
 
-  // Ordenar cronológicamente: fecha del torneo (F25) → día real → hora → cancha.
-  // Día real: FECHA (datetime) si ambas filas la tienen; si no, el día de la semana
-  // (LUN primero, sin día al final). Así MAR va antes que MIE y VIE antes que SAB.
-  const ORDEN_DIAS = ['LUN','MAR','MIE','JUE','VIE','SAB','DOM'];
-  const fechaNum = p => parseInt(String(p.fecha || '').replace(/\D/g, ''), 10) || 0;
-  const diaIdx = p => { const i = ORDEN_DIAS.indexOf(diaDePartido(p)); return i < 0 ? 99 : i; };
-  items.sort((a, b) => {
-    const na = fechaNum(a), nb = fechaNum(b);
-    if (na !== nb) return na - nb;
-    const da = parseFechaPartido(a.fechaDate), db = parseFechaPartido(b.fechaDate);
-    if (da && db) {
-      const ta = new Date(da.getFullYear(), da.getMonth(), da.getDate()).getTime();
-      const tb = new Date(db.getFullYear(), db.getMonth(), db.getDate()).getTime();
-      if (ta !== tb) return ta - tb;
-    } else {
-      const ia = diaIdx(a), ib = diaIdx(b);
-      if (ia !== ib) return ia - ib;
-    }
-    const ha = parseHoraMinutos(a.canchaHora), hb = parseHoraMinutos(b.canchaHora);
-    if (ha !== hb) return ha - hb;
-    return parseCanchaNum(a.canchaHora) - parseCanchaNum(b.canchaHora);
-  });
+  items.sort(compararPartidosCronologico);
 
   // Agrupar por fecha (número). Libres y no-libres de la misma fecha van juntos.
   const groups = {};
@@ -5667,7 +5754,7 @@ function filterByEquipo(equipo) {
   const fechaSelect = document.getElementById('fechaSelect');
   
   if (fixFechaText) {
-    fixFechaText.textContent = `Fecha ${selKey} · ${jugados}/${sinLibre.length}`;
+    fixFechaText.textContent = `${etiquetaCortaFecha(selKey)} · ${jugados}/${sinLibre.length}`;
   }
   if (fixPendientes) {
     fixPendientes.textContent = statusTxt;
@@ -5681,14 +5768,23 @@ function filterByEquipo(equipo) {
       const sinLib = todos.filter(p => !String(p.partido || '').toLowerCase().includes('libre'));
       const jug = sinLib.filter(p => p.jugado === true || p.jugado === 'Jugado').length;
       const tot = sinLib.length;
-      const lbl = `Fecha ${k} (${jug}/${tot})`;
+      const lbl = `${etiquetaCortaFecha(k)} (${jug}/${tot})`;
       return `<option value="${k}" ${k === selKey ? 'selected' : ''}>${lbl}</option>`;
     }).join('');
     fechaSelect.innerHTML = opts;
   }
 
   // ── Si hay filtro de equipo: mostrar todos los partidos sin selector de fecha ──
-  const itemsToRender = state.currentEquipo ? items : selItems;
+  let itemsToRender = state.currentEquipo ? items : selItems;
+
+  // F25+: Libres y Senior desfasados → primero el bloque Libres, después Senior,
+  // cada uno con su separador. Dentro de cada bloque se mantiene el orden cronológico.
+  const labelsSel = !state.currentEquipo ? FECHA_LABELS[parseInt(selKey, 10)] : null;
+  if (labelsSel) {
+    itemsToRender = itemsToRender.filter(p => !esPartidoSenior(p))
+      .concat(itemsToRender.filter(esPartidoSenior));
+  }
+  let lastCat = null;
 
   let html = '';
   if (state.currentEquipo) {
@@ -5706,6 +5802,19 @@ function filterByEquipo(equipo) {
   // Cuando hay equipo: agrupar por fecha con separador visual
   let lastFecha = null;
   itemsToRender.forEach((p, idx) => {
+    if (labelsSel) {
+      const cat = esPartidoSenior(p) ? 'senior' : 'libres';
+      if (cat !== lastCat) {
+        const titulo = cat === 'senior'
+          ? `Senior · ${labelsSel.senior || ''}`
+          : `Libres · ${labelsSel.libres.replace(' · ', ' ')}`;
+        html += `<div class="fecha-cat-separator${cat === 'senior' ? ' senior' : ''}">
+          <span class="fecha-cat-icon">${cat === 'senior' ? '🏆' : '⚽'}</span>
+          <span class="fecha-cat-title">${escapeHTML(titulo)}</span>
+        </div>`;
+        lastCat = cat;
+      }
+    }
     if (state.currentEquipo) {
       const fNum = p.fecha != null ? String(p.fecha) : '?';
       if (fNum !== lastFecha) {
@@ -6081,10 +6190,10 @@ function renderStandingsTableHtml(data, view, opts) {
 function renderFaseFinalLibres(view) {
   var esA = view === 'zona-a-libres';
   var grupos = esA
-    ? [{ titulo: '🏆 FASE CAMPEONATO', equipos: EQUIPOS_CAMPEONATO_A },
-       { titulo: '🛡️ FASE PERMANENCIA', equipos: EQUIPOS_PERMANENCIA_A }]
-    : [{ titulo: '🏆 FASE CAMPEONATO', equipos: EQUIPOS_CAMPEONATO_B },
-       { titulo: '🛡️ FASE PROMOCIÓN', equipos: EQUIPOS_PROMOCION_B }];
+    ? [{ titulo: '🏆 FASE CAMPEONATO (Fecha 10 → 15)', equipos: EQUIPOS_CAMPEONATO_A },
+       { titulo: '🛡️ FASE PERMANENCIA (Fecha 10 → 14)', equipos: EQUIPOS_PERMANENCIA_A }]
+    : [{ titulo: '🏆 FASE CAMPEONATO (Fecha 10 → 15)', equipos: EQUIPOS_CAMPEONATO_B },
+       { titulo: '🛡️ FASE PROMOCIÓN (Fecha 10 → 14)', equipos: EQUIPOS_PROMOCION_B }];
   var opts = { sinColores: true, sinDelta: true };
 
   var html = '';
@@ -6098,7 +6207,7 @@ function renderFaseFinalLibres(view) {
   var zona = esA ? 'a' : 'b';
   var regular = calcularTablaLibresClausura(view, FECHA_FIN_FASE_REGULAR_LIBRES) || [];
   html += '<button class="toggle-general" onclick="toggleFaseRegular(\'' + zona + '\')">' +
-      '<span class="toggle-arrow">▼</span> Ver tabla Fase Regular (F16 - F24)' +
+      '<span class="toggle-arrow">▼</span> Ver tabla Fase Regular (F16-F24)' +
     '</button>' +
     '<div id="faseRegular' + zona.toUpperCase() + '" class="clasificacion-general oculta">' +
       '<div class="card">' + renderStandingsTableHtml(regular, view, { sinDelta: true }) + '</div>' +
@@ -7035,6 +7144,17 @@ function renderDisc(view) {
         }
       }
 
+      // F25+: etiqueta humana de la fecha de habilitación según la categoría del jugador
+      let fechaHabLabel = '';
+      const habNumLbl = getHabFechaNum(r);
+      const labelsHab = habNumLbl !== null ? FECHA_LABELS[habNumLbl] : null;
+      if (labelsHab) {
+        const esSenior = r['Senior'] === true || /\(S\)/i.test(String(r['Equipo'] || ''));
+        if (!esSenior) fechaHabLabel = `Libres F${libresNumFecha(labelsHab)} (Fase Final)`;
+        else if (labelsHab.senior) fechaHabLabel = `Senior ${labelsHab.senior}`;
+        else fechaHabLabel = '⚠ Sin fecha pendiente (torneo finalizado para Senior)';
+      }
+
       const partidosDisplay = !sinSancion ? partidos : '—';
       const esNumero        = typeof partidos === 'number';
       const labelPartidos   = esNumero && partidos > 1 ? 'partidos' : (esNumero ? 'partido' : '');
@@ -7068,6 +7188,7 @@ function renderDisc(view) {
           <div class="suspension-num">${partidosDisplay}</div>
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
           ${fechaHabStr ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
+          ${fechaHabLabel ? `<div class="habilitado-fecha">${fechaHabLabel}</div>` : ''}
         </div>
       </div>`;
     }
@@ -8402,7 +8523,17 @@ function compartirFixture() {
   var pendientes = partidos.filter(function(p) { return p.jugado !== true && p.jugado !== 'Jugado'; });
   
   var catTxt = filtroActivo !== 'todos' ? (filtroActivo === 'libres' ? ' - Libres' : ' - Senior') : '';
-  var txt = '*CDP - FECHA ' + selKey + catTxt + '*\n\n';
+  var labelsSel = FECHA_LABELS[parseInt(selKey, 10)];
+  var txt;
+  if (labelsSel) {
+    // F25+: header con etiqueta humana (según el filtro activo)
+    var etq = filtroActivo === 'libres' ? etiquetaFecha(selKey, 'libres')
+            : filtroActivo === 'senior' ? (etiquetaFecha(selKey, 'senior') || 'F' + parseInt(selKey, 10) + ' · Senior')
+            : etiquetaCortaFecha(selKey);
+    txt = '⚽ *Fixture · ' + etq + '*\n────────────────────\n\n';
+  } else {
+    txt = '*CDP - FECHA ' + selKey + catTxt + '*\n\n';
+  }
   
   // Helper para extraer info de canchaHora
   function extraerInfo(p) {
@@ -8428,32 +8559,55 @@ function compartirFixture() {
     return info;
   }
   
-  // Resultados jugados
-  if (jugados.length > 0) {
-    jugados.forEach(function(p) {
-      var equipos = parsearPartido(p.partido);
-      var goles = parsearResultado(p.resultado);
-      if (equipos && goles) {
-        txt += equipos.local + ' *' + goles.local + '-' + goles.visitante + '* ' + equipos.visitante + '\n';
-        var info = extraerInfo(p);
-        if (info) txt += '  _' + info + '_\n';
-      }
-    });
-  }
+  // Jugados + pendientes de una lista de partidos
+  function bloquePartidos(jugados, pendientes) {
+    var txt = '';
+    // Resultados jugados
+    if (jugados.length > 0) {
+      jugados.forEach(function(p) {
+        var equipos = parsearPartido(p.partido);
+        var goles = parsearResultado(p.resultado);
+        if (equipos && goles) {
+          txt += equipos.local + ' *' + goles.local + '-' + goles.visitante + '* ' + equipos.visitante + '\n';
+          var info = extraerInfo(p);
+          if (info) txt += '  _' + info + '_\n';
+        }
+      });
+    }
   
-  // Pendientes
-  if (pendientes.length > 0) {
-    if (jugados.length > 0) txt += '\n_Pendientes_\n';
-    pendientes.forEach(function(p) {
-      var equipos = parsearPartido(p.partido);
-      if (equipos) {
-        txt += equipos.local + ' vs ' + equipos.visitante + '\n';
-        var info = extraerInfo(p);
-        if (info) txt += '  _' + info + '_\n';
-      }
-    });
+    // Pendientes
+    if (pendientes.length > 0) {
+      if (jugados.length > 0) txt += '\n_Pendientes_\n';
+      pendientes.forEach(function(p) {
+        var equipos = parsearPartido(p.partido);
+        if (equipos) {
+          txt += equipos.local + ' vs ' + equipos.visitante + '\n';
+          var info = extraerInfo(p);
+          if (info) txt += '  _' + info + '_\n';
+        }
+      });
+    }
+    return txt;
   }
-  
+
+  var esJugado = function(p) { return p.jugado === true || p.jugado === 'Jugado'; };
+  if (labelsSel) {
+    // F25+: agrupar por categoría (Libres primero), en orden cronológico
+    var bloques = [
+      { titulo: 'LIBRES — ' + labelsSel.libres.replace(' · ', ' '), lista: partidos.filter(function(p) { return !esPartidoSenior(p); }) },
+      { titulo: 'SENIOR — ' + (labelsSel.senior || ''), lista: partidos.filter(esPartidoSenior) }
+    ];
+    bloques.forEach(function(b) {
+      if (!b.lista.length) return;
+      var lista = b.lista.slice().sort(compararPartidosCronologico);
+      txt += '*' + b.titulo + '*\n';
+      txt += bloquePartidos(lista.filter(esJugado), lista.filter(function(p) { return !esJugado(p); }));
+      txt += '\n';
+    });
+  } else {
+    txt += bloquePartidos(jugados, pendientes);
+  }
+
   txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
@@ -8493,6 +8647,8 @@ function compartirTabla() {
     }
   });
   
+  var actualizado = textoActualizadoHasta(view.includes('senior') ? 'senior' : 'libres');
+  if (actualizado) txt += '\n_' + actualizado + '_\n';
   txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
@@ -8516,6 +8672,8 @@ function compartirGoleadores() {
     }
   });
   
+  var actualizado = textoActualizadoHasta(view === 'senior' ? 'senior' : 'libres');
+  if (actualizado) txt += '\n_' + actualizado + '_\n';
   txt += '\ncdpcedelu.github.io/CDP-Stats';
   abrirWhatsApp(txt);
 }
