@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-25 ARG — Etiquetas de fecha F25-F30 por desfase Libres (Fase Final) / Senior (Semis y Finales) -->
+<!-- CDP Fixture — index.html — 2026-10-25 ARG — Finales Senior F27 ("(Senior)") detectadas como Senior en Fixture -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4668,9 +4668,10 @@ function etiquetaCortaFecha(sheetNum) {
   return `F${n} · Libres F${lib} (Fase Final)`;
 }
 
-// Partido Senior: flag del sheet o equipos con "(S)"
+// Partido Senior: flag del sheet o equipos con "(S)" / "(Senior)".
+// Las finales de F27 vienen como "FINAL ORO (Senior) vs FINAL ORO (Senior)" con isSenior = false.
 function esPartidoSenior(p) {
-  return p.isSenior === true || /\(S\)/i.test(String(p.partido || ''));
+  return p.isSenior === true || /\((S|Senior)\)/i.test(String(p.partido || ''));
 }
 
 // Footer de los mensajes de WhatsApp de tablas/goleadores: hasta qué fecha llega el cálculo
@@ -5662,8 +5663,8 @@ function filterByEquipo(equipo) {
   let items = state.fixture || [];
 
   // Filtros de categoría
-  if (state.currentFixtureFilter === 'libres') items = items.filter(p => !p.isSenior);
-  if (state.currentFixtureFilter === 'senior') items = items.filter(p => p.isSenior);
+  if (state.currentFixtureFilter === 'libres') items = items.filter(p => !esPartidoSenior(p));
+  if (state.currentFixtureFilter === 'senior') items = items.filter(esPartidoSenior);
 
   // Filtro por equipo
   if (state.currentEquipo) {
@@ -5824,7 +5825,7 @@ function filterByEquipo(equipo) {
     }
     const jugado = p.jugado === true || p.jugado === 'Jugado';
     const nrCase = p.jugado === 'NR';
-    const rowClass = p.isSenior ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
+    const rowClass = esPartidoSenior(p) ? 'senior' : (jugado || nrCase ? 'jugado' : 'pendiente');
     let local = '', visitante = '', result = '';
     
     // Extraer golesL y golesV desde p.resultado si no existen
