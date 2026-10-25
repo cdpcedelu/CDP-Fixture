@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-25 ARG — Fixture: día de la semana en el sidebar de la card (desde "Cancha y Hora" o FECHA) -->
+<!-- CDP Fixture — index.html — 2026-10-25 ARG — Fixture: día de la semana (FECHA → "Cancha y Hora") + orden cronológico dentro de cada fecha -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -706,12 +706,13 @@
     transform: rotate(180deg);
   }
   .partido-sidebar-dia {
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    opacity: 0.85;
-    margin-bottom: 4px;
+    letter-spacing: 2px;
+    opacity: 0.95;
+    margin-bottom: 5px;
+    color: #fff;
   }
   .partido-sidebar-hora {
     font-family: Impact, 'Arial Black', sans-serif;
@@ -5417,19 +5418,46 @@ function syncDisciplinaToCategoria() {
 // ============================================================
 // FIXTURE
 // ============================================================
-// Día de la semana (LUN..DOM) desde la columna FECHA del sheet. '' si no hay fecha válida.
+// Columna FECHA del sheet (fechaDate) → Date, o null si falta / es inválida.
 // "2026-10-28" y "28/10/2026" se leen como fecha local: new Date('2026-10-28') es UTC
 // y en Argentina (UTC-3) daría el día anterior.
-function diaSemanaDesdeFecha(fecha) {
-  if (!fecha) return '';
-  const dias = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
-  const str = String(fecha).trim();
+function parseFechaPartido(fechaValue) {
+  if (!fechaValue) return null;
+  const str = String(fechaValue).trim();
   let d;
   let m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (m) d = new Date(+m[1], +m[2] - 1, +m[3]);
   else if ((m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) d = new Date(+m[3], +m[2] - 1, +m[1]);
   else d = new Date(str);
-  return isNaN(d.getTime()) ? '' : dias[d.getDay()];
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// Día de la semana (LUN..DOM) desde FECHA. '' si no hay fecha válida.
+function diaDeFecha(fechaValue) {
+  const d = parseFechaPartido(fechaValue);
+  return d ? ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'][d.getDay()] : '';
+}
+
+// Fallback: día desde "Cancha y Hora" ("Cancha 2, 20:30hs, MIE, 28/10").
+function diaDeString(s) {
+  if (!s) return '';
+  const m = String(s).match(/\b(LUN|MAR|MIE|JUE|VIE|SAB|DOM)\b/i);
+  return m ? m[1].toUpperCase() : '';
+}
+
+// Día final del partido: FECHA primero, "Cancha y Hora" como fallback.
+function diaDePartido(p) {
+  return diaDeFecha(p.fechaDate) || diaDeString(p.canchaHora);
+}
+
+function parseHoraMinutos(s) {
+  const m = String(s || '').match(/(\d{1,2}):(\d{2})/);
+  return m ? (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) : 9999;
+}
+
+function parseCanchaNum(s) {
+  const m = String(s || '').match(/Cancha\s*(\d+)/i);
+  return m ? parseInt(m[1], 10) : 9;
 }
 
 async function loadFixture() {
@@ -5547,18 +5575,27 @@ function filterByEquipo(equipo) {
     return;
   }
 
-  // Ordenar: fecha asc, luego Viernes antes Sábado, luego horario
-  function diaHoraSort(p) {
-    const ch = String(p.canchaHora || '').toLowerCase();
-    const diaPrio = ch.includes('vie') ? 0 : ch.includes('sab') ? 1 : 2;
-    const mHora   = ch.match(/(\d{1,2}):(\d{2})/);
-    const mins    = mHora ? parseInt(mHora[1]) * 60 + parseInt(mHora[2]) : 9999;
-    return diaPrio * 10000 + mins;
-  }
+  // Ordenar cronológicamente: fecha del torneo (F25) → día real → hora → cancha.
+  // Día real: FECHA (datetime) si ambas filas la tienen; si no, el día de la semana
+  // (LUN primero, sin día al final). Así MAR va antes que MIE y VIE antes que SAB.
+  const ORDEN_DIAS = ['LUN','MAR','MIE','JUE','VIE','SAB','DOM'];
+  const fechaNum = p => parseInt(String(p.fecha || '').replace(/\D/g, ''), 10) || 0;
+  const diaIdx = p => { const i = ORDEN_DIAS.indexOf(diaDePartido(p)); return i < 0 ? 99 : i; };
   items.sort((a, b) => {
-    const fa = a.fecha ?? 0, fb = b.fecha ?? 0;
-    if (fa !== fb) return fa - fb;
-    return diaHoraSort(a) - diaHoraSort(b);
+    const na = fechaNum(a), nb = fechaNum(b);
+    if (na !== nb) return na - nb;
+    const da = parseFechaPartido(a.fechaDate), db = parseFechaPartido(b.fechaDate);
+    if (da && db) {
+      const ta = new Date(da.getFullYear(), da.getMonth(), da.getDate()).getTime();
+      const tb = new Date(db.getFullYear(), db.getMonth(), db.getDate()).getTime();
+      if (ta !== tb) return ta - tb;
+    } else {
+      const ia = diaIdx(a), ib = diaIdx(b);
+      if (ia !== ib) return ia - ib;
+    }
+    const ha = parseHoraMinutos(a.canchaHora), hb = parseHoraMinutos(b.canchaHora);
+    if (ha !== hb) return ha - hb;
+    return parseCanchaNum(a.canchaHora) - parseCanchaNum(b.canchaHora);
   });
 
   // Agrupar por fecha (número). Libres y no-libres de la misma fecha van juntos.
@@ -5756,18 +5793,16 @@ function filterByEquipo(equipo) {
 
     // Extraer día, hora y cancha para el sidebar
     // "Cancha y Hora": "Cancha 2, 20:30hs, MIE, 28/10" (el día puede faltar: "Cancha 3, 13:00hs, -")
-    let horaStr = '', canchaStr = '', diaStr = '';
+    let horaStr = '', canchaStr = '';
+    // Día: FECHA (datetime) primero, "Cancha y Hora" como fallback
+    const diaStr = diaDePartido(p);
     if (p.canchaHora) {
       const ch = String(p.canchaHora);
       const horaMatch = ch.match(/(\d{1,2}:\d{2})/);
       const canchaMatch = ch.match(/cancha\s*(\d+)/i) || ch.match(/-\s*(\d+)\s*$/);
-      const diaMatch = ch.match(/\b(LUN|MAR|MIE|JUE|VIE|SAB|DOM)\b/i);
       if (horaMatch) horaStr = horaMatch[1] + ' hs';
       if (canchaMatch) canchaStr = 'Cancha ' + canchaMatch[1];
-      if (diaMatch) diaStr = diaMatch[1].toUpperCase();
     }
-    // Fallback: si "Cancha y Hora" no trae el día, derivarlo de la columna FECHA (fechaDate)
-    if (!diaStr) diaStr = diaSemanaDesdeFecha(p.fechaDate);
     const sidebarHtml = (horaStr || canchaStr || jugado) ? `
       <div class="partido-sidebar">
         ${jugado ? '<div class="jugado-badge">JUGADO</div>' : ''}
