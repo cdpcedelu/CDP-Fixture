@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-10-25 ARG — Finales Senior F27 ("(Senior)") detectadas como Senior en Fixture -->
+<!-- CDP Fixture — index.html — 2026-11-02 ARG — Fixture F27: etiquetas Final Oro / Plata / Bronce en finales Senior -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -727,6 +727,24 @@
     color: var(--text);
   }
   .fecha-cat-separator.senior { border-left-color: var(--gold); }
+  /* Etiqueta de final Senior (F27) arriba de los equipos */
+  .final-senior-badge {
+    align-self: flex-start;
+    width: fit-content;
+    display: inline-block;
+    margin: 8px 12px 0;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1f2937;
+  }
+  .final-senior-badge.oro    { background: linear-gradient(135deg, #fde68a, #f59e0b); }
+  .final-senior-badge.plata  { background: linear-gradient(135deg, #f3f4f6, #9ca3af); }
+  .final-senior-badge.bronce { background: linear-gradient(135deg, #fed7aa, #c2410c); color: #fff; }
   .partido-sidebar-dia {
     font-size: 13px;
     font-weight: 800;
@@ -4674,6 +4692,22 @@ function esPartidoSenior(p) {
   return p.isSenior === true || /\((S|Senior)\)/i.test(String(p.partido || ''));
 }
 
+// Finales Senior (F27): equipo clasificado → final que juega.
+const FECHA_FINALES_SENIOR = 27;
+const FINALES_SENIOR = [
+  { equipo: 'Contadores A', titulo: '🥇 Final Oro',    cls: 'oro' },
+  { equipo: 'Docentes T',   titulo: '🥈 Final Plata',  cls: 'plata' },
+  { equipo: 'Docentes X',   titulo: '🥉 Final Bronce', cls: 'bronce' }
+];
+
+// Final Senior del partido (F27, cualquiera de los dos equipos), o null.
+function finalSeniorDePartido(p, local, visitante) {
+  if (fechaNumPartido(p) !== FECHA_FINALES_SENIOR || !esPartidoSenior(p)) return null;
+  const limpiar = n => String(n || '').replace(/\s*\((S|Senior)\)\s*$/i, '').trim().toLowerCase();
+  const eqs = [limpiar(local), limpiar(visitante)];
+  return FINALES_SENIOR.find(f => eqs.includes(f.equipo.toLowerCase())) || null;
+}
+
 // Footer de los mensajes de WhatsApp de tablas/goleadores: hasta qué fecha llega el cálculo
 // (última fecha con partidos jugados de la categoría). '' si no hay datos.
 function textoActualizadoHasta(categoria) {
@@ -5929,9 +5963,15 @@ function filterByEquipo(equipo) {
       ? `<div class="partido-penales">⚽ Ganó por penales: <strong>${escapeHTML(p.ganadorPenales === 'L' ? local : visitante)}</strong></div>`
       : '';
 
+    const finalSenior = finalSeniorDePartido(p, local, visitante);
+    const finalSeniorHtml = finalSenior
+      ? `<div class="final-senior-badge ${finalSenior.cls}">${finalSenior.titulo}</div>`
+      : '';
+
     html += `<div class="partido-row ${rowClass}" ${clickHandler}>
       <div class="partido-top">
         <div class="partido-content">
+          ${finalSeniorHtml}
           <div class="partido-header">
             <div class="partido-equipo-row">
               ${escudoLocal}
