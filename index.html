@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-02 ARG — Fixture F27: etiquetas Final Oro / Plata / Bronce en finales Senior -->
+<!-- CDP Fixture — index.html — 2026-11-09 ARG — Tabla Senior solo F14-F24 + rojas IC cumplidas por categoría (Libres/Senior, LIBRE no cuenta) -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1905,6 +1905,16 @@
     opacity: 0.9;
     margin-top: 2px;
   }
+
+  /* Rojas de jugadores IC: estado de la sanción por categoría */
+  .ic-estado {
+    font-size: 11px;
+    margin-top: 3px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .ic-estado.cumplida { color: var(--green); }
+  .ic-estado.pendiente { color: #ef4444; }
 
   .habilitado-fecha {
     font-size: 10px;
@@ -4676,6 +4686,14 @@ function etiquetaFecha(sheetNum, categoria) {
   return `F${n} · ${partes.join(' + ')}`;
 }
 
+// Fecha de habilitación para una categoría ('Libres' | 'Senior'): "F28" o, desde F25, la etiqueta propia.
+function etiquetaCortaHab(n, cat) {
+  const labels = FECHA_LABELS[n];
+  if (!labels) return `F${n}`;
+  if (cat === 'Libres') return `F${n} (Libres F${libresNumFecha(labels)})`;
+  return labels.senior ? `F${n} (${labels.senior})` : `F${n}`;
+}
+
 // Etiqueta corta: selector de fecha y header pill del Fixture.
 function etiquetaCortaFecha(sheetNum) {
   const n = parseInt(sheetNum, 10);
@@ -4818,6 +4836,8 @@ function normalizarNombreEquipo(s) {
 //   - Senior:   Apertura F1..F13, Clausura desde F14 (visualmente F1)
 //   - Libres:   Apertura F1..F15, Clausura desde F16 (visualmente F1)
 var FECHA_INICIO_CLAUSURA_SENIOR = 14;
+// Fase regular Senior del Clausura termina en F24 (F26 Semifinales y F27 Finales no suman a la tabla)
+var FECHA_FIN_CLAUSURA_SENIOR = 24;
 var FECHA_INICIO_CLAUSURA_LIBRES = 16;
 // (Compat con lógica anterior — no se usa para congelar más nada)
 var FECHA_FIN_APERTURA_SENIOR = 13;
@@ -4875,7 +4895,7 @@ var AJUSTES_INICIALES_CLAUSURA_SENIOR = [
   { equipo: 'Docentes X (S)', puntos: -3, motivo: 'Comienza con −3 pts por incomparecencia en el Apertura.' }
 ];
 
-// Tabla Senior CLAUSURA: cuenta solo partidos F14+ (arranca de cero).
+// Tabla Senior CLAUSURA: cuenta solo partidos F14-F24 (arranca de cero; sin semis ni finales).
 function calcularTablaSeniorClausura() {
   var data = state.posiciones['general-senior'];
   if (!data || !data.length) return null;
@@ -4883,7 +4903,7 @@ function calcularTablaSeniorClausura() {
     return r['Equipo'] || r['Equipo '] || r['Equipos'] || '';
   }).filter(Boolean);
   if (!equipos.length) return null;
-  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_SENIOR, null);
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_CLAUSURA_SENIOR, FECHA_FIN_CLAUSURA_SENIOR);
 
   // Aplicar ajustes iniciales (sanciones arrastradas del Apertura)
   AJUSTES_INICIALES_CLAUSURA_SENIOR.forEach(function(aj) {
@@ -7041,6 +7061,93 @@ async function loadDiscView(view) {
   }
 }
 
+// ── Sanciones de jugadores IC (juegan Libres y Senior) ──
+// Regla: la sanción se cumple POR CATEGORÍA. En cada categoría el jugador queda habilitado
+// cuando ese equipo jugó N partidos después de la fecha de la roja (fecha LIBRE no cuenta).
+// Equipo de la otra categoría: este mapa manual (jugador sin "(IC)" → equipo) tiene prioridad;
+// si no está, se deduce de sus rojas/amarillas en la otra categoría o del mismo nombre con/sin "(S)".
+var IC_EQUIPO_OTRA_CATEGORIA = {
+  // 'ARELLANO MARIO': 'Abogados A',
+};
+
+function esJugadorIC(nombre) { return /\(IC\)/i.test(String(nombre || '')); }
+function esEquipoSenior(equipo) { return /\(S\)/i.test(String(equipo || '')); }
+function normalizarJugadorIC(nombre) {
+  return normalizarNombreEquipo(String(nombre || '').replace(/\(IC\)/ig, '')).replace(/\s+/g, ' ').trim();
+}
+
+// Partidos de un equipo después de fechaRoja (sin LIBRE), en orden.
+function partidosEquipoDesde(equipo, fechaRoja) {
+  const eqNorm = normalizarNombreEquipo(equipo);
+  const out = [];
+  (state.fixture || []).forEach(p => {
+    const fn = fechaNumPartido(p);
+    if (!fn || fn <= fechaRoja) return;
+    const m = String(p.partido || '').match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+    if (!m) return;
+    const l = normalizarNombreEquipo(m[1]), v = normalizarNombreEquipo(m[2]);
+    if (l !== eqNorm && v !== eqNorm) return;
+    const rival = l === eqNorm ? v : l;
+    if (rival === 'libre') return;
+    out.push({ fecha: fn, jugado: p.jugado === true || p.jugado === 'Jugado' });
+  });
+  return out.sort((a, b) => a.fecha - b.fecha);
+}
+
+// Equipo del jugador IC en la otra categoría, o null si no se puede deducir.
+function equipoOtraCategoriaIC(jugador, equipoRoja) {
+  const key = normalizarJugadorIC(jugador);
+  const senior = esEquipoSenior(equipoRoja);
+  for (const k in IC_EQUIPO_OTRA_CATEGORIA) {
+    if (normalizarJugadorIC(k) === key) return IC_EQUIPO_OTRA_CATEGORIA[k];
+  }
+  // Rojas y amarillas del mismo jugador en la otra categoría (el más frecuente)
+  const conteo = {};
+  ['rojas', 'amarillas-a', 'amarillas-b', 'amarillas-senior'].forEach(v => {
+    (state.disciplina[v] || []).forEach(r => {
+      if (normalizarJugadorIC(r['Jugador']) !== key) return;
+      const eq = String(r['Equipo'] || '').trim();
+      if (!eq || esEquipoSenior(eq) === senior) return;
+      conteo[eq] = (conteo[eq] || 0) + 1;
+    });
+  });
+  const candidatos = Object.keys(conteo).sort((a, b) => conteo[b] - conteo[a]);
+  if (candidatos.length) return candidatos[0];
+  // Mismo nombre con/sin "(S)", si existe en el fixture
+  const base = String(equipoRoja || '').replace(/\s*\(S\)\s*$/i, '').trim();
+  const otro = senior ? base : base + ' (S)';
+  return partidosEquipoDesde(otro, 0).length ? otro : null;
+}
+
+// Estado de la sanción en una categoría: cumplidos (jugados), habFecha y si ya cumplió.
+function estadoSancionEquipo(equipo, fechaRoja, partidosNum) {
+  const lista = partidosEquipoDesde(equipo, fechaRoja);
+  const cumplidos = Math.min(lista.filter(x => x.jugado).length, partidosNum);
+  let habFecha = null;
+  if (lista.length >= partidosNum) {
+    habFecha = lista.length > partidosNum ? lista[partidosNum].fecha : lista[partidosNum - 1].fecha + 1;
+  }
+  return { equipo, cumplidos, faltan: partidosNum - cumplidos, habFecha, cumplida: cumplidos >= partidosNum };
+}
+
+// Para una roja de jugador IC con N partidos numérico: estado en Libres y en Senior. null si no aplica.
+function estadoSancionIC(r) {
+  const partidosNum = r['Partidos'];
+  const fechaRoja = parseInt(r['Fecha'], 10);
+  if (!esJugadorIC(r['Jugador']) || typeof partidosNum !== 'number' || partidosNum <= 0 || !fechaRoja) return null;
+  const equipoRoja = String(r['Equipo'] || '').trim();
+  const otro = equipoOtraCategoriaIC(r['Jugador'], equipoRoja);
+  const estRoja = estadoSancionEquipo(equipoRoja, fechaRoja, partidosNum);
+  const estOtro = otro ? estadoSancionEquipo(otro, fechaRoja, partidosNum) : null;
+  const senior = esEquipoSenior(equipoRoja);
+  return {
+    libres: senior ? estOtro : estRoja,
+    senior: senior ? estRoja : estOtro,
+    otroDesconocido: !otro,
+    cumplida: estRoja.cumplida && (!estOtro || estOtro.cumplida)
+  };
+}
+
 function renderDisc(view) {
   const data = state.disciplina[view];
   const isRojas = view === 'rojas';
@@ -7121,6 +7228,13 @@ function renderDisc(view) {
         return;
       }
 
+      // Jugador IC: cumplida solo si cumplió en las dos categorías
+      const ic = estadoSancionIC(r);
+      if (ic && !ic.otroDesconocido) {
+        (ic.cumplida ? cumplidas : activas).push(r);
+        return;
+      }
+
       const habNum = getHabFechaNum(r);
       // Cumplida si la fecha de habilitación <= próxima fecha
       if (habNum !== null && habNum <= proximaFecha) {
@@ -7196,6 +7310,24 @@ function renderDisc(view) {
         else fechaHabLabel = '⚠ Sin fecha pendiente (torneo finalizado para Senior)';
       }
 
+      // Jugador IC: estado por categoría (Libres / Senior)
+      let icHtml = '';
+      const ic = estadoSancionIC(r);
+      if (ic) {
+        const linea = (icono, cat, est) => {
+          if (!est) return `<div class="ic-estado">${icono} ${cat}: equipo no identificado</div>`;
+          const eq = escapeHTML(formatTeamName(est.equipo));
+          if (est.cumplida) {
+            return `<div class="ic-estado cumplida">${icono} ${cat} (${eq}): ✅ cumplió${est.habFecha ? ' · hab. ' + escapeHTML(etiquetaCortaHab(est.habFecha, cat)) : ''}</div>`;
+          }
+          const hab = est.habFecha ? ` · hab. ${escapeHTML(etiquetaCortaHab(est.habFecha, cat))}` : ' · sin fechas pendientes';
+          return `<div class="ic-estado pendiente">${icono} ${cat} (${eq}): ⛔ cumplió ${est.cumplidos}/${partidos}, faltan ${est.faltan}${hab}</div>`;
+        };
+        icHtml = linea('⚽', 'Libres', ic.libres) + linea('🏆', 'Senior', ic.senior);
+      }
+      // Con el equipo de la otra categoría identificado, el estado por categoría reemplaza al "Hab." del sheet
+      const icCompleto = !!(ic && !ic.otroDesconocido);
+
       const partidosDisplay = !sinSancion ? partidos : '—';
       const esNumero        = typeof partidos === 'number';
       const labelPartidos   = esNumero && partidos > 1 ? 'partidos' : (esNumero ? 'partido' : '');
@@ -7222,14 +7354,16 @@ function renderDisc(view) {
               <span>${r['Equipo'] || '-'}${articulo ? ' · Art. ' + articulo : ''}</span>
             </div>
             ${sinSancion ? '<div style="font-size:10px;color:#ef4444;margin-top:3px;font-weight:600">⚠ Sin sanción cargada</div>' : ''}
+            ${icHtml}
           </div>
           ${isAdmin ? '<div style="color:var(--green);font-size:16px;flex-shrink:0">✏️</div>' : ''}
         </div>
         <div class="disc-sidebar">
           <div class="suspension-num">${partidosDisplay}</div>
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
-          ${fechaHabStr ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
-          ${fechaHabLabel ? `<div class="habilitado-fecha">${fechaHabLabel}</div>` : ''}
+          ${fechaHabStr && !icCompleto ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
+          ${fechaHabLabel && !icCompleto ? `<div class="habilitado-fecha">${fechaHabLabel}</div>` : ''}
+          ${icCompleto ? '<div class="habilitado-fecha">IC</div>' : ''}
         </div>
       </div>`;
     }
