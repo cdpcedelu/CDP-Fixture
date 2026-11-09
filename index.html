@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-09 ARG — Tabla Senior solo F14-F24 + rojas IC cumplidas por categoría (Libres/Senior, LIBRE no cuenta) -->
+<!-- CDP Fixture — index.html — 2026-11-09 ARG — Rojas IC: Bonnin Santiago (Abogados A (S)) y Morua Roque (Salud B (S)) en Senior -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -7068,6 +7068,8 @@ async function loadDiscView(view) {
 // si no está, se deduce de sus rojas/amarillas en la otra categoría o del mismo nombre con/sin "(S)".
 var IC_EQUIPO_OTRA_CATEGORIA = {
   // 'ARELLANO MARIO': 'Abogados A',
+  'BONNIN SANTIAGO': 'Abogados A (S)',
+  'MORUA ROQUE JOSE ANTONIO': 'Salud B (S)',
 };
 
 function esJugadorIC(nombre) { return /\(IC\)/i.test(String(nombre || '')); }
