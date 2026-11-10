@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-10 ARG — Senior Torneo Verano (F28+): tablas Grupo A/B/C, goleadores y amarillas nuevos; Clausura colapsada -->
+<!-- CDP Fixture — index.html — 2026-11-10 ARG — Torneo Verano Senior arranca en F29 (Fecha 1), F30 Fecha 2, F31 Fecha 3 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3877,9 +3877,10 @@
                   <option value="25">F25 · Libres F10 (Fase Final)</option>
                   <option value="26">F26 · Libres F11 + Senior Semifinales</option>
                   <option value="27">F27 · Libres F12 + Senior Finales</option>
-                  <option value="28">F28 · Libres F13 + Senior Fecha 1 Torneo Verano</option>
-                  <option value="29">F29 · Libres F14 + Senior Fecha 2 Torneo Verano</option>
-                  <option value="30">F30 · Libres F15 + Senior Fecha 3 Torneo Verano</option>
+                  <option value="28">F28 · Libres F13 (Fase Final)</option>
+                  <option value="29">F29 · Libres F14 + Senior Fecha 1 Torneo Verano</option>
+                  <option value="30">F30 · Libres F15 + Senior Fecha 2 Torneo Verano</option>
+                  <option value="31">F31 · Senior Fecha 3 Torneo Verano</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1">
@@ -4655,14 +4656,15 @@ const FECHA_FIN_FASE_REGULAR_LIBRES = FECHA_INICIO_FASE_FINAL - 1;
 
 // Desde F25 Libres y Senior se desfasan: el sheet sigue numerado F1-F30
 // (compartido), pero cada categoría muestra su propia etiqueta.
-// F1-F24 no están acá → se muestran como siempre ("Fecha N").
+// F1-F24 no están acá → se muestran como siempre ("Fecha N"). libres: null = fecha solo Senior.
 const FECHA_LABELS = {
   25: { libres: 'Fase Final · Fecha 10', senior: null },
   26: { libres: 'Fase Final · Fecha 11', senior: 'Semifinales' },
   27: { libres: 'Fase Final · Fecha 12', senior: 'Finales' },
-  28: { libres: 'Fase Final · Fecha 13', senior: 'Fecha 1 Torneo Verano' },
-  29: { libres: 'Fase Final · Fecha 14', senior: 'Fecha 2 Torneo Verano' },
-  30: { libres: 'Fase Final · Fecha 15', senior: 'Fecha 3 Torneo Verano' }
+  28: { libres: 'Fase Final · Fecha 13', senior: null },
+  29: { libres: 'Fase Final · Fecha 14', senior: 'Fecha 1 Torneo Verano' },
+  30: { libres: 'Fase Final · Fecha 15', senior: 'Fecha 2 Torneo Verano' },
+  31: { libres: null, senior: 'Fecha 3 Torneo Verano' }
 };
 
 // Número de fecha Libres de la Fase Final ("Fase Final · Fecha 10" → 10)
@@ -4678,10 +4680,10 @@ function etiquetaFecha(sheetNum, categoria) {
   const labels = FECHA_LABELS[n];
   if (!labels) return `Fecha ${n}`;  // F1-F24 sin cambios
 
-  if (categoria === 'libres') return `F${n} · Libres ${labels.libres}`;
+  if (categoria === 'libres') return labels.libres ? `F${n} · Libres ${labels.libres}` : `Fecha ${n}`;
   if (categoria === 'senior') return labels.senior ? `F${n} · Senior ${labels.senior}` : null;
 
-  const partes = [`Libres ${labels.libres}`];
+  const partes = labels.libres ? [`Libres ${labels.libres}`] : [];
   if (labels.senior) partes.push(`Senior ${labels.senior}`);
   return `F${n} · ${partes.join(' + ')}`;
 }
@@ -4690,7 +4692,7 @@ function etiquetaFecha(sheetNum, categoria) {
 function etiquetaCortaHab(n, cat) {
   const labels = FECHA_LABELS[n];
   if (!labels) return `F${n}`;
-  if (cat === 'Libres') return `F${n} (Libres F${libresNumFecha(labels)})`;
+  if (cat === 'Libres') return labels.libres ? `F${n} (Libres F${libresNumFecha(labels)})` : `F${n}`;
   return labels.senior ? `F${n} (${labels.senior})` : `F${n}`;
 }
 
@@ -4700,6 +4702,7 @@ function etiquetaCortaFecha(sheetNum) {
   const labels = FECHA_LABELS[n];
   if (!labels) return `Fecha ${n}`;
   const lib = libresNumFecha(labels);
+  if (!labels.libres) return `F${n} · Senior ${labels.senior}`;
   if (labels.senior) return `F${n} · Libres F${lib} + Senior ${labels.senior}`;
   return `F${n} · Libres F${lib} (Fase Final)`;
 }
@@ -4741,6 +4744,7 @@ function textoActualizadoHasta(categoria) {
   const labels = FECHA_LABELS[ultima];
   if (!labels) return `Actualizado hasta Fecha ${ultima}`;
   if (senior) return labels.senior ? `Actualizado hasta Senior ${labels.senior} (F${ultima})` : `Actualizado hasta Fecha ${ultima}`;
+  if (!labels.libres) return `Actualizado hasta Fecha ${ultima}`;
   return `Actualizado hasta ${labels.libres.replace(' · ', ' ')} (F${ultima})`;
 }
 
@@ -4838,9 +4842,9 @@ function normalizarNombreEquipo(s) {
 var FECHA_INICIO_CLAUSURA_SENIOR = 14;
 // Fase regular Senior del Clausura termina en F24 (F26 Semifinales y F27 Finales no suman a la tabla)
 var FECHA_FIN_CLAUSURA_SENIOR = 24;
-// Torneo Senior nuevo por grupos (desde F28). Tablas, goleadores y amarillas Senior cuentan desde acá;
+// Torneo Verano Senior por grupos (desde F29). Tablas, goleadores y amarillas Senior cuentan desde acá;
 // lo anterior (Clausura) queda colapsado como histórico.
-var FECHA_INICIO_GRUPOS_SENIOR = 28;
+var FECHA_INICIO_GRUPOS_SENIOR = 29;
 var GRUPOS_SENIOR = [
   { nombre: 'Grupo A', equipos: ['Contadores A (S)', 'Docentes T (S)', 'Docentes X (S)', 'Docentes B (S)'] },
   { nombre: 'Grupo B', equipos: ['Contadores Z (S)', 'Docentes F (S)', 'Licenciados (S)', 'Docentes A (S)'] },
@@ -5870,7 +5874,7 @@ function filterByEquipo(equipo) {
       if (cat !== lastCat) {
         const titulo = cat === 'senior'
           ? `Senior · ${labelsSel.senior || ''}`
-          : `Libres · ${labelsSel.libres.replace(' · ', ' ')}`;
+          : `Libres · ${String(labelsSel.libres || '').replace(' · ', ' ')}`;
         html += `<div class="fecha-cat-separator${cat === 'senior' ? ' senior' : ''}">
           <span class="fecha-cat-icon">${cat === 'senior' ? '🏆' : '⚽'}</span>
           <span class="fecha-cat-title">${escapeHTML(titulo)}</span>
@@ -6287,7 +6291,7 @@ function renderFaseFinalLibres(view) {
   return html;
 }
 
-// Senior torneo nuevo: una tabla por grupo (partidos F28+) + histórico colapsado (clausuraHtml)
+// Senior torneo nuevo: una tabla por grupo (partidos F29+) + histórico colapsado (clausuraHtml)
 function renderGruposSenior(view, clausuraHtml) {
   var opts = { sinColores: true, sinDelta: true };
   var html = '';
@@ -6960,7 +6964,7 @@ function loadScorers(view, torneo) {
   loadScorersView(view);
 }
 
-// ── Senior torneo por grupos: goleadores y amarillas desde F28 ──
+// ── Senior torneo por grupos: goleadores y amarillas desde F29 ──
 // Partidos Senior jugados del torneo nuevo
 function partidosSeniorGrupos() {
   return (state.fixture || []).filter(function(p) {
@@ -7463,7 +7467,7 @@ function renderDisc(view) {
       const labelsHab = habNumLbl !== null ? FECHA_LABELS[habNumLbl] : null;
       if (labelsHab) {
         const esSenior = r['Senior'] === true || /\(S\)/i.test(String(r['Equipo'] || ''));
-        if (!esSenior) fechaHabLabel = `Libres F${libresNumFecha(labelsHab)} (Fase Final)`;
+        if (!esSenior) fechaHabLabel = labelsHab.libres ? `Libres F${libresNumFecha(labelsHab)} (Fase Final)` : '';
         else if (labelsHab.senior) fechaHabLabel = `Senior ${labelsHab.senior}`;
         else fechaHabLabel = '⚠ Sin fecha pendiente (torneo finalizado para Senior)';
       }
@@ -7579,7 +7583,7 @@ function renderDisc(view) {
     };
 
     if (view === 'amarillas-senior') {
-      // Torneo por grupos (F28+) arriba; Clausura colapsada abajo
+      // Torneo por grupos (F29+) arriba; Clausura colapsada abajo
       const nuevas = calcularAmarillasSeniorGrupos();
       html += '<div class="grupo-titulo" style="padding:14px 18px 6px">Torneo Verano</div>';
       nuevas.forEach(r => { html += amarillaRowHtml(r); });
@@ -8942,7 +8946,7 @@ function compartirFixture() {
   if (labelsSel) {
     // F25+: agrupar por categoría (Libres primero), en orden cronológico
     var bloques = [
-      { titulo: 'LIBRES — ' + labelsSel.libres.replace(' · ', ' '), lista: partidos.filter(function(p) { return !esPartidoSenior(p); }) },
+      { titulo: 'LIBRES — ' + String(labelsSel.libres || '').replace(' · ', ' '), lista: partidos.filter(function(p) { return !esPartidoSenior(p); }) },
       { titulo: 'SENIOR — ' + (labelsSel.senior || ''), lista: partidos.filter(esPartidoSenior) }
     ];
     bloques.forEach(function(b) {
