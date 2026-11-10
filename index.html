@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-10 ARG — Torneo Verano Senior: solo F29 (Fecha 1) etiquetada; sin F30/F31 Senior -->
+<!-- CDP Fixture — index.html — 2026-11-10 ARG — Jugadores que dejan de ser IC (IC_BAJAS) + mismo jugador con/sin (IC) unificado en goleadores y amarillas -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -5166,6 +5166,7 @@ function applyAllData(data) {
   state.goleadores['senior'] = (golS.scorers || []).map(function(s) {
     return { 'Jugador': s.jugador, 'Equipo': s.equipo, 'Total': s.total };
   });
+  ['libres-a', 'libres-b', 'senior'].forEach(function(v) { state.goleadores[v] = unificarJugadoresIC(state.goleadores[v]); });
   state.goleadoresHayMas = {
     'libres-a': { hayMas: golA.hayMas, totalConUno: golA.totalConUno },
     'libres-b': { hayMas: golB.hayMas, totalConUno: golB.totalConUno },
@@ -5187,6 +5188,7 @@ function applyAllData(data) {
   state.disciplina['amarillas-senior'] = (data.disciplina.amarillasSenior || []).map(function(r) {
     return { 'Jugador': r.jugador, 'Equipo': r.equipo, 'Total': r.total };
   });
+  ['amarillas-a', 'amarillas-b', 'amarillas-senior'].forEach(function(v) { state.disciplina[v] = unificarJugadoresIC(state.disciplina[v]); });
   
   // Sponsors
   state.sponsors = data.sponsors || [];
@@ -5684,9 +5686,9 @@ function buildDetailsHTML(json) {
 
   function buildSide(goles, amarillas, rojas) {
     let items = [];
-    (goles||[]).forEach(g => items.push(`<div class="details-incident">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' ('+parseInt(g.goles)+')':''}</div>`));
-    (amarillas||[]).forEach(n => items.push(`<div class="details-incident">🟨 ${escapeHTML(n)}</div>`));
-    (rojas||[]).forEach(n => items.push(`<div class="details-incident">🟥 ${escapeHTML(n)}</div>`));
+    (goles||[]).forEach(g => items.push(`<div class="details-incident">⚽ ${escapeHTML(nombreJugadorVisible(g.jugador))}${g.goles>1?' ('+parseInt(g.goles)+')':''}</div>`));
+    (amarillas||[]).forEach(n => items.push(`<div class="details-incident">🟨 ${escapeHTML(nombreJugadorVisible(n))}</div>`));
+    (rojas||[]).forEach(n => items.push(`<div class="details-incident">🟥 ${escapeHTML(nombreJugadorVisible(n))}</div>`));
     return items.length ? items.join('') : '<div class="details-empty">Sin incidencias</div>';
   }
 
@@ -5928,9 +5930,9 @@ function filterByEquipo(equipo) {
     let golesL = '', golesV = '';
     if (jugado) {
       if (p.goleadoresL && p.goleadoresL.length)
-        golesL = p.goleadoresL.map(g => `⚽ ${escapeHTML(g.jugador)}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
+        golesL = p.goleadoresL.map(g => `⚽ ${escapeHTML(nombreJugadorVisible(g.jugador))}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
       if (p.goleadoresV && p.goleadoresV.length)
-        golesV = p.goleadoresV.map(g => `⚽ ${escapeHTML(g.jugador)}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
+        golesV = p.goleadoresV.map(g => `⚽ ${escapeHTML(nombreJugadorVisible(g.jugador))}${g.goles > 1 ? ' x'+g.goles : ''}`).join(' · ');
     }
     const amarL = (p.amonestadosL || []).map(() => '🟨').join('');
     const amarV = (p.amonestadosV || []).map(() => '🟨').join('');
@@ -5954,14 +5956,14 @@ function filterByEquipo(equipo) {
     let detHtmlL = '', detHtmlV = '';
     if (jugado) {
       let incL = [];
-      (p.goleadoresL||[]).forEach(g => incL.push(`<div class="details-incident">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' x'+g.goles:''}</div>`));
-      (p.amonestadosL||[]).forEach(n => incL.push(`<div class="details-incident">🟨 ${escapeHTML(n)}</div>`));
-      (p.rojasL||[]).forEach(n => incL.push(`<div class="details-incident">🟥 ${escapeHTML(n)}</div>`));
+      (p.goleadoresL||[]).forEach(g => incL.push(`<div class="details-incident">⚽ ${escapeHTML(nombreJugadorVisible(g.jugador))}${g.goles>1?' x'+g.goles:''}</div>`));
+      (p.amonestadosL||[]).forEach(n => incL.push(`<div class="details-incident">🟨 ${escapeHTML(nombreJugadorVisible(n))}</div>`));
+      (p.rojasL||[]).forEach(n => incL.push(`<div class="details-incident">🟥 ${escapeHTML(nombreJugadorVisible(n))}</div>`));
       detHtmlL = incL.length ? incL.join('') : '<div class="details-empty">Sin incidencias</div>';
       let incV = [];
-      (p.goleadoresV||[]).forEach(g => incV.push(`<div class="details-incident right">⚽ ${escapeHTML(g.jugador)}${g.goles>1?' x'+g.goles:''}</div>`));
-      (p.amonestadosV||[]).forEach(n => incV.push(`<div class="details-incident right">🟨 ${escapeHTML(n)}</div>`));
-      (p.rojasV||[]).forEach(n => incV.push(`<div class="details-incident right">🟥 ${escapeHTML(n)}</div>`));
+      (p.goleadoresV||[]).forEach(g => incV.push(`<div class="details-incident right">⚽ ${escapeHTML(nombreJugadorVisible(g.jugador))}${g.goles>1?' x'+g.goles:''}</div>`));
+      (p.amonestadosV||[]).forEach(n => incV.push(`<div class="details-incident right">🟨 ${escapeHTML(nombreJugadorVisible(n))}</div>`));
+      (p.rojasV||[]).forEach(n => incV.push(`<div class="details-incident right">🟥 ${escapeHTML(nombreJugadorVisible(n))}</div>`));
       detHtmlV = incV.length ? incV.join('') : '<div class="details-empty" style="text-align:right">Sin incidencias</div>';
     }
 
@@ -6898,6 +6900,7 @@ async function loadScorersView(view, verTodos) {
         'Total':   s.total || s.goles || 0
       };
     });
+    state.goleadores[view] = unificarJugadoresIC(state.goleadores[view]);
     // Guardar info de "ver más"
     state.goleadoresHayMas = state.goleadoresHayMas || {};
     state.goleadoresHayMas[view] = { hayMas: result.hayMas, totalConUno: result.totalConUno };
@@ -6976,10 +6979,12 @@ function rankingJugadores(items) {
   var acc = {};
   items.forEach(function(it) {
     if (!it.jugador) return;
-    var k = normalizarNombreEquipo(it.jugador) + '|' + normalizarNombreEquipo(it.equipo);
+    var k = claveJugadorIC(it.jugador, it.equipo);
     if (!acc[k]) acc[k] = { 'Jugador': it.jugador, 'Equipo': it.equipo, 'Total': 0 };
+    else if (esJugadorIC(it.jugador)) acc[k]['Jugador'] = it.jugador;
     acc[k]['Total'] += it.n;
   });
+  Object.values(acc).forEach(function(r) { r['Jugador'] = nombreJugadorVisible(r['Jugador']); });
   return Object.values(acc).sort(function(a, b) {
     return (b['Total'] - a['Total']) || String(a['Jugador']).localeCompare(String(b['Jugador']));
   });
@@ -7136,7 +7141,7 @@ function scorerRowHtml(p, i) {
       '<div class="scorer-content">' +
         '<div class="scorer-rank ' + rankClass + '">' + rank + '</div>' +
         '<div class="scorer-info">' +
-          '<div class="scorer-name">' + (p['Jugador'] || '-') + '</div>' +
+          '<div class="scorer-name">' + (nombreJugadorVisible(p['Jugador']) || '-') + '</div>' +
           '<div class="scorer-team" style="display:flex;align-items:center;gap:5px">' +
             getEscudo(p['Equipo'] || '', 18) +
             '<span>' + (p['Equipo'] || '-') + '</span>' +
@@ -7207,11 +7212,11 @@ async function loadDiscView(view) {
       }));
     } else {
       // Amarillas: mapear al formato que espera renderDisc
-      state.disciplina[view] = (rows || []).map(r => ({
+      state.disciplina[view] = unificarJugadoresIC((rows || []).map(r => ({
         'Jugador': r.jugador,
         'Equipo':  r.equipo,
         'Total':   r.total
-      }));
+      })));
     }
     renderDisc(view);
   } catch(e) {
@@ -7230,7 +7235,59 @@ var IC_EQUIPO_OTRA_CATEGORIA = {
   'MORUA ROQUE JOSE ANTONIO': 'Salud B (S)',
 };
 
-function esJugadorIC(nombre) { return /\(IC\)/i.test(String(nombre || '')); }
+// Jugadores IC que pidieron la baja en UNO de los dos equipos: dejan de ser IC y quedan solo en este
+// equipo. Siguen siendo el mismo jugador (goles, amarillas y sanciones se juntan), pero sin "(IC)".
+var IC_BAJAS = {
+  'DOMINGUEZ CRISTIAN': 'Contadores A (S)',
+  'CRISTALDO RICARDO': 'Contadores Z (S)',
+  'ROTTOLI MARIO MARCELINO': 'Docentes B',
+  'RUEDA DIEGO EDUARDO': 'Contadores A (S)',
+  'DOMINGUEZ GERMAN': 'Docentes B (S)',
+  'GRATTAROLA FEDERICO': 'Contadores A (S)',
+  'PINILLA ANDRES MARTIN': 'Arquitectos (S)',
+  'MISTA RAUL': 'Salud F',
+  'CHAPELET NICOLAS LUCIANO': 'Arquitectos',
+  'RACZINSKY JORGE SEBASTIAN': 'Tecnicos A',
+  'MERIANO SILVIO': 'Docentes B (S)',
+  'CASARETTO CARLOS ENRIQUE': 'Arquitectos',
+  'SANCHEZ NEGRETTE ALFREDO': 'Arquitectos (S)',
+  'LACAVA DANIEL': 'Contadores A (S)',
+  'RODAS MARCOS ALEJANDRO': 'Tecnicos A',
+  'RICHARD MAURO': 'Contadores A (S)',
+};
+
+function esJugadorIC(nombre) { return /\(IC\)/i.test(String(nombre || '')) && !bajaIC(nombre); }
+// Equipo con el que quedó un jugador que dejó de ser IC, o null
+function bajaIC(nombre) {
+  const key = normalizarJugadorIC(nombre);
+  const bajas = IC_BAJAS || {};
+  for (const k in bajas) {
+    if (normalizarJugadorIC(k) === key) return bajas[k];
+  }
+  return null;
+}
+// Nombre a mostrar: sin "(IC)" si el jugador dejó de ser IC
+function nombreJugadorVisible(nombre) {
+  if (!nombre || !bajaIC(nombre)) return nombre;
+  return String(nombre).replace(/\s*\(IC\)/ig, '').trim();
+}
+// Mismo jugador con o sin "(IC)" en el mismo equipo
+function claveJugadorIC(jugador, equipo) {
+  return normalizarJugadorIC(jugador) + '|' + normalizarNombreEquipo(equipo);
+}
+// Junta filas del mismo jugador escrito con y sin "(IC)" (suma Total) y reordena por Total
+function unificarJugadoresIC(lista) {
+  if (!lista || !lista.length) return lista;
+  const acc = {}, orden = [];
+  lista.forEach(r => {
+    const k = claveJugadorIC(r['Jugador'], r['Equipo']);
+    if (!acc[k]) { acc[k] = Object.assign({}, r); orden.push(k); return; }
+    acc[k]['Total'] = (Number(acc[k]['Total']) || 0) + (Number(r['Total']) || 0);
+    if (esJugadorIC(r['Jugador'])) acc[k]['Jugador'] = r['Jugador'];
+  });
+  if (orden.length === lista.length) return lista;
+  return orden.map(k => acc[k]).sort((a, b) => (Number(b['Total']) || 0) - (Number(a['Total']) || 0));
+}
 function esEquipoSenior(equipo) { return /\(S\)/i.test(String(equipo || '')); }
 function normalizarJugadorIC(nombre) {
   return normalizarNombreEquipo(String(nombre || '').replace(/\(IC\)/ig, '')).replace(/\s+/g, ' ').trim();
@@ -7294,8 +7351,19 @@ function estadoSancionEquipo(equipo, fechaRoja, partidosNum) {
 function estadoSancionIC(r) {
   const partidosNum = r['Partidos'];
   const fechaRoja = parseInt(r['Fecha'], 10);
-  if (!esJugadorIC(r['Jugador']) || typeof partidosNum !== 'number' || partidosNum <= 0 || !fechaRoja) return null;
+  const queda = bajaIC(r['Jugador']);
+  if ((!esJugadorIC(r['Jugador']) && !queda) || typeof partidosNum !== 'number' || partidosNum <= 0 || !fechaRoja) return null;
   const equipoRoja = String(r['Equipo'] || '').trim();
+  // Dejó de ser IC: la sanción se cumple solo con el equipo que le quedó
+  if (queda) {
+    if (esEquipoSenior(queda) === esEquipoSenior(equipoRoja)) return null;
+    const est = estadoSancionEquipo(queda, fechaRoja, partidosNum);
+    return {
+      libres: esEquipoSenior(queda) ? undefined : est,
+      senior: esEquipoSenior(queda) ? est : undefined,
+      otroDesconocido: false, baja: true, cumplida: est.cumplida
+    };
+  }
   const otro = equipoOtraCategoriaIC(r['Jugador'], equipoRoja);
   const estRoja = estadoSancionEquipo(equipoRoja, fechaRoja, partidosNum);
   const estOtro = otro ? estadoSancionEquipo(otro, fechaRoja, partidosNum) : null;
@@ -7475,6 +7543,7 @@ function renderDisc(view) {
       const ic = estadoSancionIC(r);
       if (ic) {
         const linea = (icono, cat, est) => {
+          if (est === undefined) return '';
           if (!est) return `<div class="ic-estado">${icono} ${cat}: equipo no identificado</div>`;
           const eq = escapeHTML(formatTeamName(est.equipo));
           if (est.cumplida) {
@@ -7508,7 +7577,7 @@ function renderDisc(view) {
       return `<div class="disc-row" ${rowClick}>
         <div class="disc-content">
           <div class="disc-info">
-            <div class="disc-name">${r['Jugador'] || '-'}</div>
+            <div class="disc-name">${nombreJugadorVisible(r['Jugador']) || '-'}</div>
             <div class="disc-team" style="display:flex;align-items:center;gap:5px">
               ${getEscudo(r['Equipo'] || '', 16)}
               <span>${r['Equipo'] || '-'}${articulo ? ' · Art. ' + articulo : ''}</span>
@@ -7523,7 +7592,7 @@ function renderDisc(view) {
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
           ${fechaHabStr && !icCompleto ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
           ${fechaHabLabel && !icCompleto ? `<div class="habilitado-fecha">${fechaHabLabel}</div>` : ''}
-          ${icCompleto ? '<div class="habilitado-fecha">IC</div>' : ''}
+          ${icCompleto && !ic.baja ? '<div class="habilitado-fecha">IC</div>' : ''}
         </div>
       </div>`;
     }
@@ -7566,7 +7635,7 @@ function renderDisc(view) {
       return `<div class="disc-row">
         <div class="disc-content">
           <div class="disc-info">
-            <div class="disc-name">${r['Jugador'] || '-'}</div>
+            <div class="disc-name">${nombreJugadorVisible(r['Jugador']) || '-'}</div>
             <div class="disc-team" style="display:flex;align-items:center;gap:5px">
               ${getEscudo(r['Equipo'] || '', 16)}
               <span>${r['Equipo'] || '-'}</span>
