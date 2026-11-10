@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-10 ARG — Jugadores que dejan de ser IC (IC_BAJAS) + mismo jugador con/sin (IC) unificado en goleadores y amarillas -->
+<!-- CDP Fixture — index.html — 2026-11-10 ARG — Rojas: diseño compacto (chips por categoría, Hab. en la barra lateral) + rojas sin Hab. calculadas con el fixture -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1866,7 +1866,7 @@
   .disc-sidebar {
     background: linear-gradient(135deg, #374151 0%, #6b7280 100%);
     color: #fff;
-    padding: 10px 14px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1906,15 +1906,45 @@
     margin-top: 2px;
   }
 
-  /* Rojas de jugadores IC: estado de la sanción por categoría */
-  .ic-estado {
-    font-size: 11px;
-    margin-top: 3px;
+  /* Rojas: estado de la sanción (por categoría en jugadores IC) */
+  .sancion-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .sancion-chip {
+    font-size: 10.5px;
     font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--bg3);
     color: var(--text-dim);
+    white-space: nowrap;
   }
-  .ic-estado.cumplida { color: var(--green); }
-  .ic-estado.pendiente { color: #ef4444; }
+  .sancion-chip b { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; margin-right: 4px; }
+  .sancion-chip.ok { background: rgba(34,197,94,0.13); color: #15803d; }
+  .sancion-chip.pend { background: rgba(239,68,68,0.11); color: #dc2626; }
+  [data-theme="dark"] .sancion-chip.ok { color: #4ade80; }
+  [data-theme="dark"] .sancion-chip.pend { color: #f87171; }
+
+  .hab-sb {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    width: 100%;
+    text-align: center;
+    color: #fff;
+    line-height: 1.15;
+  }
+  .hab-sb span { display: block; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; opacity: 0.8; text-transform: uppercase; }
+  .hab-sb b { display: block; font-size: 14px; font-weight: 800; }
+  .hab-sb small { display: block; font-size: 8.5px; font-weight: 600; opacity: 0.85; }
+  .ic-pill {
+    margin-top: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    padding: 1px 7px;
+    border-radius: 6px;
+  }
 
   .habilitado-fecha {
     font-size: 10px;
@@ -7344,7 +7374,8 @@ function estadoSancionEquipo(equipo, fechaRoja, partidosNum) {
   if (lista.length >= partidosNum) {
     habFecha = lista.length > partidosNum ? lista[partidosNum].fecha : lista[partidosNum - 1].fecha + 1;
   }
-  return { equipo, cumplidos, faltan: partidosNum - cumplidos, habFecha, cumplida: cumplidos >= partidosNum };
+  const ultimaFecha = lista.length >= partidosNum ? lista[partidosNum - 1].fecha : null;
+  return { equipo, cumplidos, faltan: partidosNum - cumplidos, habFecha, ultimaFecha, cumplida: cumplidos >= partidosNum };
 }
 
 // Para una roja de jugador IC con N partidos numérico: estado en Libres y en Senior. null si no aplica.
@@ -7374,6 +7405,47 @@ function estadoSancionIC(r) {
     otroDesconocido: !otro,
     cumplida: estRoja.cumplida && (!estOtro || estOtro.cumplida)
   };
+}
+
+// Habilitación para mostrar en rojas: { tit: 'Hab.'|'Cumple', num: 'F30', sub: 'Libres F15' }.
+// Senior: si esa fecha no tiene partidos Senior, se usa la próxima fecha Senior etiquetada.
+function habRojaInfo(n, senior) {
+  if (!n) return null;
+  if (!senior) {
+    const l = FECHA_LABELS[n];
+    return { tit: 'Hab.', num: 'F' + n, sub: l && l.libres ? 'Libres F' + libresNumFecha(l) : '' };
+  }
+  if (!FECHA_LABELS[n]) return { tit: 'Hab.', num: 'F' + n, sub: '' };
+  for (let k = n; FECHA_LABELS[k]; k++) {
+    if (FECHA_LABELS[k].senior) return { tit: 'Hab.', num: 'F' + k, sub: FECHA_LABELS[k].senior.replace(/^Fecha\s*/, 'F') };
+  }
+  return null;
+}
+// Igual que habRojaInfo, para un estado calculado con el fixture (estadoSancionEquipo)
+function habEstadoInfo(est) {
+  const senior = esEquipoSenior(est.equipo);
+  if (est.habFecha) {
+    const h = habRojaInfo(est.habFecha, senior);
+    if (h) return h;
+  }
+  if (est.ultimaFecha) return { tit: 'Cumple', num: 'F' + est.ultimaFecha, sub: '' };
+  return null;
+}
+function habSidebarHtml(h) {
+  if (!h) return '';
+  return `<div class="hab-sb"><span>${h.tit}</span><b>${h.num}</b>${h.sub ? `<small>${escapeHTML(h.sub)}</small>` : ''}</div>`;
+}
+
+// Roja con N partidos numérico pero sin "Habilitado FECHA" en el sheet: estado calculado con el fixture.
+function estadoSancionSinHab(r) {
+  const partidosNum = r['Partidos'];
+  const fechaRoja = parseInt(r['Fecha'], 10);
+  const hab = r['Habilitado FECHA'];
+  if (hab !== undefined && hab !== null && /\d/.test(String(hab))) return null;
+  if (typeof partidosNum !== 'number' || partidosNum <= 0 || !fechaRoja) return null;
+  if (estadoSancionIC(r)) return null;
+  const equipo = bajaIC(r['Jugador']) || String(r['Equipo'] || '').trim();
+  return estadoSancionEquipo(equipo, fechaRoja, partidosNum);
 }
 
 function renderDisc(view) {
@@ -7463,6 +7535,13 @@ function renderDisc(view) {
         return;
       }
 
+      // Sin "Habilitado FECHA" en el sheet: partidos cumplidos según el fixture
+      const sh = estadoSancionSinHab(r);
+      if (sh) {
+        (sh.cumplida ? cumplidas : activas).push(r);
+        return;
+      }
+
       const habNum = getHabFechaNum(r);
       // Cumplida si la fecha de habilitación <= próxima fecha
       if (habNum !== null && habNum <= proximaFecha) {
@@ -7527,33 +7606,36 @@ function renderDisc(view) {
         }
       }
 
-      // F25+: etiqueta humana de la fecha de habilitación según la categoría del jugador
-      let fechaHabLabel = '';
+      // Habilitación del sheet con etiqueta corta según la categoría del jugador
+      const esSeniorRoja = r['Senior'] === true || esEquipoSenior(r['Equipo']);
       const habNumLbl = getHabFechaNum(r);
-      const labelsHab = habNumLbl !== null ? FECHA_LABELS[habNumLbl] : null;
-      if (labelsHab) {
-        const esSenior = r['Senior'] === true || /\(S\)/i.test(String(r['Equipo'] || ''));
-        if (!esSenior) fechaHabLabel = labelsHab.libres ? `Libres F${libresNumFecha(labelsHab)} (Fase Final)` : '';
-        else if (labelsHab.senior) fechaHabLabel = `Senior ${labelsHab.senior}`;
-        else fechaHabLabel = '⚠ Sin fecha pendiente (torneo finalizado para Senior)';
-      }
+      let habSheet = null;
+      if (habNumLbl !== null) habSheet = habRojaInfo(habNumLbl, esSeniorRoja) || { tit: 'Hab.', num: 'F' + habNumLbl, sub: 'Sin fecha Senior' };
+      else if (fechaHabStr) habSheet = { tit: 'Hab.', num: fechaHabStr, sub: '' };
 
-      // Jugador IC: estado por categoría (Libres / Senior)
+      // Jugador IC: estado por categoría (Libres / Senior) en chips
+      const chip = (cat, est) => {
+        if (est === undefined) return '';
+        if (!est) return `<span class="sancion-chip"><b>${cat}</b>equipo sin identificar</span>`;
+        const h = habEstadoInfo(est);
+        const eq = escapeHTML(formatTeamName(est.equipo));
+        if (est.cumplida) return `<span class="sancion-chip ok" title="${eq}"><b>${cat}</b>✓ Cumplió</span>`;
+        const cuando = h ? `${h.tit} ${h.num}` : 'sin fechas en el fixture';
+        return `<span class="sancion-chip pend" title="${eq}"><b>${cat}</b>${est.cumplidos}/${partidos} · ${cuando}</span>`;
+      };
       let icHtml = '';
       const ic = estadoSancionIC(r);
-      if (ic) {
-        const linea = (icono, cat, est) => {
-          if (est === undefined) return '';
-          if (!est) return `<div class="ic-estado">${icono} ${cat}: equipo no identificado</div>`;
-          const eq = escapeHTML(formatTeamName(est.equipo));
-          if (est.cumplida) {
-            return `<div class="ic-estado cumplida">${icono} ${cat} (${eq}): ✅ cumplió${est.habFecha ? ' · hab. ' + escapeHTML(etiquetaCortaHab(est.habFecha, cat)) : ''}</div>`;
-          }
-          const hab = est.habFecha ? ` · hab. ${escapeHTML(etiquetaCortaHab(est.habFecha, cat))}` : ' · sin fechas pendientes';
-          return `<div class="ic-estado pendiente">${icono} ${cat} (${eq}): ⛔ cumplió ${est.cumplidos}/${partidos}, faltan ${est.faltan}${hab}</div>`;
-        };
-        icHtml = linea('⚽', 'Libres', ic.libres) + linea('🏆', 'Senior', ic.senior);
+      if (ic) icHtml = chip('Libres', ic.libres) + chip('Senior', ic.senior);
+      // Sin "Habilitado FECHA" en el sheet: cuántos partidos cumplió según el fixture
+      const sh = estadoSancionSinHab(r);
+      let habCalc = null;
+      if (sh) {
+        habCalc = habEstadoInfo(sh) || { tit: 'Hab.', num: '—', sub: 'Faltan fechas' };
+        icHtml += sh.cumplida
+          ? `<span class="sancion-chip ok"><b>Cumplidos</b>${sh.cumplidos}/${partidos}</span>`
+          : `<span class="sancion-chip pend"><b>Cumplidos</b>${sh.cumplidos}/${partidos}</span>`;
       }
+      if (icHtml) icHtml = `<div class="sancion-chips">${icHtml}</div>`;
       // Con el equipo de la otra categoría identificado, el estado por categoría reemplaza al "Hab." del sheet
       const icCompleto = !!(ic && !ic.otroDesconocido);
 
@@ -7582,7 +7664,7 @@ function renderDisc(view) {
               ${getEscudo(r['Equipo'] || '', 16)}
               <span>${r['Equipo'] || '-'}${articulo ? ' · Art. ' + articulo : ''}</span>
             </div>
-            ${sinSancion ? '<div style="font-size:10px;color:#ef4444;margin-top:3px;font-weight:600">⚠ Sin sanción cargada</div>' : ''}
+            ${sinSancion ? '<div class="sancion-chips"><span class="sancion-chip pend">⚠ Falta cargar la sanción</span></div>' : ''}
             ${icHtml}
           </div>
           ${isAdmin ? '<div style="color:var(--green);font-size:16px;flex-shrink:0">✏️</div>' : ''}
@@ -7590,9 +7672,7 @@ function renderDisc(view) {
         <div class="disc-sidebar">
           <div class="suspension-num">${partidosDisplay}</div>
           ${labelPartidos ? `<div class="suspension-label">${labelPartidos}</div>` : ''}
-          ${fechaHabStr && !icCompleto ? `<div class="habilitado-fecha">Hab. ${fechaHabStr}</div>` : ''}
-          ${fechaHabLabel && !icCompleto ? `<div class="habilitado-fecha">${fechaHabLabel}</div>` : ''}
-          ${icCompleto && !ic.baja ? '<div class="habilitado-fecha">IC</div>' : ''}
+          ${icCompleto ? (ic.baja ? habSidebarHtml(habEstadoInfo(ic.libres || ic.senior)) : '<div class="ic-pill">IC</div>') : habSidebarHtml(habCalc || habSheet)}
         </div>
       </div>`;
     }
