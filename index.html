@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-09 ARG — Rojas IC: Bonnin Santiago (Abogados A (S)) y Morua Roque (Salud B (S)) en Senior -->
+<!-- CDP Fixture — index.html — 2026-11-10 ARG — Senior Torneo Verano (F28+): tablas Grupo A/B/C, goleadores y amarillas nuevos; Clausura colapsada -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3877,9 +3877,9 @@
                   <option value="25">F25 · Libres F10 (Fase Final)</option>
                   <option value="26">F26 · Libres F11 + Senior Semifinales</option>
                   <option value="27">F27 · Libres F12 + Senior Finales</option>
-                  <option value="28">F28 · Libres F13 (Fase Final)</option>
-                  <option value="29">F29 · Libres F14 (Fase Final)</option>
-                  <option value="30">F30 · Libres F15 (Fase Final)</option>
+                  <option value="28">F28 · Libres F13 + Senior Fecha 1 Torneo Verano</option>
+                  <option value="29">F29 · Libres F14 + Senior Fecha 2 Torneo Verano</option>
+                  <option value="30">F30 · Libres F15 + Senior Fecha 3 Torneo Verano</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1">
@@ -4660,9 +4660,9 @@ const FECHA_LABELS = {
   25: { libres: 'Fase Final · Fecha 10', senior: null },
   26: { libres: 'Fase Final · Fecha 11', senior: 'Semifinales' },
   27: { libres: 'Fase Final · Fecha 12', senior: 'Finales' },
-  28: { libres: 'Fase Final · Fecha 13', senior: null },
-  29: { libres: 'Fase Final · Fecha 14', senior: null },
-  30: { libres: 'Fase Final · Fecha 15', senior: null }
+  28: { libres: 'Fase Final · Fecha 13', senior: 'Fecha 1 Torneo Verano' },
+  29: { libres: 'Fase Final · Fecha 14', senior: 'Fecha 2 Torneo Verano' },
+  30: { libres: 'Fase Final · Fecha 15', senior: 'Fecha 3 Torneo Verano' }
 };
 
 // Número de fecha Libres de la Fase Final ("Fase Final · Fecha 10" → 10)
@@ -4838,6 +4838,14 @@ function normalizarNombreEquipo(s) {
 var FECHA_INICIO_CLAUSURA_SENIOR = 14;
 // Fase regular Senior del Clausura termina en F24 (F26 Semifinales y F27 Finales no suman a la tabla)
 var FECHA_FIN_CLAUSURA_SENIOR = 24;
+// Torneo Senior nuevo por grupos (desde F28). Tablas, goleadores y amarillas Senior cuentan desde acá;
+// lo anterior (Clausura) queda colapsado como histórico.
+var FECHA_INICIO_GRUPOS_SENIOR = 28;
+var GRUPOS_SENIOR = [
+  { nombre: 'Grupo A', equipos: ['Contadores A (S)', 'Docentes T (S)', 'Docentes X (S)', 'Docentes B (S)'] },
+  { nombre: 'Grupo B', equipos: ['Contadores Z (S)', 'Docentes F (S)', 'Licenciados (S)', 'Docentes A (S)'] },
+  { nombre: 'Grupo C', equipos: ['Salud B (S)', 'Arquitectos (S)', 'Abogados A (S)', 'Salud F (S)'] }
+];
 var FECHA_INICIO_CLAUSURA_LIBRES = 16;
 // (Compat con lógica anterior — no se usa para congelar más nada)
 var FECHA_FIN_APERTURA_SENIOR = 13;
@@ -6120,7 +6128,7 @@ function renderPos(view) {
     (isSenior ? ' grupo-card' : '') +
     '">' +
     (isSenior ? '<div class="grupo-titulo">Tabla Clausura</div>' : '') +
-    renderStandingsTableHtml(data, view) +
+    renderStandingsTableHtml(data, view, isSenior ? { sinDelta: true } : undefined) +
     '</div>';
 
   // Nota al pie con ajustes iniciales (siempre en Senior, ya que la tabla es siempre Clausura)
@@ -6134,6 +6142,9 @@ function renderPos(view) {
     });
     html += '</div>';
   }
+
+  // Senior: torneo nuevo por grupos arriba; la Tabla Clausura queda colapsada abajo
+  if (isSenior) html = renderGruposSenior(view, html);
 
   document.getElementById('posContainer').innerHTML = html;
 }
@@ -6276,7 +6287,32 @@ function renderFaseFinalLibres(view) {
   return html;
 }
 
-// Muestra/oculta la Fase Regular de Libres A ('a') o B ('b')
+// Senior torneo nuevo: una tabla por grupo (partidos F28+) + histórico colapsado (clausuraHtml)
+function renderGruposSenior(view, clausuraHtml) {
+  var opts = { sinColores: true, sinDelta: true };
+  var html = '';
+  GRUPOS_SENIOR.forEach(function(g) {
+    var stats = calcularTablaGrupo(g.equipos, FECHA_INICIO_GRUPOS_SENIOR, null);
+    var data = stats.map(function(s, i) {
+      return {
+        'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
+        'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
+        'Diferencia': s.dif, 'Img': ''
+      };
+    });
+    html += '<div class="card grupo-card">' +
+      '<h2 class="grupo-titulo">Torneo Verano · ' + escapeHTML(g.nombre) + '</h2>' +
+      renderStandingsTableHtml(data, view, opts) +
+    '</div>';
+  });
+  html += '<button class="toggle-general" onclick="toggleFaseRegular(\'senior\')">' +
+      '<span class="toggle-arrow">▼</span> Ver tabla Clausura (F14-F24)' +
+    '</button>' +
+    '<div id="faseRegularSENIOR" class="clasificacion-general oculta">' + clausuraHtml + '</div>';
+  return html;
+}
+
+// Muestra/oculta la Fase Regular de Libres A ('a') o B ('b') o la Clausura Senior ('senior')
 function toggleFaseRegular(zona) {
   var cont = document.getElementById('faseRegular' + String(zona).toUpperCase());
   if (!cont) return;
@@ -6924,6 +6960,90 @@ function loadScorers(view, torneo) {
   loadScorersView(view);
 }
 
+// ── Senior torneo por grupos: goleadores y amarillas desde F28 ──
+// Partidos Senior jugados del torneo nuevo
+function partidosSeniorGrupos() {
+  return (state.fixture || []).filter(function(p) {
+    return esPartidoSenior(p) && fechaNumPartido(p) >= FECHA_INICIO_GRUPOS_SENIOR &&
+      (p.jugado === true || p.jugado === 'Jugado');
+  });
+}
+
+// Suma por jugador+equipo. items: [{ jugador, equipo, n }]. Devuelve [{ Jugador, Equipo, Total }] ordenado.
+function rankingJugadores(items) {
+  var acc = {};
+  items.forEach(function(it) {
+    if (!it.jugador) return;
+    var k = normalizarNombreEquipo(it.jugador) + '|' + normalizarNombreEquipo(it.equipo);
+    if (!acc[k]) acc[k] = { 'Jugador': it.jugador, 'Equipo': it.equipo, 'Total': 0 };
+    acc[k]['Total'] += it.n;
+  });
+  return Object.values(acc).sort(function(a, b) {
+    return (b['Total'] - a['Total']) || String(a['Jugador']).localeCompare(String(b['Jugador']));
+  });
+}
+
+// Detalle de partido (goleadores) cacheado por fila + resultado
+var _detallePartidoCache = {};
+function fetchDetallePartido(p) {
+  var key = p.rowIndex + '|' + (p.partido || '') + '|' + (p.resultado || '');
+  if (!_detallePartidoCache[key]) {
+    _detallePartidoCache[key] = fetch(APPS_SCRIPT_URL + '?action=getMatchDetail&rowIndex=' + p.rowIndex +
+        '&partido=' + encodeURIComponent(p.partido || ''))
+      .then(function(r) { return r.json(); })
+      .catch(function(e) { delete _detallePartidoCache[key]; throw e; });
+  }
+  return _detallePartidoCache[key];
+}
+
+// Goleadores Senior del torneo nuevo → state.goleadoresSeniorGrupos (null mientras carga)
+function calcularGoleadoresSeniorGrupos() {
+  var partidos = partidosSeniorGrupos();
+  var clave = partidos.map(function(p) { return p.rowIndex + ':' + p.resultado; }).join(',');
+  if (state.goleadoresSeniorGruposClave === clave && state.goleadoresSeniorGrupos) return Promise.resolve();
+  state.goleadoresSeniorGruposClave = clave;
+  state.goleadoresSeniorGrupos = null;
+  return Promise.all(partidos.map(fetchDetallePartido)).then(function(detalles) {
+    var items = [];
+    detalles.forEach(function(d, i) {
+      if (!d || !d.ok) return;
+      var p = partidos[i];
+      var eqL = d.equipoL || p.equipoL, eqV = d.equipoV || p.equipoV;
+      (d.goleadoresL || []).forEach(function(g) { items.push({ jugador: g.jugador, equipo: eqL, n: parseInt(g.goles) || 1 }); });
+      (d.goleadoresV || []).forEach(function(g) { items.push({ jugador: g.jugador, equipo: eqV, n: parseInt(g.goles) || 1 }); });
+    });
+    if (state.goleadoresSeniorGruposClave === clave) state.goleadoresSeniorGrupos = rankingJugadores(items);
+  }).catch(function() {
+    state.goleadoresSeniorGruposClave = null;
+    state.goleadoresSeniorGrupos = 'error';
+  });
+}
+
+// Amarillas Senior del torneo nuevo (vienen en el fixture)
+function calcularAmarillasSeniorGrupos() {
+  var items = [];
+  partidosSeniorGrupos().forEach(function(p) {
+    (p.amonestadosL || []).forEach(function(n) { items.push({ jugador: n, equipo: p.equipoL, n: 1 }); });
+    (p.amonestadosV || []).forEach(function(n) { items.push({ jugador: n, equipo: p.equipoV, n: 1 }); });
+  });
+  return rankingJugadores(items);
+}
+
+// Muestra/oculta el histórico Clausura de goleadores/amarillas Senior
+function toggleHistoricoSenior(id) {
+  var cont = document.getElementById(id);
+  if (!cont) return;
+  var oculta = cont.classList.toggle('oculta');
+  state.historicoSeniorAbierto = state.historicoSeniorAbierto || {};
+  state.historicoSeniorAbierto[id] = !oculta;
+  var arrow = cont.previousElementSibling && cont.previousElementSibling.querySelector('.toggle-arrow');
+  if (arrow) arrow.textContent = oculta ? '▼' : '▲';
+}
+
+function historicoSeniorAbierto(id) {
+  return !!(state.historicoSeniorAbierto && state.historicoSeniorAbierto[id]);
+}
+
 function filterScorers(query) {
   const q = query.trim().toLowerCase();
   const rows = document.querySelectorAll('#scorersContainer .scorer-row');
@@ -6957,11 +7077,60 @@ function renderScorers(view, showAll) {
   }
 
   var html = '<div class="card">';
-  data.forEach(function(p, i) {
+  data.forEach(function(p, i) { html += scorerRowHtml(p, i); });
+  
+  // Botón Ver más / Ocultar
+  if (hayMas && totalConUno > 0 && !showAll) {
+    html += '<div class="ver-mas-btn" onclick="loadScorersView(\'' + view + '\', true)">Ver ' + totalConUno + ' jugadores con 1 gol ▼</div>';
+  } else if (showAll && totalConUno > 0) {
+    html += '<div class="ver-mas-btn" onclick="loadScorersView(\'' + view + '\', false)">Ocultar jugadores con 1 gol ▲</div>';
+  }
+  
+  html += '</div>';
+
+  // Senior: torneo nuevo por grupos arriba, Clausura colapsada abajo
+  if (view === 'senior') html = renderGoleadoresSeniorGrupos(html, showAll);
+
+  document.getElementById('scorersContainer').innerHTML = html;
+  document.getElementById('scorerSearchWrap').style.display = '';
+  document.getElementById('scorerSearch').value = '';
+}
+
+function renderGoleadoresSeniorGrupos(clausuraHtml, showAll) {
+  var lista = state.goleadoresSeniorGrupos;
+  var html = '<div class="card"><div class="grupo-titulo" style="padding:14px 18px 6px">Torneo Verano</div>';
+  if (lista === 'error') {
+    html += '<div class="empty" style="padding:20px">No se pudieron cargar los goleadores</div>';
+  } else if (!lista) {
+    html += '<div class="empty" style="padding:20px">Calculando goleadores...</div>';
+  } else if (!lista.length) {
+    html += '<div class="empty" style="padding:20px">Sin goles todavía en el Torneo Verano</div>';
+  } else {
+    lista.forEach(function(p, i) { html += scorerRowHtml(p, i); });
+  }
+  html += '</div>';
+  var abierto = historicoSeniorAbierto('histGoleadoresSenior');
+  html += '<button class="toggle-general" onclick="toggleHistoricoSenior(\'histGoleadoresSenior\')">' +
+      '<span class="toggle-arrow">' + (abierto ? '▲' : '▼') + '</span> Ver goleadores Clausura' +
+    '</button>' +
+    '<div id="histGoleadoresSenior" class="clasificacion-general' + (abierto ? '' : ' oculta') + '">' + clausuraHtml + '</div>';
+
+  // Primera vez (o fixture cambió): calcular y volver a dibujar si sigue en Senior
+  var partidos = partidosSeniorGrupos();
+  var clave = partidos.map(function(p) { return p.rowIndex + ':' + p.resultado; }).join(',');
+  if (lista !== 'error' && (!lista || state.goleadoresSeniorGruposClave !== clave)) {
+    calcularGoleadoresSeniorGrupos().then(function() {
+      if (state.currentScorers === 'senior' && state.goleadoresSeniorGrupos) renderScorers('senior', showAll);
+    });
+  }
+  return html;
+}
+
+function scorerRowHtml(p, i) {
     var rank = i + 1;
     var rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
     var goals = p['Total'] || 0;
-    html += '<div class="scorer-row">' +
+    return '<div class="scorer-row">' +
       '<div class="scorer-content">' +
         '<div class="scorer-rank ' + rankClass + '">' + rank + '</div>' +
         '<div class="scorer-info">' +
@@ -6974,22 +7143,9 @@ function renderScorers(view, showAll) {
       '</div>' +
       '<div class="scorer-sidebar">' +
         '<div class="scorer-goals">' + goals + '</div>' +
-        '<div class="goals-label">goles</div>' +
+        '<div class="goals-label">' + (goals === 1 ? 'gol' : 'goles') + '</div>' +
       '</div>' +
     '</div>';
-  });
-  
-  // Botón Ver más / Ocultar
-  if (hayMas && totalConUno > 0 && !showAll) {
-    html += '<div class="ver-mas-btn" onclick="loadScorersView(\'' + view + '\', true)">Ver ' + totalConUno + ' jugadores con 1 gol ▼</div>';
-  } else if (showAll && totalConUno > 0) {
-    html += '<div class="ver-mas-btn" onclick="loadScorersView(\'' + view + '\', false)">Ocultar jugadores con 1 gol ▲</div>';
-  }
-  
-  html += '</div>';
-  document.getElementById('scorersContainer').innerHTML = html;
-  document.getElementById('scorerSearchWrap').style.display = '';
-  document.getElementById('scorerSearch').value = '';
 }
 
 // ============================================================
@@ -7403,11 +7559,9 @@ function renderDisc(view) {
       .sort((a, b) => (b['Total'] || 0) - (a['Total'] || 0))
       .filter(r => (r['Total'] || 0) > 0);
 
-    sorted.forEach(r => {
+    const amarillaRowHtml = r => {
       const total = r['Total'] || 0;
-      const cards = Array.from({length: Math.min(total, 5)}, () =>
-        `<span class="card-icon yellow-card">A</span>`).join('');
-      html += `<div class="disc-row">
+      return `<div class="disc-row">
         <div class="disc-content">
           <div class="disc-info">
             <div class="disc-name">${r['Jugador'] || '-'}</div>
@@ -7419,12 +7573,29 @@ function renderDisc(view) {
         </div>
         <div class="disc-sidebar">
           <div class="suspension-num">${total}</div>
-          <div class="suspension-label">tarjetas</div>
+          <div class="suspension-label">${total === 1 ? 'tarjeta' : 'tarjetas'}</div>
         </div>
       </div>`;
-    });
+    };
+
+    if (view === 'amarillas-senior') {
+      // Torneo por grupos (F28+) arriba; Clausura colapsada abajo
+      const nuevas = calcularAmarillasSeniorGrupos();
+      html += '<div class="grupo-titulo" style="padding:14px 18px 6px">Torneo Verano</div>';
+      nuevas.forEach(r => { html += amarillaRowHtml(r); });
+      if (!nuevas.length) html += '<div class="empty" style="padding:20px">Sin amarillas todavía en el Torneo Verano</div>';
+      html += '</div>';
+      const abierto = historicoSeniorAbierto('histAmarillasSenior');
+      html += `<button class="toggle-general" onclick="toggleHistoricoSenior('histAmarillasSenior')">
+          <span class="toggle-arrow">${abierto ? '▲' : '▼'}</span> Ver amarillas Clausura
+        </button>
+        <div id="histAmarillasSenior" class="clasificacion-general${abierto ? '' : ' oculta'}"><div class="card">`;
+    }
+
+    sorted.forEach(r => { html += amarillaRowHtml(r); });
 
     if (!sorted.length) html += '<div class="empty" style="padding:20px">Sin amarillas registradas</div>';
+    if (view === 'amarillas-senior') html += '</div>';
   }
 
   html += '</div>';
