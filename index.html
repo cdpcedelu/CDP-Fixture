@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-16 ARG — F30: Libres Fase Final F15 + Senior Fecha 2 Torneo Verano -->
+<!-- CDP Fixture — index.html — 2026-11-22 ARG — Docentes W primero si empata en Campeonato B + Promoción F30 (Maestros vs Abogados B) no cuenta en tablas -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -745,6 +745,21 @@
   .final-senior-badge.oro    { background: linear-gradient(135deg, #fde68a, #f59e0b); }
   .final-senior-badge.plata  { background: linear-gradient(135deg, #f3f4f6, #9ca3af); }
   .final-senior-badge.bronce { background: linear-gradient(135deg, #fed7aa, #c2410c); color: #fff; }
+  /* Partido de promoción Libres A <-> Libres B (F30): no suma en tablas */
+  .promo-badge {
+    align-self: flex-start;
+    width: fit-content;
+    display: inline-block;
+    margin: 8px 12px 0;
+    background: linear-gradient(135deg, #f59e0b, #dc2626);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
   .partido-sidebar-dia {
     font-size: 13px;
     font-weight: 800;
@@ -4776,6 +4791,22 @@ function textoActualizadoHasta(categoria) {
   return `Actualizado hasta ${labels.libres.replace(' · ', ' ')} (F${ultima})`;
 }
 
+// Partido de PROMOCIÓN (ascenso/descenso Libres A <-> Libres B): F30 Maestros vs Abogados B.
+// Se muestra en el Fixture con badge, pero NO suma puntos ni goles en ninguna tabla.
+// Las tarjetas sí cuentan (Disciplina no pasa por acá).
+const FECHA_PROMOCION = 30;
+const EQUIPOS_PROMOCION = ['maestros', 'abogados b'];
+function esPartidoPromocion(p, eqL, eqV) {
+  var n = parseInt(String(p && p.fecha || '').replace(/\D/g, ''), 10) || 0;
+  if (n !== FECHA_PROMOCION) return false;
+  if ((!eqL || !eqV) && p.partido) {
+    var m = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+    if (m) { eqL = m[1]; eqV = m[2]; }
+  }
+  var a = normalizarNombreEquipo(eqL), b = normalizarNombreEquipo(eqV);
+  return a !== b && EQUIPOS_PROMOCION.indexOf(a) >= 0 && EQUIPOS_PROMOCION.indexOf(b) >= 0;
+}
+
 // Tabla Libres A/B del CLAUSURA: cuenta solo partidos F16+ (arranca de cero).
 // fechaFin opcional: tope de fecha (null = sin tope). La Fase Regular usa 24.
 function calcularTablaLibresClausura(view, fechaFin) {
@@ -4815,6 +4846,15 @@ function calcularTablaLibresClausura(view, fechaFin) {
 // Orden: puntos > diferencia > GF (ya lo hace calcularTablaGrupo).
 function calcularTablaFaseFinal(equipos) {
   var stats = calcularTablaGrupo(equipos, FECHA_INICIO_FASE_FINAL, null);
+  // Campeonato B: si Docentes W empata en puntos, queda arriba (resultado entre sí).
+  // Hardcodeado: W le ganó/empató a todos en los enfrentamientos directos.
+  if (equipos === EQUIPOS_CAMPEONATO_B) {
+    var iW = stats.findIndex(function(s) { return s.equipo === 'Docentes W'; });
+    while (iW > 0 && stats[iW - 1].pts === stats[iW].pts) {
+      var tmp = stats[iW - 1]; stats[iW - 1] = stats[iW]; stats[iW] = tmp;
+      iW--;
+    }
+  }
   return stats.map(function(s, i) {
     return {
       'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
@@ -5024,6 +5064,7 @@ function calcularTablaGrupo(equipos, fechaDesde, fechaHasta) {
       if (m) { eqL = m[1].trim(); eqV = m[2].trim(); }
     }
     if (!eqL || !eqV) return;
+    if (esPartidoPromocion(p, eqL, eqV)) return;  // Promoción F30: no suma en tablas
 
     var gL = parseInt(p.golesL);
     var gV = parseInt(p.golesV);
@@ -6029,11 +6070,15 @@ function filterByEquipo(equipo) {
     const finalSeniorHtml = finalSenior
       ? `<div class="final-senior-badge ${finalSenior.cls}">${finalSenior.titulo}</div>`
       : '';
+    const promoHtml = esPartidoPromocion(p, local, visitante)
+      ? '<div class="promo-badge">⚔️ Promoción · Ascenso/Descenso</div>'
+      : '';
 
     html += `<div class="partido-row ${rowClass}" ${clickHandler}>
       <div class="partido-top">
         <div class="partido-content">
           ${finalSeniorHtml}
+          ${promoHtml}
           <div class="partido-header">
             <div class="partido-equipo-row">
               ${escudoLocal}
