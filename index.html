@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-22 ARG — Docentes W primero si empata en Campeonato B + Promoción F30 (Maestros vs Abogados B) no cuenta en tablas -->
+<!-- CDP Fixture — index.html — 2026-11-24 ARG — F31: Libres Copa Fin de Año F1 + Senior Fecha 3 Torneo Verano -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -3935,6 +3935,7 @@
                   <option value="28">F28 · Libres F13 (Fase Final)</option>
                   <option value="29">F29 · Libres F14 + Senior Fecha 1 Torneo Verano</option>
                   <option value="30">F30 · Libres F15 + Senior Fecha 2 Torneo Verano</option>
+                  <option value="31">F31 · Libres Copa Fin de Año F1 + Senior Fecha 3 Torneo Verano</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1">
@@ -4707,6 +4708,9 @@ const EQUIPOS_CAMPEONATO_B = ['Docentes E', 'Salud F', 'Docentes W', 'Docentes B
 const EQUIPOS_PROMOCION_B = ['Psicologos', 'Docentes A', 'Abogados B', 'Salud T', 'Contadores Z'];
 const FECHA_INICIO_FASE_FINAL = 25;
 const FECHA_FIN_FASE_REGULAR_LIBRES = FECHA_INICIO_FASE_FINAL - 1;
+// La Fase Final del Clausura Libres termina en F30. Desde F31 arranca la Copa Fin de Año
+// (Copa Oro / Copa Plata), que no suma en las tablas del Clausura.
+const FECHA_FIN_FASE_FINAL_LIBRES = 30;
 
 // Desde F25 Libres y Senior se desfasan: el sheet sigue numerado F1-F30
 // (compartido), pero cada categoría muestra su propia etiqueta.
@@ -4717,7 +4721,8 @@ const FECHA_LABELS = {
   27: { libres: 'Fase Final · Fecha 12', senior: 'Finales' },
   28: { libres: 'Fase Final · Fecha 13', senior: null },
   29: { libres: 'Fase Final · Fecha 14', senior: 'Fecha 1 Torneo Verano' },
-  30: { libres: 'Fase Final · Fecha 15', senior: 'Fecha 2 Torneo Verano' }
+  30: { libres: 'Fase Final · Fecha 15', senior: 'Fecha 2 Torneo Verano' },
+  31: { libres: 'Copa Fin de Año · Fecha 1', senior: 'Fecha 3 Torneo Verano' }
 };
 
 // Número de fecha Libres de la Fase Final ("Fase Final · Fecha 10" → 10)
@@ -4745,7 +4750,7 @@ function etiquetaFecha(sheetNum, categoria) {
 function etiquetaCortaHab(n, cat) {
   const labels = FECHA_LABELS[n];
   if (!labels) return `F${n}`;
-  if (cat === 'Libres') return labels.libres ? `F${n} (Libres F${libresNumFecha(labels)})` : `F${n}`;
+  if (cat === 'Libres') return labels.libres ? `F${n} (Libres ${/^Copa/.test(labels.libres) ? 'Copa ' : ''}F${libresNumFecha(labels)})` : `F${n}`;
   return labels.senior ? `F${n} (${labels.senior})` : `F${n}`;
 }
 
@@ -4755,9 +4760,11 @@ function etiquetaCortaFecha(sheetNum) {
   const labels = FECHA_LABELS[n];
   if (!labels) return `Fecha ${n}`;
   const lib = libresNumFecha(labels);
+  const esCopa = /^Copa/.test(labels.libres || '');
+  const libTxt = esCopa ? `Libres Copa F${lib}` : `Libres F${lib}`;
   if (!labels.libres) return `F${n} · Senior ${labels.senior}`;
-  if (labels.senior) return `F${n} · Libres F${lib} + Senior ${labels.senior}`;
-  return `F${n} · Libres F${lib} (Fase Final)`;
+  if (labels.senior) return `F${n} · ${libTxt} + Senior ${labels.senior}`;
+  return esCopa ? `F${n} · ${libTxt}` : `F${n} · ${libTxt} (Fase Final)`;
 }
 
 // Partido Senior: flag del sheet o equipos con "(S)" / "(Senior)".
@@ -4855,7 +4862,7 @@ function calcularTablaLibresClausura(view, fechaFin) {
 // Tabla de un grupo de la Fase Final: solo partidos F25+, sin ajustes.
 // Orden: puntos > diferencia > GF (ya lo hace calcularTablaGrupo).
 function calcularTablaFaseFinal(equipos) {
-  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_FASE_FINAL, null);
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_FASE_FINAL, FECHA_FIN_FASE_FINAL_LIBRES);
   // Campeonato B: si Docentes W empata en puntos, queda arriba (resultado entre sí).
   // Hardcodeado: W le ganó/empató a todos en los enfrentamientos directos.
   if (equipos === EQUIPOS_CAMPEONATO_B) {
@@ -6646,7 +6653,7 @@ function getPosicionEquipo(equipo) {
       return normalizarNombreEquipo(eq) === equipoNorm;
     });
     if (estaEnZona) {
-      var tabla = calcularTablaLibresClausura(view);
+      var tabla = calcularTablaLibresClausura(view, FECHA_FIN_FASE_FINAL_LIBRES);
       if (tabla) {
         for (var k = 0; k < tabla.length; k++) {
           if (normalizarNombreEquipo(tabla[k]['Equipo']) === equipoNorm) {
