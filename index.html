@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-24 ARG — F31: Libres Copa Fin de Año F1 + Senior Fecha 3 Torneo Verano -->
+<!-- CDP Fixture — index.html — 2026-11-27 ARG — Libres Copa Fin de Año: tablas por zona + mejor 2°, amarillas y goleadores desde F31; Clausura colapsado -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -4712,6 +4712,128 @@ const FECHA_FIN_FASE_REGULAR_LIBRES = FECHA_INICIO_FASE_FINAL - 1;
 // (Copa Oro / Copa Plata), que no suma en las tablas del Clausura.
 const FECHA_FIN_FASE_FINAL_LIBRES = 30;
 
+// ═══ COPA FIN DE AÑO LIBRES (desde F31) ═══
+// Libres A = Copa de Oro (zonas A de 4, B y C de 3; B y C juegan además un interzonal
+// por fecha, y cada equipo suma esos puntos en la tabla de SU zona).
+// Libres B = Copa de Plata (3 zonas de 3, todos contra todos, uno libre por fecha).
+// Clasifican a semis: el 1° de cada zona + el mejor 2° de las tres zonas.
+// Tablas, amarillas y goleadores de Libres cuentan desde F31; las sanciones (rojas) siguen igual.
+const FECHA_INICIO_COPA_LIBRES = 31;
+const COPAS_LIBRES = {
+  A: { titulo: 'Copa de Oro', medalla: '🥇', zonas: [
+    { nombre: 'Zona A', equipos: ['Contadores A', 'Tecnicos A', 'Ingenieros', 'Maestros'] },
+    { nombre: 'Zona B', equipos: ['Profesores', 'Salud B', 'Docentes W'] },
+    { nombre: 'Zona C', equipos: ['Abogados A', 'Arquitectos', 'Docentes B'] }
+  ]},
+  B: { titulo: 'Copa de Plata', medalla: '🥈', zonas: [
+    { nombre: 'Zona A', equipos: ['Abogados AR', 'Psicologos', 'Docentes A'] },
+    { nombre: 'Zona B', equipos: ['Ingenieros S', 'Abogados B', 'Contadores Z'] },
+    { nombre: 'Zona C', equipos: ['Docentes E', 'Salud F', 'Salud T'] }
+  ]}
+};
+
+// 'zona-a-libres' / 'libres-a' / 'amarillas-a' → 'A'; las de B → 'B'
+function copaLibresDeVista(view) {
+  var v = String(view || '');
+  if (v === 'zona-a-libres' || v === 'libres-a' || v === 'amarillas-a') return 'A';
+  if (v === 'zona-b-libres' || v === 'libres-b' || v === 'amarillas-b') return 'B';
+  return null;
+}
+
+function equiposCopaLibres(copa) {
+  var out = [];
+  COPAS_LIBRES[copa].zonas.forEach(function(z) { out = out.concat(z.equipos); });
+  return out;
+}
+
+// Partido jugado → { n, eqL, eqV, gL, gV } (null si no se puede leer)
+function datosPartidoJugado(p) {
+  if (!(p.jugado === true || p.jugado === 'Jugado')) return null;
+  var n = parseInt(String(p.fecha || '').replace(/\D/g, '')) || 0;
+  var eqL = p.equipoL, eqV = p.equipoV;
+  if ((!eqL || !eqV) && p.partido) {
+    var m = String(p.partido).match(/^[^.]+\.\s*(.+?)\s+vs\s+(.+)$/i);
+    if (m) { eqL = m[1].trim(); eqV = m[2].trim(); }
+  }
+  var gL = parseInt(p.golesL), gV = parseInt(p.golesV);
+  if ((isNaN(gL) || isNaN(gV)) && p.resultado) {
+    var r = String(p.resultado).match(/\[?\s*(\d+)\s*[-–]\s*(\d+)\s*\]?/);
+    if (r) { gL = parseInt(r[1]); gV = parseInt(r[2]); }
+  }
+  if (!eqL || !eqV || isNaN(gL) || isNaN(gV)) return null;
+  return { n: n, eqL: eqL, eqV: eqV, gL: gL, gV: gV };
+}
+
+// Partidos Libres jugados de la Copa (F31+) donde juega algún equipo de esa copa
+function partidosCopaLibres(copa) {
+  var set = {};
+  equiposCopaLibres(copa).forEach(function(e) { set[normalizarNombreEquipo(e)] = true; });
+  return (state.fixture || []).filter(function(p) {
+    if (esPartidoSenior(p) || fechaNumPartido(p) < FECHA_INICIO_COPA_LIBRES) return false;
+    if (!(p.jugado === true || p.jugado === 'Jugado')) return false;
+    return set[normalizarNombreEquipo(p.equipoL)] || set[normalizarNombreEquipo(p.equipoV)];
+  });
+}
+
+// Resultado entre dos equipos en la Copa: 1 = gana a, -1 = gana b, 0 = empate o no jugaron
+function resultadoEntreSiCopa(a, b) {
+  var na = normalizarNombreEquipo(a), nb = normalizarNombreEquipo(b);
+  var ptsA = 0, ptsB = 0, jugaron = false;
+  (state.fixture || []).forEach(function(p) {
+    if (esPartidoSenior(p)) return;
+    var d = datosPartidoJugado(p);
+    if (!d || d.n < FECHA_INICIO_COPA_LIBRES) return;
+    var l = normalizarNombreEquipo(d.eqL), v = normalizarNombreEquipo(d.eqV);
+    var gA, gB;
+    if (l === na && v === nb) { gA = d.gL; gB = d.gV; }
+    else if (l === nb && v === na) { gA = d.gV; gB = d.gL; }
+    else return;
+    jugaron = true;
+    if (gA > gB) ptsA += 3; else if (gA < gB) ptsB += 3; else { ptsA++; ptsB++; }
+  });
+  if (!jugaron || ptsA === ptsB) return 0;
+  return ptsA > ptsB ? 1 : -1;
+}
+
+// Tabla de una zona de la Copa. Cuenta TODOS los partidos F31+ del equipo
+// (incluido el interzonal, que suma en la tabla de su propia zona).
+// Desempate: puntos > (si empatan 2: resultado entre sí) > dif > GF > menos GC.
+function calcularTablaZonaCopa(equipos) {
+  var stats = calcularTablaGrupo(equipos, FECHA_INICIO_COPA_LIBRES, null);
+  stats.sort(function(a, b) {
+    return (b.pts - a.pts) || (b.dif - a.dif) || (b.gf - a.gf) || (a.gc - b.gc);
+  });
+  for (var i = 0; i < stats.length - 1; i++) {
+    var mismos = stats.filter(function(s) { return s.pts === stats[i].pts; });
+    if (mismos.length !== 2 || stats[i + 1].pts !== stats[i].pts) continue;
+    if (resultadoEntreSiCopa(stats[i].equipo, stats[i + 1].equipo) === -1) {
+      var t = stats[i]; stats[i] = stats[i + 1]; stats[i + 1] = t;
+    }
+    i++;
+  }
+  return stats;
+}
+
+// Mejor 2°: puntos > dif > GF > menos GC (no se enfrentaron entre sí)
+function mejoresSegundosCopa(copa) {
+  var segundos = [];
+  COPAS_LIBRES[copa].zonas.forEach(function(z) {
+    var t = calcularTablaZonaCopa(z.equipos);
+    if (t[1]) segundos.push(Object.assign({ zona: z.nombre }, t[1]));
+  });
+  return segundos.sort(function(a, b) {
+    return (b.pts - a.pts) || (b.dif - a.dif) || (b.gf - a.gf) || (a.gc - b.gc);
+  });
+}
+
+function filaTablaCopa(s, i) {
+  return {
+    'Pos': i + 1, 'Equipo': s.equipo, 'PJ': s.pj, 'Puntos': s.pts,
+    'PG': s.pg, 'PE': s.pe, 'PP': s.pp, 'GF': s.gf, 'GC': s.gc,
+    'Diferencia': s.dif, 'Img': ''
+  };
+}
+
 // Desde F25 Libres y Senior se desfasan: el sheet sigue numerado F1-F30
 // (compartido), pero cada categoría muestra su propia etiqueta.
 // F1-F24 no están acá → se muestran como siempre ("Fecha N"). libres: null = fecha solo Senior.
@@ -6209,7 +6331,7 @@ function renderPos(view) {
 
   // Libres A/B: Fase Final (F25+) + Fase Regular (F16-F24) colapsada
   if (isLibresZona) {
-    document.getElementById('posContainer').innerHTML = renderFaseFinalLibres(view);
+    document.getElementById('posContainer').innerHTML = renderCopaLibres(view);
     return;
   }
 
@@ -6283,7 +6405,9 @@ function renderStandingsTableHtml(data, view, opts) {
     var difNum = parseInt(dif) || 0;
 
     var posClass = '';
-    if (opts.sinColores) {
+    if (opts.posClassFn) {
+      posClass = opts.posClassFn(i, row) || '';
+    } else if (opts.sinColores) {
       posClass = '';
     } else if (isSenior || isGeneral) {
       if (i < 4) posClass = 'oro';
@@ -6380,6 +6504,55 @@ function renderFaseFinalLibres(view) {
     '<div id="faseRegular' + zona.toUpperCase() + '" class="clasificacion-general oculta">' +
       '<div class="card">' + renderStandingsTableHtml(regular, view, { sinDelta: true }) + '</div>' +
     '</div>';
+  return html;
+}
+
+// Libres A/B: Copa Fin de Año (F31+) por zonas + mejor 2°; todo el Clausura colapsado abajo
+function renderCopaLibres(view) {
+  var copa = copaLibresDeVista(view);
+  var c = COPAS_LIBRES[copa];
+  var segundos = mejoresSegundosCopa(copa);
+  var hayPartidos = partidosCopaLibres(copa).length > 0;
+  var mejor2 = hayPartidos && segundos.length ? normalizarNombreEquipo(segundos[0].equipo) : null;
+
+  var html = '<div class="nota-copa" style="font-size:12px;color:var(--text-dimmer);padding:2px 4px 10px">' +
+    c.medalla + ' <strong>' + c.titulo + '</strong> · Torneo Fin de Año. Clasifican a semifinales el 1° de cada zona y el mejor 2°' +
+    (hayPartidos ? ' (en verde)' : '') + '.</div>';
+
+  c.zonas.forEach(function(z) {
+    var stats = calcularTablaZonaCopa(z.equipos);
+    var opts = {
+      sinDelta: true,
+      posClassFn: function(i, row) {
+        if (!hayPartidos) return '';
+        if (i === 0) return 'top';
+        if (i === 1 && normalizarNombreEquipo(row['Equipo']) === mejor2) return 'top';
+        return '';
+      }
+    };
+    html += '<div class="card grupo-card">' +
+      '<h2 class="grupo-titulo">' + c.medalla + ' ' + c.titulo + ' · ' + escapeHTML(z.nombre) + '</h2>' +
+      renderStandingsTableHtml(stats.map(filaTablaCopa), view, opts) +
+    '</div>';
+  });
+
+  // Mejor 2° entre las tres zonas
+  html += '<div class="card grupo-card">' +
+    '<h2 class="grupo-titulo">Mejor 2° de las tres zonas</h2>' +
+    renderStandingsTableHtml(segundos.map(function(s, i) {
+      var f = filaTablaCopa(s, i);
+      f['Equipo'] = s.equipo;
+      return f;
+    }), view, { sinDelta: true, posClassFn: function(i) { return hayPartidos && i === 0 ? 'top' : ''; } }) +
+    '<div style="font-size:11px;color:var(--text-dimmer);padding:8px 14px 12px">Se ordena por puntos, diferencia de gol, goles a favor y menos goles en contra. ' +
+    'Zonas: ' + segundos.map(function(s) { return escapeHTML(formatTeamName(s.equipo)) + ' (' + s.zona + ')'; }).join(' · ') + '</div>' +
+  '</div>';
+
+  var id = 'CLAUSURALIBRES' + copa;
+  html += '<button class="toggle-general" onclick="toggleFaseRegular(\'clausuraLibres' + copa + '\')">' +
+      '<span class="toggle-arrow">▼</span> Ver tablas Clausura (Fase Final y Fase Regular)' +
+    '</button>' +
+    '<div id="faseRegular' + id + '" class="clasificacion-general oculta">' + renderFaseFinalLibres(view) + '</div>';
   return html;
 }
 
@@ -6645,6 +6818,24 @@ function getRachaDotsHtml(equipo) {
 // Obtener posición del equipo en la tabla
 function getPosicionEquipo(equipo) {
   var equipoNorm = normalizarNombreEquipo(equipo);
+
+  // 0. Libres: posición en su zona de la Copa Fin de Año (solo si ya jugó algún partido de la Copa)
+  if (String(equipo || '').indexOf('(S)') === -1) {
+    for (var copa in COPAS_LIBRES) {
+      var zonas = COPAS_LIBRES[copa].zonas;
+      for (var zi = 0; zi < zonas.length; zi++) {
+        var enZona = zonas[zi].equipos.some(function(eq) { return normalizarNombreEquipo(eq) === equipoNorm; });
+        if (!enZona) continue;
+        var tz = calcularTablaZonaCopa(zonas[zi].equipos);
+        for (var q = 0; q < tz.length; q++) {
+          if (normalizarNombreEquipo(tz[q].equipo) === equipoNorm) {
+            if (!tz[q].pj) return null;
+            return { pos: q + 1, total: tz.length, vista: copa === 'A' ? 'zona-a-libres' : 'zona-b-libres' };
+          }
+        }
+      }
+    }
+  }
 
   // 1. Buscar en tabla Clausura Libres A/B (arranca F16+)
   for (var view in EQUIPOS_LIBRES_CLAUSURA) {
@@ -7118,6 +7309,77 @@ function calcularGoleadoresSeniorGrupos() {
   });
 }
 
+// Amarillas Libres de la Copa Fin de Año (F31+, vienen en el fixture). Solo de equipos de esa copa.
+function calcularAmarillasCopaLibres(copa) {
+  var set = {};
+  equiposCopaLibres(copa).forEach(function(e) { set[normalizarNombreEquipo(e)] = true; });
+  var items = [];
+  partidosCopaLibres(copa).forEach(function(p) {
+    if (set[normalizarNombreEquipo(p.equipoL)]) (p.amonestadosL || []).forEach(function(n) { items.push({ jugador: n, equipo: p.equipoL, n: 1 }); });
+    if (set[normalizarNombreEquipo(p.equipoV)]) (p.amonestadosV || []).forEach(function(n) { items.push({ jugador: n, equipo: p.equipoV, n: 1 }); });
+  });
+  return rankingJugadores(items);
+}
+
+// Goleadores Libres de la Copa Fin de Año → state.goleadoresCopa[copa] (null mientras carga)
+function calcularGoleadoresCopaLibres(copa) {
+  state.goleadoresCopa = state.goleadoresCopa || {};
+  state.goleadoresCopaClave = state.goleadoresCopaClave || {};
+  var set = {};
+  equiposCopaLibres(copa).forEach(function(e) { set[normalizarNombreEquipo(e)] = true; });
+  var partidos = partidosCopaLibres(copa);
+  var clave = partidos.map(function(p) { return p.rowIndex + ':' + p.resultado; }).join(',');
+  if (state.goleadoresCopaClave[copa] === clave && state.goleadoresCopa[copa]) return Promise.resolve();
+  state.goleadoresCopaClave[copa] = clave;
+  state.goleadoresCopa[copa] = null;
+  return Promise.all(partidos.map(fetchDetallePartido)).then(function(detalles) {
+    var items = [];
+    detalles.forEach(function(d, i) {
+      if (!d || !d.ok) return;
+      var p = partidos[i];
+      var eqL = d.equipoL || p.equipoL, eqV = d.equipoV || p.equipoV;
+      if (set[normalizarNombreEquipo(eqL)]) (d.goleadoresL || []).forEach(function(g) { items.push({ jugador: g.jugador, equipo: eqL, n: parseInt(g.goles) || 1 }); });
+      if (set[normalizarNombreEquipo(eqV)]) (d.goleadoresV || []).forEach(function(g) { items.push({ jugador: g.jugador, equipo: eqV, n: parseInt(g.goles) || 1 }); });
+    });
+    if (state.goleadoresCopaClave[copa] === clave) state.goleadoresCopa[copa] = rankingJugadores(items);
+  }).catch(function() {
+    state.goleadoresCopaClave[copa] = null;
+    state.goleadoresCopa[copa] = 'error';
+  });
+}
+
+function renderGoleadoresCopaLibres(view, clausuraHtml, showAll) {
+  var copa = copaLibresDeVista(view);
+  var c = COPAS_LIBRES[copa];
+  var lista = (state.goleadoresCopa || {})[copa];
+  var html = '<div class="card"><div class="grupo-titulo" style="padding:14px 18px 6px">' + c.medalla + ' ' + c.titulo + ' · Torneo Fin de Año</div>';
+  if (lista === 'error') {
+    html += '<div class="empty" style="padding:20px">No se pudieron cargar los goleadores</div>';
+  } else if (!lista) {
+    html += '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Calculando goleadores...</div></div>';
+  } else if (!lista.length) {
+    html += '<div class="empty" style="padding:20px">Sin goles todavía en el Torneo Fin de Año</div>';
+  } else {
+    lista.forEach(function(p, i) { html += scorerRowHtml(p, i); });
+  }
+  html += '</div>';
+  var idHist = 'histGoleadoresLibres' + copa;
+  var abierto = historicoSeniorAbierto(idHist);
+  html += '<button class="toggle-general" onclick="toggleHistoricoSenior(\'' + idHist + '\')">' +
+      '<span class="toggle-arrow">' + (abierto ? '▲' : '▼') + '</span> Ver goleadores Clausura' +
+    '</button>' +
+    '<div id="' + idHist + '" class="clasificacion-general' + (abierto ? '' : ' oculta') + '">' + clausuraHtml + '</div>';
+
+  var partidos = partidosCopaLibres(copa);
+  var clave = partidos.map(function(p) { return p.rowIndex + ':' + p.resultado; }).join(',');
+  if (lista !== 'error' && (!lista || (state.goleadoresCopaClave || {})[copa] !== clave)) {
+    calcularGoleadoresCopaLibres(copa).then(function() {
+      if (state.currentScorers === view && state.goleadoresCopa[copa]) renderScorers(view, showAll);
+    });
+  }
+  return html;
+}
+
 // Amarillas Senior del torneo nuevo (vienen en el fixture)
 function calcularAmarillasSeniorGrupos() {
   var items = [];
@@ -7158,6 +7420,13 @@ function renderScorers(view, showAll) {
   var hayMas = hayMasInfo.hayMas;
   var totalConUno = hayMasInfo.totalConUno || 0;
 
+  var esCopaLibres = view === 'libres-a' || view === 'libres-b';
+  if ((!data || !data.length) && esCopaLibres) {
+    document.getElementById('scorersContainer').innerHTML =
+      renderGoleadoresCopaLibres(view, '<div class="card"><div class="empty">Sin goleadores en el Clausura</div></div>', showAll);
+    return;
+  }
+
   if (!data || !data.length) {
     // Caso especial: no hay goleadores con 2+, pero SÍ hay jugadores con 1 gol
     // Mostrar botón para cargarlos en vez de "Sin goleadores"
@@ -7189,6 +7458,8 @@ function renderScorers(view, showAll) {
 
   // Senior: torneo nuevo por grupos arriba, Clausura colapsada abajo
   if (view === 'senior') html = renderGoleadoresSeniorGrupos(html, showAll);
+  // Libres: Copa Fin de Año arriba, Clausura colapsado abajo
+  if (esCopaLibres) html = renderGoleadoresCopaLibres(view, html, showAll);
 
   document.getElementById('scorersContainer').innerHTML = html;
   document.getElementById('scorerSearchWrap').style.display = '';
@@ -7791,6 +8062,22 @@ function renderDisc(view) {
       </div>`;
     };
 
+    if (view === 'amarillas-a' || view === 'amarillas-b') {
+      // Copa Fin de Año (F31+) arriba; Clausura colapsada abajo
+      const copaAm = copaLibresDeVista(view);
+      const nuevasL = calcularAmarillasCopaLibres(copaAm);
+      html += '<div class="grupo-titulo" style="padding:14px 18px 6px">' + COPAS_LIBRES[copaAm].medalla + ' ' + COPAS_LIBRES[copaAm].titulo + ' · Torneo Fin de Año</div>';
+      nuevasL.forEach(r => { html += amarillaRowHtml(r); });
+      if (!nuevasL.length) html += '<div class="empty" style="padding:20px">Sin amarillas todavía en el Torneo Fin de Año</div>';
+      html += '</div>';
+      const idHist = 'histAmarillasLibres' + copaAm;
+      const abiertoL = historicoSeniorAbierto(idHist);
+      html += `<button class="toggle-general" onclick="toggleHistoricoSenior('${idHist}')">
+          <span class="toggle-arrow">${abiertoL ? '▲' : '▼'}</span> Ver amarillas Clausura
+        </button>
+        <div id="${idHist}" class="clasificacion-general${abiertoL ? '' : ' oculta'}"><div class="card">`;
+    }
+
     if (view === 'amarillas-senior') {
       // Torneo por grupos (F29+) arriba; Clausura colapsada abajo
       const nuevas = calcularAmarillasSeniorGrupos();
@@ -7808,7 +8095,7 @@ function renderDisc(view) {
     sorted.forEach(r => { html += amarillaRowHtml(r); });
 
     if (!sorted.length) html += '<div class="empty" style="padding:20px">Sin amarillas registradas</div>';
-    if (view === 'amarillas-senior') html += '</div>';
+    if (view === 'amarillas-senior' || view === 'amarillas-a' || view === 'amarillas-b') html += '</div>';
   }
 
   html += '</div>';
