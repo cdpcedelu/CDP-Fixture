@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CDP Fixture — index.html — 2026-11-27 ARG — Libres Copa Fin de Año: tablas por zona + mejor 2°, amarillas y goleadores desde F31; Clausura colapsado -->
+<!-- CDP Fixture — index.html — 2026-11-27 ARG — Libres Copa: sin cuadro Mejor 2° -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -6535,18 +6535,6 @@ function renderCopaLibres(view) {
       renderStandingsTableHtml(stats.map(filaTablaCopa), view, opts) +
     '</div>';
   });
-
-  // Mejor 2° entre las tres zonas
-  html += '<div class="card grupo-card">' +
-    '<h2 class="grupo-titulo">Mejor 2° de las tres zonas</h2>' +
-    renderStandingsTableHtml(segundos.map(function(s, i) {
-      var f = filaTablaCopa(s, i);
-      f['Equipo'] = s.equipo;
-      return f;
-    }), view, { sinDelta: true, posClassFn: function(i) { return hayPartidos && i === 0 ? 'top' : ''; } }) +
-    '<div style="font-size:11px;color:var(--text-dimmer);padding:8px 14px 12px">Se ordena por puntos, diferencia de gol, goles a favor y menos goles en contra. ' +
-    'Zonas: ' + segundos.map(function(s) { return escapeHTML(formatTeamName(s.equipo)) + ' (' + s.zona + ')'; }).join(' · ') + '</div>' +
-  '</div>';
 
   var id = 'CLAUSURALIBRES' + copa;
   html += '<button class="toggle-general" onclick="toggleFaseRegular(\'clausuraLibres' + copa + '\')">' +
